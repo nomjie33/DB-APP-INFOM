@@ -3,9 +3,9 @@
 
 ---
 
-## 📋 Project Overview
+## Project Overview
 
-This is a **Vehicle Rental Management System** built using Java and MySQL. The application implements a **layered architecture** to manage:
+This is the Vehicle Rental Management System version built using Java and MySQL. The application implements a **layered architecture** to manage:
 - Customer records
 - Vehicle inventory
 - Rental transactions
@@ -17,7 +17,7 @@ This is a **Vehicle Rental Management System** built using Java and MySQL. The a
 
 ---
 
-## 🏗️ Project Architecture
+## Project Architecture
 
 ### Layered Structure
 
@@ -68,8 +68,8 @@ src/
 │   ├── PenaltyService.java
 │   └── DeploymentService.java
 │
-├── ui/                 # User interfaces
-│   ├── CustomerUI.java
+├── ui/                 # User interfaces (tho idk how UI works, pls add files u think are relevant)
+│   ├── CustomerUI.java 
 │   ├── VehicleUI.java
 │   ├── TechnicianUI.java
 │   ├── PartUI.java
@@ -89,7 +89,7 @@ src/
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Tables
 
@@ -140,7 +140,7 @@ src/
 
 ---
 
-## 👥 Collaboration Workflow
+## Collaboration Workflow
 
 ### Task Assignment
 
@@ -171,7 +171,7 @@ Each team member should work on one layer at a time:
 - Create complex SQL queries
 - Format output
 
-## 📝 Implementation Guidelines
+## Implementation Guidelines
 
 ### 1. Entity Classes (Model)
 - Keep classes simple - no business logic
@@ -223,7 +223,7 @@ Each team member should work on one layer at a time:
 
 ---
 
-## 🎯 Key Features to Implement
+## Key Features to Implement
 
 ### Core Transactions
 - ✅ Create rental
@@ -236,16 +236,11 @@ Each team member should work on one layer at a time:
 ### Reports
 - ✅ Rental revenue report
 - ✅ Defective vehicles report
-- ✅ Location rental frequency
-- ✅ Customer rental history
-- ✅ Top customers
-- ✅ Overdue rentals
-- ✅ Maintenance costs
-- ✅ Fleet distribution
+- (add other reports based on proposal)
 
 ---
 
-## 🐛 Testing
+## Testing
 
 1. **Unit test each DAO method:**
    - Test insert, update, delete, select
@@ -263,7 +258,7 @@ Each team member should work on one layer at a time:
 
 ---
 
-## 📚 Resources
+## Resources
 
 - [MySQL Documentation](https://dev.mysql.com/doc/)
 - [JavaFX Documentation](https://openjfx.io/)
