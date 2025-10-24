@@ -11,8 +11,7 @@
 -- 5. Consider adding triggers for automatic updates (optional)
 --
 -- =====================================================
-
--- Use the database
+CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
 USE vehicle_rental_db;
 
 -- =====================================================
@@ -20,12 +19,24 @@ USE vehicle_rental_db;
 -- =====================================================
 -- Stores rental branch/location information
 -- Create this first as it's referenced by vehicles and technicians
+CREATE TABLE locations (
+    locationID INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100)
+);
 
 
 -- =====================================================
 -- 2. CUSTOMERS TABLE
 -- =====================================================
 -- Stores customer information
+CREATE TABLE customers (
+    customerID INT PRIMARY KEY AUTO_INCREMENT,
+    lastName VARCHAR(100) NOT NULL,
+    firstName VARCHAR(100) NOT NULL,
+    contactNumber VARCHAR(15),
+    address VARCHAR(80),
+    emailAddress VARCHAR(100)
+);
 
 
 -- =====================================================
@@ -45,10 +56,14 @@ USE vehicle_rental_db;
 -- =====================================================
 -- Stores parts inventory
 
+
 -- =====================================================
 -- 6. RENTALS TABLE
 -- =====================================================
 -- Stores rental transaction records
+
+
+
 
 -- =====================================================
 -- 7. PAYMENTS TABLE
