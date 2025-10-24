@@ -2,6 +2,7 @@ package dao;
 
 import model.Customer;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,8 +13,33 @@ import java.util.List;
  * METHODS TO IMPLEMENT:
  * 
  * 1. insertCustomer(Customer customer)
- *    - INSERT new customer into database
- *    - Return generated customer ID or boolean success
+ *    - INSERT new customer into database **/
+
+    public boolean createCustomer(Customer customer) {
+        String sql = "INSERT INTO customers (customerID, lastName, firstName, " +
+                     "contactNumber, address, emailAddress) VALUES (?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, customer.getCustomerID());
+            stmt.setString(2, customer.getLastName());
+            stmt.setString(3, customer.getFirstName());
+            stmt.setString(4, customer.getContactNumber());
+            stmt.setString(5, customer.getAddress());
+            stmt.setString(6, customer.getEmailAddress());
+            
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error creating customer: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+ 
+ /* 
  * 
  * 2. updateCustomer(Customer customer)
  *    - UPDATE existing customer record

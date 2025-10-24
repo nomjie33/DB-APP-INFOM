@@ -39,7 +39,7 @@ public class DBConnection {
     // TODO: Update these values for your MySQL setup
     private static final String DB_URL = "jdbc:mysql://localhost:3306/vehicle_rental_db";
     private static final String DB_USER = "root";  // Change to your MySQL username
-    private static final String DB_PASSWORD = "your_password";  // Change to your password
+    private static final String DB_PASSWORD = "p@ssword";  // Change to your password
     private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
     
     // Singleton instance (optional - can use static methods instead)
