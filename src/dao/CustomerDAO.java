@@ -1,6 +1,7 @@
 package dao;
 
 import model.Customer;
+import util.DBConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,33 +14,7 @@ import java.util.List;
  * METHODS TO IMPLEMENT:
  * 
  * 1. insertCustomer(Customer customer)
- *    - INSERT new customer into database **/
-
-    public boolean createCustomer(Customer customer) {
-        String sql = "INSERT INTO customers (customerID, lastName, firstName, " +
-                     "contactNumber, address, emailAddress) VALUES (?, ?, ?, ?, ?, ?)";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, customer.getCustomerID());
-            stmt.setString(2, customer.getLastName());
-            stmt.setString(3, customer.getFirstName());
-            stmt.setString(4, customer.getContactNumber());
-            stmt.setString(5, customer.getAddress());
-            stmt.setString(6, customer.getEmailAddress());
-            
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-            
-        } catch (SQLException e) {
-            System.err.println("Error creating customer: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
- 
- /* 
+ *    - INSERT new customer into database
  * 
  * 2. updateCustomer(Customer customer)
  *    - UPDATE existing customer record
@@ -74,17 +49,169 @@ import java.util.List;
  */
 public class CustomerDAO {
     
-    // TODO: Implement insertCustomer(Customer customer)
+    public boolean createCustomer(Customer customer) {
+        String sql = "INSERT INTO customers (customerID, lastName, firstName, " +
+                    "contactNumber, address, emailAddress) VALUES (?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, customer.getCustomerID());
+            stmt.setString(2, customer.getLastName());
+            stmt.setString(3, customer.getFirstName());
+            stmt.setString(4, customer.getContactNumber());
+            stmt.setString(5, customer.getAddress());
+            stmt.setString(6, customer.getEmailAddress());
+            
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error creating customer: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
     
-    // TODO: Implement updateCustomer(Customer customer)
+    public boolean updateCustomer(Customer customer) {
+        String sql = "UPDATE customers SET lastName = ?, firstName = ?, " +
+                     "contactNumber = ?, address = ?, emailAddress = ? WHERE customerID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, customer.getLastName());
+            stmt.setString(2, customer.getFirstName());
+            stmt.setString(3, customer.getContactNumber());
+            stmt.setString(4, customer.getAddress());
+            stmt.setString(5, customer.getEmailAddress());
+            stmt.setString(6, customer.getCustomerID());
+            
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating customer: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
     
-    // TODO: Implement deleteCustomer(int customerId)
+    public boolean deleteCustomer(String customerId) {
+        String sql = "DELETE FROM customers WHERE customerID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, customerId);
+            
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error deleting customer: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
     
-    // TODO: Implement getCustomerById(int customerId)
+    public Customer getCustomerById(String customerId) {
+        String sql = "SELECT * FROM customers WHERE customerID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, customerId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractCustomerFromResultSet(rs);
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting customer by ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
     
-    // TODO: Implement getAllCustomers()
+    public List<Customer> getAllCustomers() {
+        String sql = "SELECT * FROM customers";
+        List<Customer> customers = new ArrayList<>();
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                customers.add(extractCustomerFromResultSet(rs));
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting all customers: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return customers;
+    }
     
-    // TODO: Implement searchCustomersByName(String name)
+    public List<Customer> searchCustomersByName(String name) {
+        String sql = "SELECT * FROM customers WHERE lastName LIKE ? OR firstName LIKE ?";
+        List<Customer> customers = new ArrayList<>();
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + name + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    customers.add(extractCustomerFromResultSet(rs));
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error searching customers by name: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return customers;
+    }
     
-    // TODO: Implement getCustomerByEmail(String email)
+    public Customer getCustomerByEmail(String email) {
+        String sql = "SELECT * FROM customers WHERE emailAddress = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, email);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return extractCustomerFromResultSet(rs);
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting customer by email: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Helper method to extract Customer object from ResultSet.
+     * Reduces code duplication across query methods.
+     */
+    private Customer extractCustomerFromResultSet(ResultSet rs) throws SQLException {
+        Customer customer = new Customer();
+        customer.setCustomerID(rs.getString("customerID"));
+        customer.setLastName(rs.getString("lastName"));
+        customer.setFirstName(rs.getString("firstName"));
+        customer.setContactNumber(rs.getString("contactNumber"));
+        customer.setAddress(rs.getString("address"));
+        customer.setEmailAddress(rs.getString("emailAddress"));
+        return customer;
+    }
 }
