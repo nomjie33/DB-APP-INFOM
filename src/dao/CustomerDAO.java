@@ -49,7 +49,7 @@ import java.util.List;
  */
 public class CustomerDAO {
     
-    public boolean createCustomer(Customer customer) {
+    public boolean insertCustomer(Customer customer) {
         String sql = "INSERT INTO customers (customerID, lastName, firstName, " +
                     "contactNumber, address, emailAddress) VALUES (?, ?, ?, ?, ?, ?)";
         
