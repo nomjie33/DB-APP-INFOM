@@ -5,29 +5,19 @@ package model;
  * 
  * PURPOSE: Maps to the 'parts' table in MySQL database.
  * 
- * SIMPLIFIED SCHEMA:
+ * SCHEMA:
  * Table columns:
- * - partId    : VARCHAR(11) - Primary key (e.g., "P01", "P02")
+ * - partID    : VARCHAR(11) - Primary key (e.g., "P01", "P02")
  * - partName  : VARCHAR(25) - Name/description of the part
  * - quantity  : INT(3)      - Available inventory quantity
- * 
- * Example rows:
- * P01, "Brake Pads",    50
- * P02, "Engine Oil",    120
- * P03, "Air Filter",    75
- * 
- * IMPLEMENTATION NOTES:
- * - Keep this class as a POJO (no business logic).
- * - Use `partId` as the identity in equals() / hashCode().
- * - Quantity represents available stock; decrement during maintenance operations.
  * 
  * COLLABORATOR NOTES:
  * - Used in maintenance transactions to track parts usage
  * - PartDAO handles inventory updates (increment/decrement quantity)
- */
+ */ 
 public class Part {
     // Fields matching the simplified parts table
-    private String partId;
+    private String partID;
     private String partName;
     private int quantity;
     
@@ -36,19 +26,19 @@ public class Part {
     }
     
     // Parameterized constructor
-    public Part(String partId, String partName, int quantity) {
-        this.partId = partId;
+    public Part(String partID, String partName, int quantity) {
+        this.partID = partID;
         this.partName = partName;
         this.quantity = quantity;
     }
     
     // Getters and setters
     public String getPartId() {
-        return partId;
+        return partID;
     }
     
-    public void setPartId(String partId) {
-        this.partId = partId;
+    public void setPartId(String partID) {
+        this.partID = partID;
     }
     
     public String getPartName() {
@@ -70,7 +60,7 @@ public class Part {
     @Override
     public String toString() {
         return "Part{" +
-                "partId='" + partId + '\'' +
+                "partId='" + partID + '\'' +
                 ", partName='" + partName + '\'' +
                 ", quantity=" + quantity +
                 '}';
@@ -81,11 +71,11 @@ public class Part {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Part part = (Part) o;
-        return partId != null && partId.equals(part.partId);
+        return partID != null && partID.equals(part.partID);
     }
     
     @Override
     public int hashCode() {
-        return partId != null ? partId.hashCode() : 0;
+        return partID != null ? partID.hashCode() : 0;
     }
 }
