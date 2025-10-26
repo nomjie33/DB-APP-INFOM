@@ -284,32 +284,4 @@ public class MaintenanceDAO {
         );
     }
     
-    /**
-     * Test method - demonstrates basic DAO usage.
-     * Run this to verify your database connection and table structure.
-     */
-    public static void main(String[] args) {
-        System.out.println("=== MaintenanceDAO Test ===\n");
-        
-        MaintenanceDAO dao = new MaintenanceDAO();
-        
-        // Test: Get all maintenance records
-        System.out.println("Fetching all maintenance records...");
-        List<MaintenanceTransaction> allMaintenance = dao.getAllMaintenance();
-        System.out.println("Found " + allMaintenance.size() + " maintenance record(s).");
-        
-        for (MaintenanceTransaction mt : allMaintenance) {
-            System.out.println(mt);
-        }
-        
-        // Test: Get by ID (if you have data)
-        if (!allMaintenance.isEmpty()) {
-            String testId = allMaintenance.get(0).getMaintenanceId();
-            System.out.println("\nFetching maintenance by ID: " + testId);
-            MaintenanceTransaction mt = dao.getMaintenanceById(testId);
-            System.out.println(mt);
-        }
-        
-        System.out.println("\n=== Test Complete ===");
-    }
 }

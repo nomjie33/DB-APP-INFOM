@@ -5,30 +5,87 @@ package model;
  * 
  * PURPOSE: Maps to the 'parts' table in MySQL database.
  * 
- * FIELDS TO IMPLEMENT:
- * - partId (int/String) - Primary key
- * - partName (String) - Name/description of the part
- * - category (String) - Type of part (e.g., "Engine", "Brake", "Tire")
- * - unitPrice (double) - Cost per unit
- * - quantityInStock (int) - Available inventory
- * - reorderLevel (int) - Minimum stock before reorder needed
+ * SIMPLIFIED SCHEMA:
+ * Table columns:
+ * - partId    : VARCHAR(11) - Primary key (e.g., "P01", "P02")
+ * - partName  : VARCHAR(25) - Name/description of the part
+ * - quantity  : INT(3)      - Available inventory quantity
  * 
- * METHODS TO IMPLEMENT:
- * - Constructor(s)
- * - Getters and Setters for all fields
- * - toString() for debugging
- * - equals() and hashCode()
+ * Example rows:
+ * P01, "Brake Pads",    50
+ * P02, "Engine Oil",    120
+ * P03, "Air Filter",    75
+ * 
+ * IMPLEMENTATION NOTES:
+ * - Keep this class as a POJO (no business logic).
+ * - Use `partId` as the identity in equals() / hashCode().
+ * - Quantity represents available stock; decrement during maintenance operations.
  * 
  * COLLABORATOR NOTES:
- * - Used in maintenance and penalty calculations
- * - Track inventory levels for parts management
+ * - Used in maintenance transactions to track parts usage
+ * - PartDAO handles inventory updates (increment/decrement quantity)
  */
 public class Part {
-    // TODO: Add private fields for part attributes
+    // Fields matching the simplified parts table
+    private String partId;
+    private String partName;
+    private int quantity;
     
-    // TODO: Add constructors (default and parameterized)
+    // Default constructor
+    public Part() {
+    }
     
-    // TODO: Add getters and setters
+    // Parameterized constructor
+    public Part(String partId, String partName, int quantity) {
+        this.partId = partId;
+        this.partName = partName;
+        this.quantity = quantity;
+    }
     
-    // TODO: Add toString(), equals(), hashCode()
+    // Getters and setters
+    public String getPartId() {
+        return partId;
+    }
+    
+    public void setPartId(String partId) {
+        this.partId = partId;
+    }
+    
+    public String getPartName() {
+        return partName;
+    }
+    
+    public void setPartName(String partName) {
+        this.partName = partName;
+    }
+    
+    public int getQuantity() {
+        return quantity;
+    }
+    
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+    
+    @Override
+    public String toString() {
+        return "Part{" +
+                "partId='" + partId + '\'' +
+                ", partName='" + partName + '\'' +
+                ", quantity=" + quantity +
+                '}';
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Part part = (Part) o;
+        return partId != null && partId.equals(part.partId);
+    }
+    
+    @Override
+    public int hashCode() {
+        return partId != null ? partId.hashCode() : 0;
+    }
 }
