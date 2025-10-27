@@ -97,13 +97,13 @@ public class CustomerDAO {
         }
     }
     
-    public boolean deleteCustomer(String customerId) {
+    public boolean deleteCustomer(String customerID) {
         String sql = "DELETE FROM customers WHERE customerID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, customerId);
+            stmt.setString(1, customerID);
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -115,13 +115,13 @@ public class CustomerDAO {
         }
     }
     
-    public Customer getCustomerById(String customerId) {
+    public Customer getCustomerById(String customerID) {
         String sql = "SELECT * FROM customers WHERE customerID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, customerId);
+            stmt.setString(1, customerID);
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {

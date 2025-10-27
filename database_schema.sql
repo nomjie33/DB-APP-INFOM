@@ -14,13 +14,14 @@
 CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
 USE vehicle_rental_db;
 
+
 -- =====================================================
 -- 1. LOCATIONS TABLE
 -- =====================================================
 -- Stores rental branch/location information
 -- Create this first as it's referenced by vehicles and technicians
 CREATE TABLE locations (
-    locationID INT PRIMARY KEY AUTO_INCREMENT,
+    locationID VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100)
 );
 
@@ -30,7 +31,7 @@ CREATE TABLE locations (
 -- =====================================================
 -- Stores customer information
 CREATE TABLE customers (
-    customerID INT PRIMARY KEY AUTO_INCREMENT,
+    customerID VARCHAR(10) PRIMARY KEY,
     lastName VARCHAR(100) NOT NULL,
     firstName VARCHAR(100) NOT NULL,
     contactNumber VARCHAR(15),
@@ -138,5 +139,9 @@ CREATE INDEX idx_rental_status ON rentals(endTime);
 -- =====================================================
 -- SAMPLE DATA (Optional - for testing)
 -- =====================================================
+INSERT INTO locations VALUES ('LOC-001', 'Test Location');
+SELECT * FROM locations;
+
+
 
 COMMIT;

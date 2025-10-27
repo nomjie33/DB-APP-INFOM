@@ -1,0 +1,7 @@
+# Database Configuration Template
+# Copy this to db.properties and fill in your credentials
+
+db.url=jdbc:mysql://localhost:3306/vehicle_rental_db
+db.username=root
+db.password=YOUR_PASSWORD_HERE
+db.driver=com.mysql.cj.jdbc.Driver

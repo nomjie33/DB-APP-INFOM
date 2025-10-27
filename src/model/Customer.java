@@ -39,7 +39,7 @@ public class Customer {
     public Customer() {
     }
     
-    public Customer(String customerID, String lastName, String firstName, 
+    public Customer(int customerID, String lastName, String firstName, 
                    String contactNumber, String address, String emailAddress) {
         this.customerID = customerID;
         this.lastName = lastName;

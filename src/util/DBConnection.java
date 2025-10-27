@@ -10,37 +10,34 @@ import java.sql.SQLException;
  * PURPOSE: Centralized database connection management.
  * Provides connection to MySQL database for all DAO classes.
  * 
- * SINGLETON PATTERN: Ensures only one connection pool/manager exists.
- * 
  * CONFIGURATION:
- * Update these constants with your MySQL database details:
- * - DB_URL: Your database URL
- * - DB_USER: Your MySQL username
- * - DB_PASSWORD: Your MySQL password
+ * - Credentials are loaded from db.properties (NOT committed to Git)
+ * - Each team member creates their own db.properties file
+ * - Copy db.properties.example and edit with YOUR credentials
  * 
- * USAGE EXAMPLE:
- * ```java
- * Connection conn = DBConnection.getConnection();
- * // Use connection for queries
- * conn.close(); // Always close when done
- * ```
+ * SETUP (IMPORTANT):
+ * 1. Copy db.properties.example to db.properties
+ * 2. Edit db.properties with your MySQL username/password
+ * 3. Create database: CREATE DATABASE vehicle_rental_db;
+ * 4. Test connection: java util.DBConnection
  * 
  * COLLABORATOR NOTES:
- * - IMPORTANT: Add MySQL Connector/J library to project dependencies
- * - Download from: https://dev.mysql.com/downloads/connector/j/
- * - Or use Maven/Gradle dependency
- * - Never commit database credentials to version control
- * - Consider using environment variables or config file for credentials
- * - Implement connection pooling for production (e.g., HikariCP)
+ * - IMPORTANT: Add MySQL Connector/J library to project
+ * - Download: https://dev.mysql.com/downloads/connector/j/
+ * - db.properties is in .gitignore (passwords never committed!)
  */
 public class DBConnection {
     
     // ===== DATABASE CONFIGURATION =====
-    // TODO: Update these values for your MySQL setup
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/vehicle_rental_db";
-    private static final String DB_USER = "root";  // Change to your MySQL username
-    private static final String DB_PASSWORD = "p@ssword";  // Change to your password
+    private static String DB_URL;
+    private static String DB_USER;
+    private static String DB_PASSWORD;
     private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
+
+    // Load configuration when class is first used
+    static {
+    loadDatabaseConfig();
+    }
     
     // Singleton instance (optional - can use static methods instead)
     private static DBConnection instance;
@@ -59,6 +56,36 @@ public class DBConnection {
             e.printStackTrace();
         }
     }
+    /**
+    * Load database configuration from db.properties file.
+    * Each team member has their own db.properties with their credentials.
+    * This file is NOT committed to Git (.gitignore protects it).
+    */
+    private static void loadDatabaseConfig() {
+    java.util.Properties props = new java.util.Properties();
+    
+    try (java.io.FileInputStream fis = new java.io.FileInputStream("db.properties")) {
+        props.load(fis);
+        
+        DB_URL = props.getProperty("db.url");
+        DB_USER = props.getProperty("db.username");
+        DB_PASSWORD = props.getProperty("db.password");
+        
+        System.out.println("✓ Database configuration loaded from db.properties");
+        
+    } catch (java.io.IOException e) {
+        System.err.println("════════════════════════════════════════════");
+        System.err.println("ERROR: Cannot find db.properties file!");
+        System.err.println("════════════════════════════════════════════");
+        System.err.println("\nSetup Instructions:");
+        System.err.println("1. Copy 'db.properties.example' to 'db.properties'");
+        System.err.println("2. Edit db.properties with YOUR MySQL credentials");
+        System.err.println("3. Make sure db.properties is in project root");
+        System.err.println("\nFile is in .gitignore - your password is safe!");
+        System.err.println("════════════════════════════════════════════\n");
+        e.printStackTrace();
+    }
+}
     
     /**
      * Get database connection.
