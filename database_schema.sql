@@ -58,12 +58,29 @@ CREATE TABLE vehicles (
 -- 4. TECHNICIANS TABLE
 -- =====================================================
 -- Stores technician/mechanic information
-
+CREATE TABLE technicians (
+    technician_id VARCHAR(11) PRIMARY KEY,
+    last_name VARCHAR(25) NOT NULL,
+    first_name VARCHAR(25) NOT NULL,
+    specialization_id VARCHAR(15),
+    rate DECIMAL(10, 2) NOT NULL,
+    contact_number VARCHAR(15),
+    
+    INDEX idx_technician_specialization (specialization_id)
+);
 
 -- =====================================================
 -- 5. PARTS TABLE
 -- =====================================================
 -- Stores parts inventory
+CREATE TABLE parts (
+    part_id VARCHAR(11) PRIMARY KEY,
+    part_name VARCHAR(25) NOT NULL,
+    quantity INT(3) NOT NULL DEFAULT 0,
+    
+    CONSTRAINT chk_part_quantity 
+        CHECK (quantity >= 0)
+);
 
 
 -- =====================================================
@@ -117,6 +134,37 @@ CREATE INDEX idx_rental_status ON rentals(endTime);
 -- 8. MAINTENANCE TABLE
 -- =====================================================
 -- Stores vehicle maintenance/repair records
+CREATE TABLE maintenance (
+    maintenance_id VARCHAR(11) PRIMARY KEY,
+    vehicle_id VARCHAR(11) NOT NULL,
+    technician_id VARCHAR(11) NOT NULL,
+    part_id VARCHAR(11),
+    report_date TIMESTAMP NOT NULL,
+    repair_date TIMESTAMP,
+    notes TEXT,
+    vehicle_status VARCHAR(15),
+    
+    -- Foreign key constraints
+    CONSTRAINT fk_maintenance_vehicle 
+        FOREIGN KEY (vehicle_id) REFERENCES vehicles(plateID)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    
+    CONSTRAINT fk_maintenance_technician 
+        FOREIGN KEY (technician_id) REFERENCES technicians(technician_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    
+    CONSTRAINT fk_maintenance_part 
+        FOREIGN KEY (part_id) REFERENCES parts(part_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    
+    -- Indexes for performance
+    INDEX idx_maintenance_vehicle (vehicle_id),
+    INDEX idx_maintenance_technician (technician_id),
+    INDEX idx_maintenance_report_date (report_date)
+);
 
 -- =====================================================
 -- 9. PENALTIES TABLE
