@@ -1,7 +1,10 @@
 package dao;
 
 import model.Vehicle;
+import util.DBConnection;
+
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,22 +56,255 @@ import java.util.List;
  * - Use PreparedStatement for all queries
  */
 public class VehicleDAO {
+    private static final String STATUS_AVAILABLE = "Available";
+    private static final String STATUS_IN_USE = "In Use";
+    private static final String STATUS_MAINTENANCE = "Maintenance";
     
     // TODO: Implement insertVehicle(Vehicle vehicle)
-    
+    public boolean insertVehicle(Vehicle vehicle) {
+        String sql = "INSERT INTO vehicles (plateID, vehicleType, vehicleModel, status, rentalPrice) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, vehicle.getPlateID());
+            stmt.setString(2, vehicle.getVehicleType());
+            stmt.setString(3, vehicle.getVehicleModel());
+            stmt.setString(4, vehicle.getStatus());
+            stmt.setDouble(5, vehicle.getRentalPrice());
+            
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                System.out.println("✓ Vehicle inserted: " + vehicle.getPlateID());
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error inserting vehicle: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+
     // TODO: Implement updateVehicle(Vehicle vehicle)
+    public boolean updateVehicle(Vehicle vehicle) {
+        String sql = "UPDATE vehicles SET vehicleType = ?, vehicleModel = ?, " +
+                    "status = ?, rentalPrice = ? WHERE plateID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, vehicle.getVehicleType());
+            stmt.setString(2, vehicle.getVehicleModel());
+            stmt.setString(3, vehicle.getStatus());
+            stmt.setDouble(4, vehicle.getRentalPrice());
+            stmt.setString(5, vehicle.getPlateID());
+            
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                System.out.println("✓ Vehicle updated: " + vehicle.getPlateID());
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating vehicle: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
     
     // TODO: Implement deleteVehicle(int vehicleId)
-    
+    public boolean deleteVehicle(String plateID) {
+        String sql = "DELETE FROM vehicles WHERE plateID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, plateID);
+            
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                System.out.println("✓ Vehicle deleted: " + plateID);
+                return true;
+            } else {
+                System.err.println("✗ Vehicle not found: " + plateID);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error deleting vehicle: " + e.getMessage());
+            System.err.println("Note: Cannot delete vehicle if referenced in rentals/maintenance");
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+
     // TODO: Implement getVehicleById(int vehicleId)
+    public Vehicle getVehicleById(String plateID) {
+        String sql = "SELECT * FROM vehicles WHERE plateID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, plateID);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return extractVehicleFromResultSet(rs);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting vehicle by ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
     
     // TODO: Implement getAllVehicles()
+    public List<Vehicle> getAllVehicles() {
+        List<Vehicle> vehicles = new ArrayList<>();
+        String sql = "SELECT * FROM vehicles ORDER BY plateID";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                vehicles.add(extractVehicleFromResultSet(rs));
+            }
+            
+            System.out.println("✓ Retrieved " + vehicles.size() + " vehicle(s)");
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting all vehicles: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return vehicles;
+    }
     
     // TODO: Implement getAvailableVehicles()
-    
+    public List<Vehicle> getAvailableVehicles() {
+        List<Vehicle> vehicles = new ArrayList<>();
+        String sql = "SELECT * FROM vehicles WHERE status = ? ORDER BY vehicleType, rentalPrice";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, STATUS_AVAILABLE);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                vehicles.add(extractVehicleFromResultSet(rs));
+            }
+            
+            System.out.println("✓ Found " + vehicles.size() + " available vehicle(s)");
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting available vehicles: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return vehicles;
+    }
     // TODO: Implement getVehiclesByLocation(int locationId)
+        public List<Vehicle> getVehiclesByLocation(String locationID) {
+        List<Vehicle> vehicles = new ArrayList<>();
+        
+        // TODO: Update this query based on your actual schema
+        // If vehicles table has locationID field:
+        String sql = "SELECT * FROM vehicles WHERE locationID = ? ORDER BY vehicleType";
+        
+        // If you have a separate deployments table:
+        // String sql = "SELECT v.* FROM vehicles v " +
+        //              "JOIN deployments d ON v.plateID = d.plateID " +
+        //              "WHERE d.locationID = ? AND d.endDate IS NULL";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, locationID);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                vehicles.add(extractVehicleFromResultSet(rs));
+            }
+            
+            System.out.println("✓ Found " + vehicles.size() + " vehicle(s) at location " + locationID);
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting vehicles by location: " + e.getMessage());
+            System.err.println("Note: Ensure vehicles table has locationID or adjust query for deployments table");
+            e.printStackTrace();
+        }
+        
+        return vehicles;
+    }
     
     // TODO: Implement updateVehicleStatus(int vehicleId, String newStatus)
-    
+        public boolean updateVehicleStatus(String plateID, String newStatus) {
+        // Validate status
+        if (!isValidStatus(newStatus)) {
+            System.err.println("✗ Invalid status: " + newStatus);
+            System.err.println("Valid statuses: Available, In Use, Maintenance");
+            return false;
+        }
+        
+        String sql = "UPDATE vehicles SET status = ? WHERE plateID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, newStatus);
+            stmt.setString(2, plateID);
+            
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                System.out.println("✓ Vehicle " + plateID + " status updated to: " + newStatus);
+                // TODO: Log status change to audit table if needed
+                return true;
+            } else {
+                System.err.println("✗ Vehicle not found: " + plateID);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating vehicle status: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
     // TODO: Implement getVehiclesByStatus(String status)
+    public List<Vehicle> getVehiclesByStatus(String status) {
+        List<Vehicle> vehicles = new ArrayList<>();
+        String sql = "SELECT * FROM vehicles WHERE status = ? ORDER BY vehicleType, vehicleModel";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                vehicles.add(extractVehicleFromResultSet(rs));
+            }
+            
+            System.out.println("✓ Found " + vehicles.size() + " vehicle(s) with status: " + status);
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting vehicles by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return vehicles;
+    }
+    
 }
