@@ -1,0 +1,116 @@
+# =====================================================
+# Java Vehicle Rental Project - .gitignore
+# =====================================================
+
+# ===== Database credentials =====
+db.properties
+
+# ===== Compiled Files =====
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# ===== Build Directories =====
+bin/
+build/
+target/
+out/
+dist/
+
+# ===== IDE Specific Files =====
+
+# Eclipse
+.project
+.classpath
+.settings/
+.metadata/
+*.launch
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# NetBeans
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# ===== OS Specific Files =====
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+
+# ===== Database Files =====
+*.db
+*.sqlite
+*.sql~ 
+
+# ===== Security - IMPORTANT! =====
+# Never commit passwords or API keys!
+**/config/database.properties
+**/config/credentials.properties
+.env
+*.key
+*.pem
+
+# ===== Logs =====
+*.log
+logs/
+*.out
+
+# ===== Temporary Files =====
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.backup
+
+# ===== Java Package Files =====
+*.jar
+!libs/*.jar  # Keep library JARs in libs folder
+
+# ===== Maven =====
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ===== Gradle =====
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# ===== Application Specific =====
+# Add any project-specific files to ignore here
+reports/output/
+exports/
+backup/
