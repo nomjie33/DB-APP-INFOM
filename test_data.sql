@@ -120,35 +120,34 @@ INSERT INTO customers (customerID, lastName, firstName, contactNumber, address, 
 -- Spare parts inventory for maintenance
 
 
-/*
 -- =====================================================
 -- 6. RENTALS TABLE (NOT READY YET - COMMENTED OUT)
 -- =====================================================
 -- Active and completed rental transactions
 
-INSERT INTO rentals (rentalID, customerID, plateID, locationID, startDate, expectedReturnDate, actualReturnDate, rentalStatus) VALUES
+INSERT INTO rentals (rentalID, customerID, plateID, locationID, startTime, endTime, rentalDate) VALUES
+('RNT-001', 'CUST-003', 'ES-003', 'LOC-001', '2024-10-28 09:00:00', NULL, '2024-10-28'),
+('RNT-002', 'CUST-009', 'ES-008', 'LOC-001', '2024-10-28 10:30:00', NULL, '2024-10-28'),
+('RNT-003', 'CUST-005', 'EB-003', 'LOC-005', '2024-10-28 08:00:00', NULL, '2024-10-28'),
+('RNT-004', 'CUST-007', 'ET-003', 'LOC-001', '2024-10-28 11:00:00', NULL, '2024-10-28'),
+('RNT-005', 'CUST-001', 'ES-001', 'LOC-001', '2024-10-27 09:00:00', '2024-10-27 11:45:00', '2024-10-27'),
+('RNT-006', 'CUST-002', 'EB-001', 'LOC-002', '2024-10-27 14:00:00', '2024-10-27 17:30:00', '2024-10-27'),
+('RNT-007', 'CUST-004', 'ES-002', 'LOC-004', '2024-10-26 10:00:00', '2024-10-26 12:50:00', '2024-10-26'),
+('RNT-008', 'CUST-006', 'ET-001', 'LOC-006', '2024-10-26 15:00:00', '2024-10-26 18:00:00', '2024-10-26'),
+('RNT-009', 'CUST-008', 'EB-002', 'LOC-008', '2024-10-25 09:00:00', '2024-10-25 11:30:00', '2024-10-25'),
+('RNT-010', 'CUST-010', 'ES-004', 'LOC-002', '2024-10-25 13:00:00', '2024-10-25 16:15:00', '2024-10-25'),
+('RNT-011', 'CUST-001', 'ES-006', 'LOC-001', '2024-10-24 10:00:00', '2024-10-24 12:00:00', '2024-10-24'),
+('RNT-012', 'CUST-003', 'EB-004', 'LOC-003', '2024-10-24 14:00:00', '2024-10-24 16:30:00', '2024-10-24'),
+('RNT-013', 'CUST-002', 'ES-007', 'LOC-002', '2024-10-23 09:00:00', '2024-10-23 11:00:00', '2024-10-23'),
+('RNT-014', 'CUST-004', 'ET-002', 'LOC-004', '2024-10-23 15:00:00', '2024-10-23 18:00:00', '2024-10-23'),
+('RNT-015', 'CUST-006', 'ES-009', 'LOC-006', '2024-10-22 10:00:00', '2024-10-22 13:00:00', '2024-10-22');
 
--- ACTIVE RENTALS (In Use)
-('RNT-001', 'CUST-003', 'ES-003', 'LOC-001', '2024-10-28 09:00:00', '2024-10-28 12:00:00', NULL, 'Active'),
-('RNT-002', 'CUST-009', 'ES-008', 'LOC-001', '2024-10-28 10:30:00', '2024-10-28 13:30:00', NULL, 'Active'),
-('RNT-003', 'CUST-005', 'EB-003', 'LOC-005', '2024-10-28 08:00:00', '2024-10-28 11:00:00', NULL, 'Active'),
-('RNT-004', 'CUST-007', 'ET-003', 'LOC-001', '2024-10-28 11:00:00', '2024-10-28 14:00:00', NULL, 'Active'),
 
--- COMPLETED RENTALS (Returned)
-('RNT-005', 'CUST-001', 'ES-001', 'LOC-001', '2024-10-27 09:00:00', '2024-10-27 12:00:00', '2024-10-27 11:45:00', 'Completed'),
-('RNT-006', 'CUST-002', 'EB-001', 'LOC-002', '2024-10-27 14:00:00', '2024-10-27 17:00:00', '2024-10-27 17:30:00', 'Completed'),
-('RNT-007', 'CUST-004', 'ES-002', 'LOC-004', '2024-10-26 10:00:00', '2024-10-26 13:00:00', '2024-10-26 12:50:00', 'Completed'),
-('RNT-008', 'CUST-006', 'ET-001', 'LOC-006', '2024-10-26 15:00:00', '2024-10-26 18:00:00', '2024-10-26 18:00:00', 'Completed'),
-('RNT-009', 'CUST-008', 'EB-002', 'LOC-008', '2024-10-25 09:00:00', '2024-10-25 12:00:00', '2024-10-25 11:30:00', 'Completed'),
-('RNT-010', 'CUST-010', 'ES-004', 'LOC-002', '2024-10-25 13:00:00', '2024-10-25 16:00:00', '2024-10-25 16:15:00', 'Completed');
-*/
-
-/*
 -- =====================================================
 -- 7. PAYMENTS TABLE (NOT READY YET - COMMENTED OUT)
 -- =====================================================
 -- Payment records for rentals
-
+/*
 INSERT INTO payments (paymentID, rentalID, amount, paymentMethod, paymentDate) VALUES
 
 -- Payments for completed rentals
@@ -187,9 +186,6 @@ INSERT INTO payments (paymentID, rentalID, amount, paymentMethod, paymentDate) V
 -- Vehicle location history and movements
 
 INSERT INTO deployments (deploymentID, plateID, locationID, startDate, endDate) VALUES
-
--- CURRENT DEPLOYMENTS (endDate is NULL = currently at location)
-/*
 ('DEP-001', 'ES-001', 'LOC-001', '2024-10-01', NULL),
 ('DEP-002', 'ES-002', 'LOC-001', '2024-10-01', NULL),
 ('DEP-003', 'ES-003', 'LOC-001', '2024-10-01', NULL),
@@ -211,15 +207,13 @@ INSERT INTO deployments (deploymentID, plateID, locationID, startDate, endDate) 
 ('DEP-019', 'ET-003', 'LOC-001', '2024-10-20', NULL),
 ('DEP-020', 'ET-004', 'LOC-002', '2024-10-01', NULL),
 ('DEP-021', 'ET-005', 'LOC-004', '2024-10-01', NULL),
-
--- HISTORICAL DEPLOYMENTS (endDate exists = moved from this location)
 ('DEP-022', 'ES-005', 'LOC-001', '2024-10-01', '2024-10-26'),
 ('DEP-023', 'ES-005', 'LOC-002', '2024-10-26', NULL),
 ('DEP-024', 'EB-006', 'LOC-007', '2024-10-01', '2024-10-25'),
 ('DEP-025', 'EB-006', 'LOC-002', '2024-10-25', NULL),
 ('DEP-026', 'ES-008', 'LOC-003', '2024-10-01', '2024-10-15'),
 ('DEP-027', 'ET-003', 'LOC-005', '2024-10-01', '2024-10-20');
-*/
+
 
 -- =====================================================
 -- VERIFICATION QUERIES

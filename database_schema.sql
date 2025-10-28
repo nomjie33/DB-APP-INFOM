@@ -13,9 +13,11 @@
 -- =====================================================
 CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
 USE vehicle_rental_db;
--- DROP TABLE locations;
--- DROP TABLE customers;
-
+-- DROP TABLE IF EXISTS locations;
+-- DROP TABLE IF EXISTS vehicles;
+-- DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS deployments;
+DROP TABLE IF EXISTS rentals;
 
 -- =====================================================
 -- 1. LOCATIONS TABLE
@@ -75,14 +77,13 @@ CREATE TABLE vehicles (
 
 CREATE TABLE rentals (
     rentalID VARCHAR(11) PRIMARY KEY,
-    startTime VARCHAR(25) NOT NULL,
-    endTime VARCHAR(25),
     customerID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,
     locationID VARCHAR(11) NOT NULL,
+    startTime TIMESTAMP NOT NULL,
+    endTime TIMESTAMP NULL,
     rentalDate DATE NOT NULL,
     
-    -- Prevent deletion
     CONSTRAINT fk_rental_customer 
         FOREIGN KEY (customerID) REFERENCES customers(customerID)
         ON DELETE RESTRICT
@@ -96,17 +97,13 @@ CREATE TABLE rentals (
     CONSTRAINT fk_rental_location 
         FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-    
-    -- BR: endTime must be after startTime (if set)
-    CONSTRAINT chk_rental_time 
-        CHECK (endTime IS NULL OR endTime > startTime)
+        ON UPDATE CASCADE
 );
 
 CREATE INDEX idx_rental_customer ON rentals(customerID);
 CREATE INDEX idx_rental_vehicle ON rentals(plateID);
 CREATE INDEX idx_rental_date ON rentals(rentalDate);
-CREATE INDEX idx_rental_status ON rentals(endTime);
+
 
 -- =====================================================
 -- 7. PAYMENTS TABLE
@@ -129,27 +126,29 @@ CREATE INDEX idx_rental_status ON rentals(endTime);
 -- Stores vehicle deployment/transfer records
 CREATE TABLE deployments (
     deploymentID VARCHAR(11) PRIMARY KEY,
-    rentalID VARCHAR(25) NOT NULL,
-    deploymentDate DATE NOT NULL,
+    plateID VARCHAR(11) NOT NULL,
+    locationID VARCHAR(11) NOT NULL,
+    startDate DATE NOT NULL,
+    endDate DATE NULL,
     
-    -- Foreign key constraint
-    CONSTRAINT fk_deployment_rental 
-        FOREIGN KEY (rentalID) REFERENCES rentals(rentalID)
+    CONSTRAINT fk_deployment_vehicle 
+        FOREIGN KEY (plateID) REFERENCES vehicles(plateID)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+        
+    CONSTRAINT fk_deployment_location 
+        FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
 );
 
-CREATE INDEX idx_rental_customer ON rentals(customerID);
-CREATE INDEX idx_rental_vehicle ON rentals(plateID);
-CREATE INDEX idx_rental_date ON rentals(rentalDate);
-CREATE INDEX idx_rental_status ON rentals(endTime);
+CREATE INDEX idx_deployment_vehicle ON deployments(plateID);
+CREATE INDEX idx_deployment_location ON deployments(locationID);
 
--- =====================================================
--- SAMPLE DATA (Optional - for testing)
--- =====================================================
-INSERT INTO locations VALUES ('LOC-001', 'Test Location');
-SELECT * FROM locations;
-
+-- Verify
+-- SHOW TABLES;
+-- DESCRIBE rentals;
+-- DESCRIBE deployments;
 
 
 COMMIT;
