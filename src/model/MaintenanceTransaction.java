@@ -6,7 +6,7 @@ package model;
  * PURPOSE: Maps to the 'maintenance' table in MySQL database. This class
  * follows the simplified table layout used by the team:
  *
- * Table columns (expected):
+ * SCHEMA:
  * - maintenanceID   : String (primary key, e.g. "M001")
  * - vehicleID       : String (foreign key to Vehicle, e.g. "V103")
  * - technicianID    : String (foreign key to Technician, e.g. "T01")
@@ -16,19 +16,10 @@ package model;
  * - notes           : String (notes about repair / description)
  * - vehicleStatus   : String (vehicle status after repair, e.g. "Available")
  *
- * Example rows:
- * M001, V103, T01, P01, 2025-09-07, 2025-09-20, "Brake replacement", "Available"
- * M002, V103, T02, P02, 2025-09-08, 2025-09-21, "Battery issue",     "Available"
- *
- * IMPLEMENTATION NOTES:
- * - Keep this class as a POJO (no DB logic).
- * - Use `maintenanceID` as the identity in equals() / hashCode().
- * - Use java.sql.Timestamp for reportDate and repairDate to match DB TIMESTAMP.
  */
 import java.sql.Timestamp;
 import java.util.Objects;
 public class MaintenanceTransaction {
-    // Fields matching the simplified maintenance table
     private String maintenanceID;
     private String vehicleID;
     private String technicianID;
