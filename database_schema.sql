@@ -134,36 +134,63 @@ CREATE INDEX idx_rental_status ON rentals(endTime);
 -- 8. MAINTENANCE TABLE
 -- =====================================================
 -- Stores vehicle maintenance/repair records
+-- Parts used are tracked separately in maintenance_cheque table
 CREATE TABLE maintenance (
-    maintenance_id VARCHAR(11) PRIMARY KEY,
-    vehicle_id VARCHAR(11) NOT NULL,
-    technician_id VARCHAR(11) NOT NULL,
-    part_id VARCHAR(11),
-    report_date TIMESTAMP NOT NULL,
-    repair_date TIMESTAMP,
-    notes TEXT,
-    vehicle_status VARCHAR(15),
+    maintenanceID VARCHAR(11) PRIMARY KEY,
+    dateReported DATE NOT NULL,
+    dateRepaired DATE,
+    notes VARCHAR(125),
+    technicianID VARCHAR(11) NOT NULL,
+    plateID VARCHAR(11) NOT NULL,
     
     -- Foreign key constraints
-    CONSTRAINT fk_maintenance_vehicle 
-        FOREIGN KEY (vehicle_id) REFERENCES vehicles(plateID)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-    
     CONSTRAINT fk_maintenance_technician 
-        FOREIGN KEY (technician_id) REFERENCES technicians(technician_id)
+        FOREIGN KEY (technicianID) REFERENCES technicians(technician_id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
     
-    CONSTRAINT fk_maintenance_part 
-        FOREIGN KEY (part_id) REFERENCES parts(part_id)
+    CONSTRAINT fk_maintenance_vehicle 
+        FOREIGN KEY (plateID) REFERENCES vehicles(plateID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
     
     -- Indexes for performance
-    INDEX idx_maintenance_vehicle (vehicle_id),
-    INDEX idx_maintenance_technician (technician_id),
-    INDEX idx_maintenance_report_date (report_date)
+    INDEX idx_maintenance_vehicle (plateID),
+    INDEX idx_maintenance_technician (technicianID),
+    INDEX idx_maintenance_report_date (dateReported)
+);
+
+-- =====================================================
+-- 8B. MAINTENANCE_CHEQUE TABLE
+-- =====================================================
+-- Junction table tracking parts used in maintenance
+-- Supports multiple parts per maintenance with quantity tracking
+CREATE TABLE maintenance_cheque (
+    maintenanceID VARCHAR(11),
+    partID VARCHAR(11),
+    quantityUsed DECIMAL(10, 2) NOT NULL,
+    
+    -- Composite primary key
+    PRIMARY KEY (maintenanceID, partID),
+    
+    -- Foreign key constraints
+    CONSTRAINT fk_cheque_maintenance 
+        FOREIGN KEY (maintenanceID) REFERENCES maintenance(maintenanceID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    
+    CONSTRAINT fk_cheque_part 
+        FOREIGN KEY (partID) REFERENCES parts(part_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    
+    -- Business rule: quantity must be positive
+    CONSTRAINT chk_quantity_positive 
+        CHECK (quantityUsed > 0),
+    
+    -- Indexes for performance
+    INDEX idx_cheque_maintenance (maintenanceID),
+    INDEX idx_cheque_part (partID)
 );
 
 -- =====================================================

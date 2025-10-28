@@ -7,20 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data Access Object for MAINTENANCE TRANSACTION table operations.
+ * Data Access Object for MAINTENANCE table operations.
  * 
  * PURPOSE: Handles all database CRUD operations for maintenance table.
  * 
  * SCHEMA ALIGNMENT:
  * This DAO assumes the maintenance table has columns:
- * - maintenance_id   VARCHAR (primary key, e.g. "M001")
- * - vehicle_id       VARCHAR (foreign key)
- * - technician_id    VARCHAR (foreign key)
- * - part_id          VARCHAR
- * - report_date      TIMESTAMP
- * - repair_date      TIMESTAMP
- * - notes            TEXT
- * - vehicle_status   VARCHAR
+ * - maintenanceID   VARCHAR(11) (primary key)
+ * - dateReported    DATE
+ * - dateRepaired    DATE
+ * - notes           VARCHAR(125)
+ * - technicianID    VARCHAR(11) (foreign key)
+ * - plateID         VARCHAR(11) (foreign key)
  * 
  * METHODS IMPLEMENTED:
  * 1. insertMaintenance()       - INSERT new maintenance record
@@ -31,11 +29,6 @@ import java.util.List;
  * 6. getMaintenanceByVehicle() - SELECT maintenance history for a vehicle
  * 7. getMaintenanceByTechnician() - SELECT work assigned to a technician
  * 
- * COLLABORATOR NOTES:
- * - Always use PreparedStatement to prevent SQL injection
- * - Close resources in try-with-resources for automatic cleanup
- * - Return null when record not found
- * - Handle SQLException by printing stack trace (or log in production)
  */
 public class MaintenanceDAO {
     
@@ -46,20 +39,18 @@ public class MaintenanceDAO {
      * @return true if insert successful, false otherwise
      */
     public boolean insertMaintenance(MaintenanceTransaction maintenance) {
-        String sql = "INSERT INTO maintenance (maintenance_id, vehicle_id, technician_id, part_id, " +
-                     "report_date, repair_date, notes, vehicle_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO maintenance (maintenanceID, dateReported, dateRepaired, " +
+                     "notes, technicianID, plateID) VALUES (?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, maintenance.getMaintenanceId());
-            stmt.setString(2, maintenance.getVehicleId());
-            stmt.setString(3, maintenance.getTechnicianId());
-            stmt.setString(4, maintenance.getPartId());
-            stmt.setTimestamp(5, maintenance.getReportDate());
-            stmt.setTimestamp(6, maintenance.getRepairDate());
-            stmt.setString(7, maintenance.getNotes());
-            stmt.setString(8, maintenance.getVehicleStatus());
+            stmt.setString(1, maintenance.getMaintenanceID());
+            stmt.setDate(2, maintenance.getDateReported());
+            stmt.setDate(3, maintenance.getDateRepaired());
+            stmt.setString(4, maintenance.getNotes());
+            stmt.setString(5, maintenance.getTechnicianID());
+            stmt.setString(6, maintenance.getPlateID());
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -78,21 +69,18 @@ public class MaintenanceDAO {
      * @return true if update successful, false otherwise
      */
     public boolean updateMaintenance(MaintenanceTransaction maintenance) {
-        String sql = "UPDATE maintenance SET vehicle_id = ?, technician_id = ?, part_id = ?, " +
-                     "report_date = ?, repair_date = ?, notes = ?, vehicle_status = ? " +
-                     "WHERE maintenance_id = ?";
+        String sql = "UPDATE maintenance SET dateReported = ?, dateRepaired = ?, notes = ?, " +
+                     "technicianID = ?, plateID = ? WHERE maintenanceID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, maintenance.getVehicleId());
-            stmt.setString(2, maintenance.getTechnicianId());
-            stmt.setString(3, maintenance.getPartId());
-            stmt.setTimestamp(4, maintenance.getReportDate());
-            stmt.setTimestamp(5, maintenance.getRepairDate());
-            stmt.setString(6, maintenance.getNotes());
-            stmt.setString(7, maintenance.getVehicleStatus());
-            stmt.setString(8, maintenance.getMaintenanceId());
+            stmt.setDate(1, maintenance.getDateReported());
+            stmt.setDate(2, maintenance.getDateRepaired());
+            stmt.setString(3, maintenance.getNotes());
+            stmt.setString(4, maintenance.getTechnicianID());
+            stmt.setString(5, maintenance.getPlateID());
+            stmt.setString(6, maintenance.getMaintenanceID());
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -106,17 +94,18 @@ public class MaintenanceDAO {
     
     /**
      * Delete a maintenance record by ID.
+     * Note: This will also delete related maintenance_cheque records due to CASCADE.
      * 
-     * @param maintenanceId Maintenance ID to delete
+     * @param maintenanceID Maintenance ID to delete
      * @return true if delete successful, false otherwise
      */
-    public boolean deleteMaintenance(String maintenanceId) {
-        String sql = "DELETE FROM maintenance WHERE maintenance_id = ?";
+    public boolean deleteMaintenance(String maintenanceID) {
+        String sql = "DELETE FROM maintenance WHERE maintenanceID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, maintenanceId);
+            stmt.setString(1, maintenanceID);
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
             
@@ -130,16 +119,16 @@ public class MaintenanceDAO {
     /**
      * Get a maintenance record by ID.
      * 
-     * @param maintenanceId Maintenance ID to retrieve
+     * @param maintenanceID Maintenance ID to retrieve
      * @return MaintenanceTransaction object or null if not found
      */
-    public MaintenanceTransaction getMaintenanceById(String maintenanceId) {
-        String sql = "SELECT * FROM maintenance WHERE maintenance_id = ?";
+    public MaintenanceTransaction getMaintenanceById(String maintenanceID) {
+        String sql = "SELECT * FROM maintenance WHERE maintenanceID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, maintenanceId);
+            stmt.setString(1, maintenanceID);
             ResultSet rs = stmt.executeQuery();
             
             if (rs.next()) {
@@ -161,7 +150,7 @@ public class MaintenanceDAO {
      */
     public List<MaintenanceTransaction> getAllMaintenance() {
         List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance ORDER BY report_date DESC";
+        String sql = "SELECT * FROM maintenance ORDER BY dateReported DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -182,17 +171,17 @@ public class MaintenanceDAO {
     /**
      * Get maintenance history for a specific vehicle.
      * 
-     * @param vehicleId Vehicle ID to filter by
+     * @param plateID Vehicle plate ID to filter by
      * @return List of MaintenanceTransaction objects for the vehicle
      */
-    public List<MaintenanceTransaction> getMaintenanceByVehicle(String vehicleId) {
+    public List<MaintenanceTransaction> getMaintenanceByVehicle(String plateID) {
         List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance WHERE vehicle_id = ? ORDER BY report_date DESC";
+        String sql = "SELECT * FROM maintenance WHERE plateID = ? ORDER BY dateReported DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, vehicleId);
+            stmt.setString(1, plateID);
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
@@ -210,17 +199,17 @@ public class MaintenanceDAO {
     /**
      * Get maintenance work assigned to a specific technician.
      * 
-     * @param technicianId Technician ID to filter by
+     * @param technicianID Technician ID to filter by
      * @return List of MaintenanceTransaction objects assigned to the technician
      */
-    public List<MaintenanceTransaction> getMaintenanceByTechnician(String technicianId) {
+    public List<MaintenanceTransaction> getMaintenanceByTechnician(String technicianID) {
         List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance WHERE technician_id = ? ORDER BY report_date DESC";
+        String sql = "SELECT * FROM maintenance WHERE technicianID = ? ORDER BY dateReported DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, technicianId);
+            stmt.setString(1, technicianID);
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
@@ -236,35 +225,6 @@ public class MaintenanceDAO {
     }
     
     /**
-     * Get maintenance records by vehicle status.
-     * Useful for finding vehicles that are "Available", "Under Repair", etc. after maintenance.
-     * 
-     * @param vehicleStatus Vehicle status to filter by
-     * @return List of MaintenanceTransaction objects with matching vehicle status
-     */
-    public List<MaintenanceTransaction> getMaintenanceByVehicleStatus(String vehicleStatus) {
-        List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance WHERE vehicle_status = ? ORDER BY report_date DESC";
-        
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, vehicleStatus);
-            ResultSet rs = stmt.executeQuery();
-            
-            while (rs.next()) {
-                maintenanceList.add(extractMaintenanceFromResultSet(rs));
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error retrieving maintenance by status: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return maintenanceList;
-    }
-    
-    /**
      * Helper method to extract MaintenanceTransaction object from ResultSet.
      * 
      * @param rs ResultSet positioned at a maintenance record row
@@ -273,14 +233,12 @@ public class MaintenanceDAO {
      */
     private MaintenanceTransaction extractMaintenanceFromResultSet(ResultSet rs) throws SQLException {
         return new MaintenanceTransaction(
-            rs.getString("maintenance_id"),
-            rs.getString("vehicle_id"),
-            rs.getString("technician_id"),
-            rs.getString("part_id"),
-            rs.getTimestamp("report_date"),
-            rs.getTimestamp("repair_date"),
+            rs.getString("maintenanceID"),
+            rs.getDate("dateReported"),
+            rs.getDate("dateRepaired"),
             rs.getString("notes"),
-            rs.getString("vehicle_status")
+            rs.getString("technicianID"),
+            rs.getString("plateID")
         );
     }
     

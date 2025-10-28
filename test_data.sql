@@ -28,6 +28,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DELETE FROM penalties;
 DELETE FROM payments;
+DELETE FROM maintenance_cheque;
 DELETE FROM maintenance;
 -- DELETE FROM deployments;  -- Commented out - not ready yet
 -- DELETE FROM rentals;        -- Commented out - not ready yet
@@ -199,41 +200,119 @@ INSERT INTO payments (paymentID, rentalID, amount, paymentMethod, paymentDate) V
 
 
 -- =====================================================
--- 8. MAINTENANCE TABLE
+-- 8. MAINTENANCE TABLE (Refactored)
 -- =====================================================
--- Maintenance and repair records
--- Links vehicles, technicians, and parts used
+-- Maintenance records without part information
+-- Parts tracked separately in maintenance_cheque table
 
-INSERT INTO maintenance (maintenance_id, vehicle_id, technician_id, part_id, report_date, repair_date, notes, vehicle_status) VALUES
+INSERT INTO maintenance (maintenanceID, dateReported, dateRepaired, notes, technicianID, plateID) VALUES
 -- Recent maintenance - E-Scooters
-('MAINT-001', 'ES-001', 'TECH-001', 'PART-001', '2024-10-20 09:00:00', '2024-10-21 15:30:00', 'Battery replacement - capacity degraded to 65%', 'Available'),
-('MAINT-002', 'ES-002', 'TECH-002', 'PART-003', '2024-10-22 10:30:00', '2024-10-22 14:00:00', 'Routine brake pad replacement - 75% worn', 'Available'),
-('MAINT-003', 'ES-005', 'TECH-005', 'PART-002', '2024-10-25 11:00:00', '2024-10-26 16:00:00', 'Motor controller malfunction - replaced unit', 'Available'),
-('MAINT-004', 'ES-006', 'TECH-001', 'PART-004', '2024-10-23 08:30:00', '2024-10-23 12:00:00', 'LED headlight not functioning - installed new unit', 'Available'),
-('MAINT-005', 'ES-007', 'TECH-002', 'PART-005', '2024-10-24 13:00:00', '2024-10-24 17:30:00', 'Front tire puncture - irreparable, replaced', 'Available'),
-('MAINT-006', 'ES-009', 'TECH-004', 'PART-007', '2024-10-21 09:30:00', '2024-10-21 13:00:00', 'Throttle assembly loose connection - replaced', 'Available'),
-('MAINT-007', 'ES-010', 'TECH-002', 'PART-011', '2024-10-19 14:00:00', '2024-10-19 16:30:00', 'Brake cable fraying - preventive replacement', 'Available'),
+('MAINT-001', '2024-10-20', '2024-10-21', 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001'),
+('MAINT-002', '2024-10-22', '2024-10-22', 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002'),
+('MAINT-003', '2024-10-25', '2024-10-26', 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005'),
+('MAINT-004', '2024-10-23', '2024-10-23', 'LED headlight and throttle replacement', 'TECH-001', 'ES-006'),
+('MAINT-005', '2024-10-24', '2024-10-24', 'Front tire puncture - replaced', 'TECH-002', 'ES-007'),
+('MAINT-006', '2024-10-21', '2024-10-21', 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009'),
+('MAINT-007', '2024-10-19', '2024-10-19', 'Brake cable fraying - preventive', 'TECH-002', 'ES-010'),
 
 -- E-Bikes maintenance
-('MAINT-008', 'EB-001', 'TECH-003', 'PART-001', '2024-10-18 10:00:00', '2024-10-19 11:30:00', 'Battery not holding charge - full replacement', 'Available'),
-('MAINT-009', 'EB-002', 'TECH-002', 'PART-010', '2024-10-20 15:00:00', '2024-10-21 10:00:00', 'Chain slack and wear - replaced', 'Available'),
-('MAINT-010', 'EB-004', 'TECH-005', 'PART-003', '2024-10-22 11:00:00', '2024-10-22 15:30:00', 'Brake pads worn - routine maintenance', 'Available'),
-('MAINT-011', 'EB-005', 'TECH-001', 'PART-012', '2024-10-23 09:00:00', '2024-10-23 13:00:00', 'Display screen malfunction - replaced', 'Available'),
-('MAINT-012', 'EB-006', 'TECH-006', 'PART-001', '2024-10-26 08:00:00', '2024-10-27 14:00:00', 'Battery capacity at 55% - emergency replacement', 'Maintenance'),
-('MAINT-013', 'EB-007', 'TECH-002', 'PART-014', '2024-10-24 10:30:00', '2024-10-24 14:00:00', 'Left pedal damaged - replaced pedal set', 'Available'),
-('MAINT-014', 'EB-008', 'TECH-004', 'PART-015', '2024-10-25 13:30:00', '2024-10-25 16:00:00', 'Rear light broken - installed new unit', 'Available'),
+('MAINT-008', '2024-10-18', '2024-10-19', 'Battery and display replacement', 'TECH-003', 'EB-001'),
+('MAINT-009', '2024-10-20', '2024-10-21', 'Chain and brake maintenance', 'TECH-002', 'EB-002'),
+('MAINT-010', '2024-10-22', '2024-10-22', 'Brake pads and cables replaced', 'TECH-005', 'EB-004'),
+('MAINT-011', '2024-10-23', '2024-10-23', 'Display screen malfunction', 'TECH-001', 'EB-005'),
+('MAINT-012', '2024-10-26', '2024-10-27', 'Battery capacity critical - emergency', 'TECH-006', 'EB-006'),
+('MAINT-013', '2024-10-24', '2024-10-24', 'Pedal and seat replacement', 'TECH-002', 'EB-007'),
+('MAINT-014', '2024-10-25', '2024-10-25', 'Rear light and brake maintenance', 'TECH-004', 'EB-008'),
 
 -- E-Trikes maintenance
-('MAINT-015', 'ET-001', 'TECH-002', 'PART-006', '2024-10-21 14:00:00', '2024-10-22 10:30:00', 'Rear tire wear - replaced', 'Available'),
-('MAINT-016', 'ET-002', 'TECH-003', 'PART-001', '2024-10-19 11:00:00', '2024-10-20 15:00:00', 'Battery performance declining - replaced', 'Available'),
-('MAINT-017', 'ET-004', 'TECH-005', 'PART-003', '2024-10-23 10:00:00', '2024-10-23 14:30:00', 'Brake pads replacement - routine service', 'Available'),
-('MAINT-018', 'ET-005', 'TECH-007', 'PART-002', '2024-10-24 09:00:00', '2024-10-25 11:00:00', 'Motor controller issue - replaced component', 'Available'),
+('MAINT-015', '2024-10-21', '2024-10-22', 'Tire and brake inspection', 'TECH-002', 'ET-001'),
+('MAINT-016', '2024-10-19', '2024-10-20', 'Battery and controller check', 'TECH-003', 'ET-002'),
+('MAINT-017', '2024-10-23', '2024-10-23', 'Complete brake system service', 'TECH-005', 'ET-004'),
+('MAINT-018', '2024-10-24', '2024-10-25', 'Motor controller replacement', 'TECH-007', 'ET-005'),
 
 -- Ongoing maintenance (not yet completed)
-('MAINT-019', 'ES-005', 'TECH-002', 'PART-003', '2024-10-27 09:00:00', NULL, 'Brake inspection and maintenance in progress', 'Maintenance'),
-('MAINT-020', 'EB-006', 'TECH-006', 'PART-013', '2024-10-27 10:00:00', NULL, 'Seat replacement - awaiting part delivery', 'Maintenance');
+('MAINT-019', '2024-10-27', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005'),
+('MAINT-020', '2024-10-27', NULL, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006');
 
 SELECT * FROM maintenance;
+
+-- =====================================================
+-- 8B. MAINTENANCE_CHEQUE TABLE (New)
+-- =====================================================
+-- Parts used in each maintenance record with quantities
+
+INSERT INTO maintenance_cheque (maintenanceID, partID, quantityUsed) VALUES
+-- MAINT-001: Battery replacement
+('MAINT-001', 'PART-001', 1.00),
+
+-- MAINT-002: Brake maintenance
+('MAINT-002', 'PART-003', 2.00),
+('MAINT-002', 'PART-011', 1.00),
+
+-- MAINT-003: Motor controller
+('MAINT-003', 'PART-002', 1.00),
+
+-- MAINT-004: Headlight and throttle
+('MAINT-004', 'PART-004', 1.00),
+('MAINT-004', 'PART-007', 1.00),
+
+-- MAINT-005: Tire replacement
+('MAINT-005', 'PART-005', 1.00),
+
+-- MAINT-006: Throttle only
+('MAINT-006', 'PART-007', 1.00),
+
+-- MAINT-007: Brake cable
+('MAINT-007', 'PART-011', 1.00),
+
+-- MAINT-008: Battery and display
+('MAINT-008', 'PART-001', 1.00),
+('MAINT-008', 'PART-012', 1.00),
+
+-- MAINT-009: Chain and brakes
+('MAINT-009', 'PART-010', 1.00),
+('MAINT-009', 'PART-003', 2.00),
+
+-- MAINT-010: Brake system
+('MAINT-010', 'PART-003', 2.00),
+('MAINT-010', 'PART-011', 2.00),
+
+-- MAINT-011: Display only
+('MAINT-011', 'PART-012', 1.00),
+
+-- MAINT-012: Battery replacement
+('MAINT-012', 'PART-001', 1.00),
+
+-- MAINT-013: Pedals and seat
+('MAINT-013', 'PART-014', 1.00),
+('MAINT-013', 'PART-013', 1.00),
+
+-- MAINT-014: Light and brakes
+('MAINT-014', 'PART-015', 1.00),
+('MAINT-014', 'PART-003', 2.00),
+
+-- MAINT-015: Tire and brakes
+('MAINT-015', 'PART-006', 1.00),
+('MAINT-015', 'PART-003', 2.00),
+
+-- MAINT-016: Battery and controller
+('MAINT-016', 'PART-001', 1.00),
+('MAINT-016', 'PART-002', 1.00),
+
+-- MAINT-017: Complete brake system (uses more parts)
+('MAINT-017', 'PART-003', 4.00),
+('MAINT-017', 'PART-011', 2.00),
+
+-- MAINT-018: Motor controller
+('MAINT-018', 'PART-002', 1.00),
+
+-- MAINT-019: Brake maintenance in progress
+('MAINT-019', 'PART-003', 2.00),
+
+-- MAINT-020: Seat replacement (awaiting delivery - no parts used yet)
+('MAINT-020', 'PART-013', 1.00);
+
+SELECT * FROM maintenance_cheque;
 
 
 
@@ -300,7 +379,9 @@ SELECT 'Technicians', COUNT(*) FROM technicians
 UNION ALL
 SELECT 'Parts', COUNT(*) FROM parts
 UNION ALL
-SELECT 'Maintenance', COUNT(*) FROM maintenance;
+SELECT 'Maintenance', COUNT(*) FROM maintenance
+UNION ALL
+SELECT 'Maintenance_Cheque', COUNT(*) FROM maintenance_cheque;
 -- UNION ALL
 -- SELECT 'Rentals', COUNT(*) FROM rentals           -- Uncomment when ready
 -- UNION ALL
@@ -328,19 +409,19 @@ GROUP BY specialization_id;
 -- Check maintenance records by status (completed vs in progress)
 SELECT 
     CASE 
-        WHEN repair_date IS NULL THEN 'In Progress'
+        WHEN dateRepaired IS NULL THEN 'In Progress'
         ELSE 'Completed'
     END as MaintenanceStatus,
     COUNT(*) as count
 FROM maintenance
-GROUP BY (repair_date IS NULL);
+GROUP BY (dateRepaired IS NULL);
 
 -- Check most used parts in maintenance
-SELECT p.part_name, COUNT(m.maintenance_id) as times_used
+SELECT p.part_name, SUM(mc.quantityUsed) as total_quantity_used, COUNT(mc.maintenanceID) as times_used
 FROM parts p
-LEFT JOIN maintenance m ON p.part_id = m.part_id
+LEFT JOIN maintenance_cheque mc ON p.part_id = mc.partID
 GROUP BY p.part_id, p.part_name
-ORDER BY times_used DESC
+ORDER BY total_quantity_used DESC
 LIMIT 10;
 
 -- Check technician workload
@@ -348,9 +429,9 @@ SELECT
     t.technician_id,
     CONCAT(t.first_name, ' ', t.last_name) as technician_name,
     t.specialization_id,
-    COUNT(m.maintenance_id) as jobs_completed
+    COUNT(m.maintenanceID) as jobs_completed
 FROM technicians t
-LEFT JOIN maintenance m ON t.technician_id = m.technician_id
+LEFT JOIN maintenance m ON t.technician_id = m.technicianID
 GROUP BY t.technician_id, t.first_name, t.last_name, t.specialization_id
 ORDER BY jobs_completed DESC;
 
@@ -374,13 +455,14 @@ ORDER BY VehicleCount DESC;
 -- END OF TEST DATA
 -- =====================================================
 
-SELECT '✓ Test data loaded successfully!' as Status;
+SELECT 'Test data loaded successfully!' as Status;
 SELECT 'Data Summary:' as Info;
 SELECT '  - 8 Locations' as Summary
 UNION ALL SELECT '  - 23 Vehicles'
 UNION ALL SELECT '  - 10 Customers'
 UNION ALL SELECT '  - 8 Technicians'
 UNION ALL SELECT '  - 15 Parts'
-UNION ALL SELECT '  - 20 Maintenance Records';
+UNION ALL SELECT '  - 20 Maintenance Records'
+UNION ALL SELECT '  - 37 Maintenance Parts Usage Records';
 
 SELECT 'Note: Rentals, Payments, Penalties, and Deployments are not yet populated' as Note;
