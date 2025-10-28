@@ -21,16 +21,6 @@ import java.util.List;
  * - rate              DECIMAL(10,2)
  * - contact_number    VARCHAR(15)
  * 
- * Example table structure:
- * CREATE TABLE technicians (
- *     technician_id VARCHAR(11) PRIMARY KEY,
- *     last_name VARCHAR(25) NOT NULL,
- *     first_name VARCHAR(25) NOT NULL,
- *     specialization_id VARCHAR(15),
- *     rate DECIMAL(10,2) NOT NULL,
- *     contact_number VARCHAR(15)
- * );
- * 
  * METHODS IMPLEMENTED:
  * 1. insertTechnician()        - INSERT new technician
  * 2. updateTechnician()        - UPDATE technician record

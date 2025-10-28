@@ -15,24 +15,13 @@ import java.math.BigDecimal;
  * - specializationID  : VARCHAR(15) - Specialization reference (e.g., "SPEC01")
  * - rate              : DECIMAL(10,2) - Hourly or service rate
  * - contactNumber     : VARCHAR(15) - Contact phone number (stored as String for formatting)
- * 
- * Example rows:
- * T01, "Santos", "Mike", "SPEC01", 500.00, "09171234567"
- * T02, "Cruz", "Sarah", "SPEC02", 450.00, "09187654321"
- * 
- * IMPLEMENTATION NOTES:
- * - Keep this class as a POJO (no business logic).
- * - Use `technicianId` as the identity in equals() / hashCode().
- * - Use BigDecimal for rate to maintain precision in financial calculations.
- * - contactNumber stored as String to preserve leading zeros and formatting.
- * 
+ *
  * COLLABORATOR NOTES:
  * - Used in maintenance transactions to assign repairs
  * - Rate is used to calculate maintenance labor costs
  * - Specialization links to maintenance requirements
  */
 public class Technician {
-    // Fields matching the simplified technicians table
     private String technicianID;
     private String lastName;
     private String firstName;

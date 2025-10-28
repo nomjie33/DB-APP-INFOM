@@ -16,7 +16,6 @@ package model;
  * - PartDAO handles inventory updates (increment/decrement quantity)
  */ 
 public class Part {
-    // Fields matching the simplified parts table
     private String partID;
     private String partName;
     private int quantity;
