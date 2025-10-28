@@ -13,6 +13,8 @@
 -- =====================================================
 CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
 USE vehicle_rental_db;
+-- DROP TABLE locations;
+-- DROP TABLE customers;
 
 
 -- =====================================================
@@ -21,8 +23,8 @@ USE vehicle_rental_db;
 -- Stores rental branch/location information
 -- Create this first as it's referenced by vehicles and technicians
 CREATE TABLE locations (
-    locationID VARCHAR(10) PRIMARY KEY,
-    name VARCHAR(100)
+    locationID VARCHAR(11) PRIMARY KEY,
+    name VARCHAR(50)
 );
 
 
@@ -31,12 +33,12 @@ CREATE TABLE locations (
 -- =====================================================
 -- Stores customer information
 CREATE TABLE customers (
-    customerID VARCHAR(10) PRIMARY KEY,
-    lastName VARCHAR(100) NOT NULL,
-    firstName VARCHAR(100) NOT NULL,
-    contactNumber VARCHAR(15),
+    customerID VARCHAR(11) PRIMARY KEY,
+    lastName VARCHAR(25) NOT NULL,
+    firstName VARCHAR(25) NOT NULL,
+    contactNumber VARCHAR(11),
     address VARCHAR(80),
-    emailAddress VARCHAR(100)
+    emailAddress VARCHAR(80)
 );
 
 
@@ -44,7 +46,13 @@ CREATE TABLE customers (
 -- 3. VEHICLES TABLE
 -- =====================================================
 -- Stores vehicle inventory
-
+CREATE TABLE vehicles (
+    plateID VARCHAR(11) PRIMARY KEY,
+    vehicleType VARCHAR(25) NOT NULL, 
+    vehicleModel VARCHAR(30) NOT NULL, 
+    status VARCHAR(15) NOT NULL DEFAULT 'Available',
+    rentalPrice DECIMAL (10, 2) NOT NULL
+);
 
 -- =====================================================
 -- 4. TECHNICIANS TABLE

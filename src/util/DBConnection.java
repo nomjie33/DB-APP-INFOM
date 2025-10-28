@@ -36,7 +36,7 @@ public class DBConnection {
 
     // Load configuration when class is first used
     static {
-    loadDatabaseConfig();
+        loadDatabaseConfig();
     }
     
     // Singleton instance (optional - can use static methods instead)
