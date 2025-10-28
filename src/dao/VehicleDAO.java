@@ -306,5 +306,30 @@ public class VehicleDAO {
         
         return vehicles;
     }
+
+    // ==== HELPER FUNCTIONS ====
+
+    /**
+     * Helper method to extract Vehicle object from ResultSet.
+     * Eliminates code duplication across all query methods.
+     */
+    private Vehicle extractVehicleFromResultSet(ResultSet rs) throws SQLException {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setPlateID(rs.getString("plateID"));
+        vehicle.setVehicleType(rs.getString("vehicleType"));
+        vehicle.setVehicleModel(rs.getString("vehicleModel"));
+        vehicle.setStatus(rs.getString("status"));
+        vehicle.setRentalPrice(rs.getDouble("rentalPrice"));
+        return vehicle;
+    }
+    
+    /**
+     * Validates if the given status is one of the allowed values.
+     */
+    private boolean isValidStatus(String status) {
+        return STATUS_AVAILABLE.equalsIgnoreCase(status) ||
+               STATUS_IN_USE.equalsIgnoreCase(status) ||
+               STATUS_MAINTENANCE.equalsIgnoreCase(status);
+    }
     
 }
