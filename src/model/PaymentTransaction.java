@@ -3,33 +3,91 @@ package model;
 /**
  * Entity class representing a PAYMENT TRANSACTION in the database.
  * 
- * PURPOSE: Maps to the 'payments' table in MySQL database.
+ * PURPOSE: Maps to the 'payment' table in MySQL database.
  * 
- * FIELDS TO IMPLEMENT:
- * - paymentId (int/String) - Primary key
- * - rentalId (int/String) - Foreign key to RentalTransaction
- * - paymentDate (Date/Timestamp) - When payment was made
- * - amount (double) - Payment amount
- * - paymentMethod (String) - "Cash", "Credit Card", "Debit Card", "Online"
- * - status (String) - "Paid", "Pending", "Refunded"
- * - receiptNumber (String) - Receipt/transaction reference
+ * SCHEMA:
+ * - paymentID   : String (primary key, VARCHAR(11))
+ * - amount      : java.math.BigDecimal (payment amount, DECIMAL(10,2))
+ * - rentalID    : String (foreign key to Rental, VARCHAR(11))
+ * - paymentDate : java.sql.Date (when payment was made)
  * 
- * METHODS TO IMPLEMENT:
- * - Constructor(s)
- * - Getters and Setters for all fields
- * - toString() for debugging
- * - equals() and hashCode()
- * 
- * COLLABORATOR NOTES:
- * - Links to RentalTransaction for payment tracking
- * - Multiple payments possible per rental (deposit + final payment)
+ * RELATIONSHIP:
+ * - Many-to-one with RentalTransaction
  */
+import java.math.BigDecimal;
+import java.sql.Date;
+
 public class PaymentTransaction {
-    // TODO: Add private fields for payment transaction attributes
-    
-    // TODO: Add constructors (default and parameterized)
-    
-    // TODO: Add getters and setters
-    
-    // TODO: Add toString(), equals(), hashCode()
+    private String paymentID;
+    private BigDecimal amount;
+    private String rentalID;
+    private Date paymentDate;
+
+    // Default constructor
+    public PaymentTransaction() {
+    }
+
+    // Parameterized constructor
+    public PaymentTransaction(String paymentID, BigDecimal amount, String rentalID, Date paymentDate) {
+        this.paymentID = paymentID;
+        this.amount = amount;
+        this.rentalID = rentalID;
+        this.paymentDate = paymentDate;
+    }
+
+    // Getters and setters
+    public String getPaymentID() {
+        return paymentID;
+    }
+
+    public void setPaymentID(String paymentID) {
+        this.paymentID = paymentID;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public String getRentalID() {
+        return rentalID;
+    }
+
+    public void setRentalID(String rentalID) {
+        this.rentalID = rentalID;
+    }
+
+    public Date getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(Date paymentDate) {
+        this.paymentDate = paymentDate;
+    }
+
+    @Override
+    public String toString() {
+        return "PaymentTransaction{" +
+                "paymentID='" + paymentID + '\'' +
+                ", amount=" + amount +
+                ", rentalID='" + rentalID + '\'' +
+                ", paymentDate=" + paymentDate +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PaymentTransaction that = (PaymentTransaction) o;
+        return paymentID != null && paymentID.equals(that.paymentID);
+    }
+
+    @Override
+    public int hashCode() {
+        return paymentID != null ? paymentID.hashCode() : 0;
+    }
 }
