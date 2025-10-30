@@ -307,6 +307,27 @@ public class VehicleDAO {
         return vehicles;
     }
 
+    public List<Vehicle> getVehiclesByType(String vehicleType) {
+        List<Vehicle> vehicles = new ArrayList<>();
+        String sql = "SELECT * FROM vehicles WHERE vehicleType = ? ORDER BY vehicleModel";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, vehicleType);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                vehicles.add(extractVehicleFromResultSet(rs));
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting vehicles by type: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return vehicles;
+    }
     // ==== HELPER FUNCTIONS ====
 
     /**
