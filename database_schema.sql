@@ -220,6 +220,18 @@ CREATE TABLE deployments (
 CREATE INDEX idx_deployment_vehicle ON deployments(plateID);
 CREATE INDEX idx_deployment_location ON deployments(locationID);
 
+
+-- =====================================================
+-- 11. STAFF TABLE
+-- =====================================================
+-- Verifies admin access before entering app
+CREATE TABLE staff (
+    staffID VARCHAR(11) PRIMARY KEY,
+    username VARCHAR(30) NOT NULL UNIQUE, 
+    staffEmail VARCHAR(80) NOT NULL UNIQUE, 
+    password VARCHAR(255) NOT NULL
+);
+
 -- Verify
 -- SHOW TABLES;
 -- DESCRIBE rentals;
