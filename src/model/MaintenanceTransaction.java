@@ -14,10 +14,12 @@ package model;
  * - notes           : String (notes about repair, VARCHAR(125))
  * - technicianID    : String (foreign key to Technician, VARCHAR(11))
  * - plateID         : String (foreign key to Vehicle, VARCHAR(11))
+ * - hoursWorked     : java.math.BigDecimal (hours spent on maintenance, DECIMAL(5,2))
  *
  * RELATIONSHIP:
  * - One maintenance record can have many parts (one-to-many with MaintenanceCheque)
  */
+import java.math.BigDecimal;
 import java.sql.Date;
 
 public class MaintenanceTransaction {
@@ -27,12 +29,13 @@ public class MaintenanceTransaction {
     private String notes;
     private String technicianID;
     private String plateID;
+    private BigDecimal hoursWorked;
 
     // Default constructor
     public MaintenanceTransaction() {
     }
 
-    // Parameterized constructor
+    // Parameterized constructor 
     public MaintenanceTransaction(String maintenanceID, Date dateReported, Date dateRepaired,
                                   String notes, String technicianID, String plateID) {
         this.maintenanceID = maintenanceID;
@@ -41,6 +44,19 @@ public class MaintenanceTransaction {
         this.notes = notes;
         this.technicianID = technicianID;
         this.plateID = plateID;
+        this.hoursWorked = BigDecimal.ZERO;
+    }
+    
+    // Parameterized constructor
+    public MaintenanceTransaction(String maintenanceID, Date dateReported, Date dateRepaired,
+                                  String notes, String technicianID, String plateID, BigDecimal hoursWorked) {
+        this.maintenanceID = maintenanceID;
+        this.dateReported = dateReported;
+        this.dateRepaired = dateRepaired;
+        this.notes = notes;
+        this.technicianID = technicianID;
+        this.plateID = plateID;
+        this.hoursWorked = hoursWorked;
     }
 
     // Getters and setters
@@ -92,6 +108,14 @@ public class MaintenanceTransaction {
         this.plateID = plateID;
     }
 
+    public BigDecimal getHoursWorked() {
+        return hoursWorked;
+    }
+
+    public void setHoursWorked(BigDecimal hoursWorked) {
+        this.hoursWorked = hoursWorked;
+    }
+
     @Override
     public String toString() {
         return "MaintenanceTransaction{" +
@@ -101,6 +125,7 @@ public class MaintenanceTransaction {
                 ", notes='" + notes + '\'' +
                 ", technicianID='" + technicianID + '\'' +
                 ", plateID='" + plateID + '\'' +
+                ", hoursWorked=" + hoursWorked +
                 '}';
     }
 

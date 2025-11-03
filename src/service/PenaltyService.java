@@ -2,77 +2,335 @@ package service;
 
 import dao.*;
 import model.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Date;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Business Logic Service for PENALTY operations.
  * 
- * PURPOSE: Calculates and manages customer penalties for damages and violations.
+ * PURPOSE: Calculates and manages customer penalties based on maintenance costs.
  * 
- * DEPENDENCIES:
- * - PenaltyDAO (penalty records)
- * - RentalDAO (get rental details)
- * - MaintenanceDAO (get repair costs for damage penalties)
- * - CustomerDAO (customer information)
- * 
- * METHODS TO IMPLEMENT:
- * 
- * 1. assessDamagePenalty(int rentalId, int customerId, int maintenanceId, String description)
- *    WORKFLOW:
- *    - Get maintenance record to get repair cost (MaintenanceDAO)
- *    - Calculate penalty = parts cost + technician fee
- *    - Create penalty record (PenaltyDAO)
- *    - Link to rental and customer
- *    - Return penalty ID
- * 
- * 2. assessLatePenalty(int rentalId, int customerId, int daysLate)
- *    WORKFLOW:
- *    - Get rental details (RentalDAO)
- *    - Get vehicle daily rate (from rental)
- *    - Calculate late fee = daysLate × daily rate × late fee multiplier (e.g., 1.5)
- *    - Create penalty record with reason "Late Return"
- *    - Return penalty ID
- * 
- * 3. assessCustomPenalty(int rentalId, int customerId, double amount, String reason, String description)
- *    - For miscellaneous penalties (traffic tickets, cleaning fees, etc.)
- *    - Create penalty record with custom amount
- * 
- * 4. markPenaltyAsPaid(int penaltyId)
- *    - Update penalty payment status
- *    - Record payment date
- * 
- * 5. getCustomerPenalties(int customerId)
- *    - Get all penalties for a customer
- *    - For customer penalty history
- * 
- * 6. getUnpaidPenaltiesForCustomer(int customerId)
- *    - Get outstanding penalties
- *    - For collections
- * 
- * 7. getTotalPenaltyAmount(int customerId)
- *    - Calculate total penalty debt
- * 
- * COLLABORATOR NOTES:
- * - Damage penalty formula: maintenance total cost (parts + labor)
- * - Late penalty formula: days × rate × multiplier
- * - Always link penalties to rentals and customers
- * - Track payment status carefully
+ * COST FORMULAS:
+ * - Labor Cost = hoursWorked × technician rate
+ * - Parts Cost = Σ(part price × quantity used)
+ * - Total Maintenance Cost = Labor Cost + Parts Cost
+ * - Penalty Amount = Total Maintenance Cost
  */
 public class PenaltyService {
     
-    // Private DAO instances
-    // TODO: Initialize DAO objects in constructor
+    private PenaltyDAO penaltyDAO;
+    private MaintenanceDAO maintenanceDAO;
+    private TechnicianDAO technicianDAO;
+    private dao.MaintenanceChequeDAO maintenanceChequeDAO;
+    private PartDAO partDAO;
     
-    // TODO: Implement assessDamagePenalty()
+    public PenaltyService() {
+        this.penaltyDAO = new PenaltyDAO();
+        this.maintenanceDAO = new MaintenanceDAO();
+        this.technicianDAO = new TechnicianDAO();
+        this.maintenanceChequeDAO = new dao.MaintenanceChequeDAO();
+        this.partDAO = new PartDAO();
+    }
     
-    // TODO: Implement assessLatePenalty()
+    /**
+     * Calculate labor cost for a maintenance job.
+     * Formula: hoursWorked × technician rate
+     */
+    public BigDecimal calculateLaborCost(String maintenanceID) {
+        System.out.println("\n=== CALCULATING LABOR COST ===");
+        System.out.println("Maintenance ID: " + maintenanceID);
+        
+        try {
+            // Get maintenance record
+            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceById(maintenanceID);
+            if (maintenance == null) {
+                System.out.println(":( Maintenance record not found");
+                return BigDecimal.ZERO;
+            }
+            
+            BigDecimal hoursWorked = maintenance.getHoursWorked();
+            if (hoursWorked == null || hoursWorked.compareTo(BigDecimal.ZERO) <= 0) {
+                System.out.println(":( Hours worked not recorded for this maintenance");
+                return BigDecimal.ZERO;
+            }
+            
+            // Get technician rate
+            Technician technician = technicianDAO.getTechnicianById(maintenance.getTechnicianID());
+            if (technician == null) {
+                System.out.println(":( Technician not found");
+                return BigDecimal.ZERO;
+            }
+            
+            BigDecimal rate = technician.getRate();
+            BigDecimal laborCost = hoursWorked.multiply(rate).setScale(2, RoundingMode.HALF_UP);
+            
+            System.out.println("Hours Worked: " + hoursWorked);
+            System.out.println("Technician Rate: ₱" + rate);
+            System.out.println("Labor Cost: ₱" + laborCost);
+            System.out.println(":) Labor cost calculated successfully");
+            
+            return laborCost;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error calculating labor cost: " + e.getMessage());
+            e.printStackTrace();
+            return BigDecimal.ZERO;
+        }
+    }
     
-    // TODO: Implement assessCustomPenalty()
+    /**
+     * Calculate parts cost for a maintenance job.
+     * Formula: Σ(part price × quantity used)
+     */
+    public BigDecimal calculatePartsCost(String maintenanceID) {
+        System.out.println("\n=== CALCULATING PARTS COST ===");
+        System.out.println("Maintenance ID: " + maintenanceID);
+        
+        try {
+            // Get all parts used in this maintenance
+            List<model.MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenance(maintenanceID);
+            
+            if (cheques == null || cheques.isEmpty()) {
+                System.out.println("No parts used in this maintenance");
+                return BigDecimal.ZERO;
+            }
+            
+            BigDecimal totalPartsCost = BigDecimal.ZERO;
+            System.out.println("\nParts breakdown:");
+            
+            for (model.MaintenanceCheque cheque : cheques) {
+                String partID = cheque.getPartID();
+                BigDecimal quantityUsed = cheque.getQuantityUsed();
+                
+                // Get part details including price
+                Part part = partDAO.getPartById(partID);
+                if (part == null) {
+                    System.out.println(":( Part not found: " + partID);
+                    continue;
+                }
+                
+                BigDecimal partPrice = part.getPrice();
+                if (partPrice == null || partPrice.compareTo(BigDecimal.ZERO) <= 0) {
+                    System.out.println(":( Price not set for part: " + part.getPartName());
+                    continue;
+                }
+                
+                BigDecimal partCost = partPrice.multiply(quantityUsed).setScale(2, RoundingMode.HALF_UP);
+                totalPartsCost = totalPartsCost.add(partCost);
+                
+                System.out.println("- " + part.getPartName() + ": " + quantityUsed + " × ₱" + partPrice + " = ₱" + partCost);
+            }
+            
+            System.out.println("\nTotal Parts Cost: ₱" + totalPartsCost);
+            System.out.println(":) Parts cost calculated successfully");
+            
+            return totalPartsCost;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error calculating parts cost: " + e.getMessage());
+            e.printStackTrace();
+            return BigDecimal.ZERO;
+        }
+    }
     
-    // TODO: Implement markPenaltyAsPaid()
+    /**
+     * Calculate total maintenance cost.
+     * Formula: Labor Cost + Parts Cost
+     */
+    public BigDecimal calculateMaintenanceCost(String maintenanceID) {
+        System.out.println("\n========================================");
+        System.out.println("CALCULATING TOTAL MAINTENANCE COST");
+        System.out.println("========================================");
+        System.out.println("Maintenance ID: " + maintenanceID);
+        
+        BigDecimal laborCost = calculateLaborCost(maintenanceID);
+        BigDecimal partsCost = calculatePartsCost(maintenanceID);
+        BigDecimal totalCost = laborCost.add(partsCost).setScale(2, RoundingMode.HALF_UP);
+        
+        System.out.println("\n--- COST SUMMARY ---");
+        System.out.println("Labor Cost:  ₱" + laborCost);
+        System.out.println("Parts Cost:  ₱" + partsCost);
+        System.out.println("-------------------");
+        System.out.println("TOTAL COST:  ₱" + totalCost);
+        System.out.println("========================================");
+        
+        return totalCost;
+    }
     
-    // TODO: Implement getCustomerPenalties()
+    /**
+     * Create a penalty from a maintenance transaction.
+     * The penalty amount is the total maintenance cost.
+     */
+    public boolean createPenaltyFromMaintenance(String penaltyID, String rentalID, String maintenanceID, Date dateIssued) {
+        System.out.println("\n=== CREATING PENALTY FROM MAINTENANCE ===");
+        System.out.println("Penalty ID: " + penaltyID);
+        System.out.println("Rental ID: " + rentalID);
+        System.out.println("Maintenance ID: " + maintenanceID);
+        
+        try {
+            // Calculate total maintenance cost
+            BigDecimal amount = calculateMaintenanceCost(maintenanceID);
+            
+            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                System.out.println(":( Cannot create penalty with zero or negative amount");
+                return false;
+            }
+            
+            // Create penalty transaction
+            PenaltyTransaction penalty = new PenaltyTransaction(
+                penaltyID,
+                rentalID,
+                amount,
+                "UNPAID",
+                null,  // maintenanceID will be linked separately if needed
+                dateIssued
+            );
+            
+            boolean success = penaltyDAO.insertPenalty(penalty);
+            
+            if (success) {
+                System.out.println(":) Penalty created successfully!");
+                System.out.println("Penalty Amount: ₱" + amount);
+                System.out.println("Status: UNPAID");
+            } else {
+                System.out.println(":( Failed to create penalty");
+            }
+            
+            return success;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error creating penalty: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
     
-    // TODO: Implement getUnpaidPenaltiesForCustomer()
+    /**
+     * Get all penalties for a specific rental.
+     */
+    public List<PenaltyTransaction> getPenaltiesByRental(String rentalID) {
+        System.out.println("\n=== GETTING PENALTIES FOR RENTAL ===");
+        System.out.println("Rental ID: " + rentalID);
+        try {
+            List<PenaltyTransaction> penalties = penaltyDAO.getPenaltiesByRental(rentalID);
+            
+            if (penalties == null || penalties.isEmpty()) {
+                System.out.println("No penalties found for this rental");
+                return new ArrayList<>();
+            }
+            
+            System.out.println(":) Found " + penalties.size() + " penalty/penalties");
+            for (PenaltyTransaction penalty : penalties) {
+                System.out.println("- " + penalty.getPenaltyID() + ": ₱" + penalty.getTotalPenalty() + " (" + penalty.getPenaltyStatus() + ")");
+            }
+            
+            return penalties;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error retrieving penalties: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
     
-    // TODO: Implement getTotalPenaltyAmount()
+    /**
+     * Update penalty payment status.
+     */
+    public boolean updatePenaltyPayment(String penaltyID, String newStatus) {
+        System.out.println("\n=== UPDATING PENALTY PAYMENT ===");
+        System.out.println("Penalty ID: " + penaltyID);
+        System.out.println("New Status: " + newStatus);
+        try {
+            // Get existing penalty
+            PenaltyTransaction penalty = penaltyDAO.getPenaltyById(penaltyID);
+            if (penalty == null) {
+                System.out.println(":( Penalty not found");
+                return false;
+            }
+            
+            // Update status
+            penalty.setPenaltyStatus(newStatus);
+            boolean success = penaltyDAO.updatePenalty(penalty);
+            
+            if (success) {
+                System.out.println(":) Penalty payment status updated successfully");
+            } else {
+                System.out.println(":( Failed to update penalty payment status");
+            }
+            
+            return success;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error updating penalty: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Get detailed cost breakdown for a maintenance job.
+     */
+    public String getMaintenanceCostBreakdown(String maintenanceID) {
+        System.out.println("\n=== MAINTENANCE COST BREAKDOWN ===");
+        
+        StringBuilder breakdown = new StringBuilder();
+        breakdown.append("Maintenance ID: ").append(maintenanceID).append("\n");
+        breakdown.append("========================================\n");
+        
+        try {
+            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceById(maintenanceID);
+            if (maintenance == null) {
+                return "Maintenance record not found";
+            }
+            
+            // Labor details
+            BigDecimal laborCost = calculateLaborCost(maintenanceID);
+            Technician tech = technicianDAO.getTechnicianById(maintenance.getTechnicianID());
+            
+            breakdown.append("\nLABOR:\n");
+            if (tech != null && maintenance.getHoursWorked() != null) {
+                breakdown.append("Technician: ").append(tech.getFullName()).append("\n");
+                breakdown.append("Hours Worked: ").append(maintenance.getHoursWorked()).append(" hours\n");
+                breakdown.append("Rate: ₱").append(tech.getRate()).append("/hour\n");
+                breakdown.append("Labor Cost: ₱").append(laborCost).append("\n");
+            } else {
+                breakdown.append("Labor details not available\n");
+            }
+            
+            // Parts details
+            BigDecimal partsCost = calculatePartsCost(maintenanceID);
+            List<model.MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenance(maintenanceID);
+            
+            breakdown.append("\nPARTS:\n");
+            if (cheques != null && !cheques.isEmpty()) {
+                for (model.MaintenanceCheque cheque : cheques) {
+                    Part part = partDAO.getPartById(cheque.getPartID());
+                    if (part != null && part.getPrice() != null) {
+                        BigDecimal itemCost = part.getPrice().multiply(cheque.getQuantityUsed());
+                        breakdown.append("- ").append(part.getPartName())
+                                 .append(": ").append(cheque.getQuantityUsed())
+                                 .append(" × ₱").append(part.getPrice())
+                                 .append(" = ₱").append(itemCost).append("\n");
+                    }
+                }
+                breakdown.append("Parts Cost: ₱").append(partsCost).append("\n");
+            } else {
+                breakdown.append("No parts used\n");
+            }
+            
+            // Total
+            BigDecimal totalCost = laborCost.add(partsCost);
+            breakdown.append("\n========================================\n");
+            breakdown.append("TOTAL MAINTENANCE COST: ₱").append(totalCost).append("\n");
+            breakdown.append("========================================\n");
+            
+            return breakdown.toString();
+            
+        } catch (Exception e) {
+            return "Error generating breakdown: " + e.getMessage();
+        }
+    }
 }

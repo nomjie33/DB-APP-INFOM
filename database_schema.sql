@@ -79,6 +79,7 @@ CREATE TABLE parts (
     part_id VARCHAR(11) PRIMARY KEY,
     part_name VARCHAR(25) NOT NULL,
     quantity INT(3) NOT NULL DEFAULT 0,
+    price DECIMAL(10, 2) DEFAULT 0.00 COMMENT 'Price per unit of part',
     
     CONSTRAINT chk_part_quantity 
         CHECK (quantity >= 0)
@@ -139,6 +140,7 @@ CREATE TABLE maintenance (
     notes VARCHAR(125),
     technicianID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,
+    hoursWorked DECIMAL(5, 2) DEFAULT 0.00 COMMENT 'Hours spent on maintenance work',
     
     -- Foreign key constraints
     CONSTRAINT fk_maintenance_technician 
@@ -194,6 +196,32 @@ CREATE TABLE maintenance_cheque (
 -- 9. PENALTIES TABLE
 -- =====================================================
 -- Stores customer penalty records
+-- Tracks penalties associated with rentals and maintenance
+CREATE TABLE penalty (
+    penaltyID VARCHAR(11) PRIMARY KEY,
+    rentalID VARCHAR(11) NOT NULL,
+    totalPenalty DECIMAL(10, 2) NOT NULL,
+    penaltyStatus VARCHAR(15) NOT NULL DEFAULT 'UNPAID',
+    maintenanceID VARCHAR(11),
+    dateIssued DATE NOT NULL,
+    
+    -- Foreign key constraints
+    CONSTRAINT fk_penalty_rental 
+        FOREIGN KEY (rentalID) REFERENCES rentals(rentalID)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    
+    CONSTRAINT fk_penalty_maintenance 
+        FOREIGN KEY (maintenanceID) REFERENCES maintenance(maintenanceID)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+    
+    -- Indexes for performance
+    INDEX idx_penalty_rental (rentalID),
+    INDEX idx_penalty_status (penaltyStatus),
+    INDEX idx_penalty_maintenance (maintenanceID),
+    INDEX idx_penalty_date (dateIssued)
+);
 
 -- =====================================================
 -- 10. DEPLOYMENTS TABLE
