@@ -142,6 +142,20 @@ CREATE INDEX idx_rental_date ON rentals(rentalDate);
 -- 7. PAYMENTS TABLE
 -- =====================================================
 -- Stores payment transaction records
+CREATE TABLE payments (
+    paymentID VARCHAR(11) PRIMARY KEY,
+    amount DECIMAL(10, 2) NOT NULL,
+    rentalID VARCHAR(11) NOT NULL,
+    paymentDate DATE NOT NULL,
+    
+    CONSTRAINT fk_payment_rental
+        FOREIGN KEY (rentalID) REFERENCES rentals(rentalID)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    
+    INDEX idx_payment_rental (rentalID),
+    INDEX idx_payment_date (paymentDate)
+);
 
 -- =====================================================
 -- 8. MAINTENANCE TABLE

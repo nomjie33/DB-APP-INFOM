@@ -183,26 +183,41 @@ INSERT INTO rentals (rentalID, customerID, plateID, locationID, startTime, endTi
 
 
 -- =====================================================
--- 7. PAYMENTS TABLE (NOT READY YET - COMMENTED OUT)
+-- 7. PAYMENTS TABLE
 -- =====================================================
 -- Payment records for rentals
-/*
-INSERT INTO payments (paymentID, rentalID, amount, paymentMethod, paymentDate) VALUES
+-- Note: Only includes payments for completed rentals (RNT-005 to RNT-015)
+-- Active rentals (RNT-001 to RNT-004) have no payments yet
 
--- Payments for completed rentals
-('PAY-001', 'RNT-005', 150.00, 'GCash', '2024-10-27 11:50:00'),
-('PAY-002', 'RNT-006', 280.00, 'Credit Card', '2024-10-27 17:35:00'),
-('PAY-003', 'RNT-007', 165.00, 'Cash', '2024-10-26 13:00:00'),
-('PAY-004', 'RNT-008', 300.00, 'PayMaya', '2024-10-26 18:05:00'),
-('PAY-005', 'RNT-009', 225.00, 'GCash', '2024-10-25 11:35:00'),
-('PAY-006', 'RNT-010', 145.00, 'Cash', '2024-10-25 16:20:00'),
+INSERT INTO payments (paymentID, amount, rentalID, paymentDate) VALUES
+-- Payments for completed rentals (full payments based on rental fees)
+('PAY-001', 5.73, 'RNT-005', '2024-10-27'),   -- ES-001: 2.75h × ₱50/day
+('PAY-002', 10.40, 'RNT-006', '2024-10-27'),  -- EB-001: 3.5h × ₱80/day
+('PAY-003', 6.42, 'RNT-007', '2024-10-26'),   -- ES-002: 2.83h × ₱55/day
+('PAY-004', 12.50, 'RNT-008', '2024-10-26'),  -- ET-001: 3h × ₱100/day
+('PAY-005', 7.81, 'RNT-009', '2024-10-25'),   -- EB-002: 2.5h × ₱75/day
+('PAY-006', 6.09, 'RNT-010', '2024-10-25'),   -- ES-004: 3.25h × ₱45/day
+('PAY-007', 4.33, 'RNT-011', '2024-10-24'),   -- ES-006: 2h × ₱52/day
+('PAY-008', 8.13, 'RNT-012', '2024-10-24'),   -- EB-004: 2.5h × ₱78/day
+('PAY-009', 3.75, 'RNT-013', '2024-10-23'),   -- ES-007: 2h × ₱45/day
+('PAY-010', 11.88, 'RNT-014', '2024-10-23'),  -- ET-002: 3h × ₱95/day
+('PAY-011', 7.25, 'RNT-015', '2024-10-22');   -- ES-009: 3h × ₱58/day
 
--- Payments for active rentals (advance payment)
-('PAY-007', 'RNT-001', 150.00, 'GCash', '2024-10-28 09:00:00'),
-('PAY-008', 'RNT-002', 180.00, 'Credit Card', '2024-10-28 10:30:00'),
-('PAY-009', 'RNT-003', 210.00, 'PayMaya', '2024-10-28 08:00:00'),
-('PAY-010', 'RNT-004', 315.00, 'Cash', '2024-10-28 11:00:00');
-*/
+-- =====================================================
+-- Placeholder payments for ongoing rentals (one record per rental)
+-- Business rule: one payment row exists for every rental. For ongoing
+-- rentals the payment amount is set to 0.00 and paymentDate set to the
+-- rentalDate as a placeholder; the real amount and paymentDate should be
+-- updated when the vehicle is returned and payment is processed.
+-- These correspond to RNT-001..RNT-004 (active/ongoing rentals)
+
+INSERT INTO payments (paymentID, amount, rentalID, paymentDate) VALUES
+('PAY-012', 0.00, 'RNT-001', '2024-10-28'),
+('PAY-013', 0.00, 'RNT-002', '2024-10-28'),
+('PAY-014', 0.00, 'RNT-003', '2024-10-28'),
+('PAY-015', 0.00, 'RNT-004', '2024-10-28');
+
+SELECT * FROM payments;
 
 
 -- =====================================================
@@ -396,17 +411,17 @@ SELECT 'Technicians', COUNT(*) FROM technicians
 UNION ALL
 SELECT 'Parts', COUNT(*) FROM parts
 UNION ALL
+SELECT 'Rentals', COUNT(*) FROM rentals
+UNION ALL
+SELECT 'Payments', COUNT(*) FROM payments
+UNION ALL
 SELECT 'Maintenance', COUNT(*) FROM maintenance
 UNION ALL
-SELECT 'Maintenance_Cheque', COUNT(*) FROM maintenance_cheque;
--- UNION ALL
--- SELECT 'Rentals', COUNT(*) FROM rentals           -- Uncomment when ready
--- UNION ALL
--- SELECT 'Payments', COUNT(*) FROM payments         -- Uncomment when ready
--- UNION ALL
--- SELECT 'Penalties', COUNT(*) FROM penalties       -- Uncomment when ready
--- UNION ALL
--- SELECT 'Deployments', COUNT(*) FROM deployments;  -- Uncomment when ready
+SELECT 'Maintenance_Cheque', COUNT(*) FROM maintenance_cheque
+UNION ALL
+SELECT 'Penalties', COUNT(*) FROM penalty
+UNION ALL
+SELECT 'Deployments', COUNT(*) FROM deployments;
 
 -- Check vehicle distribution by status
 SELECT status, COUNT(*) as count 
@@ -433,6 +448,17 @@ SELECT
 FROM maintenance
 GROUP BY (dateRepaired IS NULL);
 
+-- Check payment totals by rental
+SELECT 
+    r.rentalID,
+    r.customerID,
+    r.plateID,
+    COALESCE(SUM(p.amount), 0) as total_paid
+FROM rentals r
+LEFT JOIN payments p ON r.rentalID = p.rentalID
+GROUP BY r.rentalID, r.customerID, r.plateID
+ORDER BY r.rentalID;
+
 -- Check most used parts in maintenance
 SELECT p.part_name, SUM(mc.quantityUsed) as total_quantity_used, COUNT(mc.maintenanceID) as times_used
 FROM parts p
@@ -452,21 +478,22 @@ LEFT JOIN maintenance m ON t.technician_id = m.technicianID
 GROUP BY t.technician_id, t.first_name, t.last_name, t.specialization_id
 ORDER BY jobs_completed DESC;
 
-/*
--- Uncomment these when rentals/deployments are ready:
+-- Check active vs completed rentals
+SELECT 
+    CASE 
+        WHEN endTime IS NULL THEN 'Active'
+        ELSE 'Completed'
+    END as RentalStatus,
+    COUNT(*) as count
+FROM rentals
+GROUP BY (endTime IS NULL);
 
--- Check active rentals
-SELECT COUNT(*) as ActiveRentals 
-FROM rentals 
-WHERE rentalStatus = 'Active';
-
--- Check vehicles at each location
+-- Check vehicles at each location (current deployment)
 SELECT l.name, COUNT(d.plateID) as VehicleCount
 FROM locations l
 LEFT JOIN deployments d ON l.locationID = d.locationID AND d.endDate IS NULL
 GROUP BY l.locationID, l.name
 ORDER BY VehicleCount DESC;
-*/
 
 -- =====================================================
 -- END OF TEST DATA
@@ -479,7 +506,11 @@ UNION ALL SELECT '  - 23 Vehicles'
 UNION ALL SELECT '  - 10 Customers'
 UNION ALL SELECT '  - 8 Technicians'
 UNION ALL SELECT '  - 15 Parts'
+UNION ALL SELECT '  - 15 Rentals'
+UNION ALL SELECT '  - 11 Payments'
 UNION ALL SELECT '  - 20 Maintenance Records'
-UNION ALL SELECT '  - 37 Maintenance Parts Usage Records';
+UNION ALL SELECT '  - 37 Maintenance Parts Usage Records'
+UNION ALL SELECT '  - 10 Penalties'
+UNION ALL SELECT '  - 27 Deployments';
 
-SELECT 'Note: Rentals, Payments, Penalties, and Deployments are not yet populated' as Note;
+SELECT 'All core tables populated with test data!' as Note;

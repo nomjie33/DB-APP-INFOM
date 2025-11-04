@@ -44,7 +44,7 @@ public class PaymentDAO {
      * @return true if insert successful, false otherwise
      */
     public boolean insertPayment(PaymentTransaction payment) {
-        String sql = "INSERT INTO payment (paymentID, amount, rentalID, paymentDate) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO payments (paymentID, amount, rentalID, paymentDate) VALUES (?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -71,7 +71,7 @@ public class PaymentDAO {
      * @return true if update successful, false otherwise
      */
     public boolean updatePayment(PaymentTransaction payment) {
-        String sql = "UPDATE payment SET amount = ?, rentalID = ?, paymentDate = ? WHERE paymentID = ?";
+        String sql = "UPDATE payments SET amount = ?, rentalID = ?, paymentDate = ? WHERE paymentID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -98,7 +98,7 @@ public class PaymentDAO {
      * @return true if delete successful, false otherwise
      */
     public boolean deletePayment(String paymentID) {
-        String sql = "DELETE FROM payment WHERE paymentID = ?";
+        String sql = "DELETE FROM payments WHERE paymentID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -121,7 +121,7 @@ public class PaymentDAO {
      * @return PaymentTransaction object or null if not found
      */
     public PaymentTransaction getPaymentById(String paymentID) {
-        String sql = "SELECT * FROM payment WHERE paymentID = ?";
+        String sql = "SELECT * FROM payments WHERE paymentID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -148,7 +148,7 @@ public class PaymentDAO {
      */
     public List<PaymentTransaction> getAllPayments() {
         List<PaymentTransaction> paymentList = new ArrayList<>();
-        String sql = "SELECT * FROM payment ORDER BY paymentDate DESC";
+        String sql = "SELECT * FROM payments ORDER BY paymentDate DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -175,7 +175,7 @@ public class PaymentDAO {
      */
     public List<PaymentTransaction> getPaymentsByRental(String rentalID) {
         List<PaymentTransaction> paymentList = new ArrayList<>();
-        String sql = "SELECT * FROM payment WHERE rentalID = ? ORDER BY paymentDate ASC";
+        String sql = "SELECT * FROM payments WHERE rentalID = ? ORDER BY paymentDate ASC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -205,7 +205,7 @@ public class PaymentDAO {
      */
     public List<PaymentTransaction> getPaymentsByDateRange(Date startDate, Date endDate) {
         List<PaymentTransaction> paymentList = new ArrayList<>();
-        String sql = "SELECT * FROM payment WHERE paymentDate BETWEEN ? AND ? ORDER BY paymentDate ASC";
+        String sql = "SELECT * FROM payments WHERE paymentDate BETWEEN ? AND ? ORDER BY paymentDate ASC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -235,7 +235,7 @@ public class PaymentDAO {
      * @return Total revenue as BigDecimal, or BigDecimal.ZERO if no payments
      */
     public BigDecimal getTotalRevenueByDateRange(Date startDate, Date endDate) {
-        String sql = "SELECT SUM(amount) as total_revenue FROM payment WHERE paymentDate BETWEEN ? AND ?";
+        String sql = "SELECT SUM(amount) as total_revenue FROM payments WHERE paymentDate BETWEEN ? AND ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

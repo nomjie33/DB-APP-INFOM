@@ -6,72 +6,192 @@ import model.*;
 /**
  * Business Logic Service for PAYMENT operations.
  * 
- * PURPOSE: Handles payment processing and fee calculations.
+ * PURPOSE: Handles payment processing and rental fee calculations.
  * 
- * DEPENDENCIES:
- * - PaymentDAO (record payments)
- * - RentalDAO (get rental details for fee calculation)
- * - VehicleDAO (get vehicle daily rate)
+ * PAYMENT WORKFLOW:
+ * 1. Customer rents vehicle → rental created
+ * 2. Calculate rental fee based on time and vehicle rate
+ * 3. Process one-time payment for the rental
  * 
- * METHODS TO IMPLEMENT:
+ * BUSINESS MODEL ASSUMPTION:
+ * - Each rental requires ONE payment transaction
+ * - Payment is processed when rental ends
+ * - No partial payments or installments
  * 
- * 1. processPayment(int rentalId, double amount, String paymentMethod)
- *    WORKFLOW:
- *    - Validate amount > 0
- *    - Get rental details (RentalDAO)
- *    - Create payment record (PaymentDAO)
- *    - Generate receipt number
- *    - Return payment confirmation
- * 
- * 2. calculateRentalFee(int rentalId)
- *    WORKFLOW:
- *    - Get rental details (RentalDAO)
- *    - Get vehicle daily rate (VehicleDAO)
- *    - Calculate days = (endDate - startDate)
- *    - Calculate fee = daily rate × days
- *    - Add any additional charges
- *    - Return total amount
- * 
- * 3. calculateLateFee(int rentalId, Timestamp actualReturnDate)
- *    WORKFLOW:
- *    - Get rental (RentalDAO)
- *    - If actualReturnDate > endDate
- *    - Calculate extra days
- *    - Apply late fee multiplier (e.g., 1.5x daily rate)
- *    - Return late fee amount
- * 
- * 4. getTotalPaymentsByRental(int rentalId)
- *    - Sum all payments for a rental
- *    - For balance calculation
- * 
- * 5. getOutstandingBalance(int rentalId)
- *    - Calculate total rental cost
- *    - Subtract total payments made
- *    - Return remaining balance
- * 
- * 6. generateReceiptNumber()
- *    - Create unique receipt number (e.g., "RCP-20231125-001")
- * 
- * COLLABORATOR NOTES:
- * - Ensure payment amounts match rental costs
- * - Handle partial payments (deposit + final)
- * - Validate payment methods
- * - Generate unique receipt numbers
+ * FEE CALCULATIONS:
+ * - Base Fee = (hours rented / 24) × daily rate
+ * - Minimum charge = 1 hour
+ * - Hourly rate = daily rate / 24
  */
 public class PaymentService {
     
-    // Private DAO instances
-    // TODO: Initialize DAO objects in constructor
+    private PaymentDAO paymentDAO;
+    private RentalDAO rentalDAO;
+    private VehicleDAO vehicleDAO;
     
-    // TODO: Implement processPayment()
+    public PaymentService() {
+        this.paymentDAO = new PaymentDAO();
+        this.rentalDAO = new RentalDAO();
+        this.vehicleDAO = new VehicleDAO();
+    }
     
-    // TODO: Implement calculateRentalFee()
+    /**
+     * Process a payment for a rental.
+     * Creates a payment record in the database.
+     * 
+     * BUSINESS RULE: One payment per rental transaction
+     * 
+     * @param paymentID Unique payment identifier (e.g., "PAY-001")
+     * @param rentalID Rental this payment is for
+     * @param amount Payment amount
+     * @param paymentDate Date of payment
+     * @return true if payment processed successfully
+     */
+    public boolean processPayment(String paymentID, String rentalID, java.math.BigDecimal amount, java.sql.Date paymentDate) {
+        System.out.println("\n=== PROCESSING PAYMENT ===");
+        System.out.println("Payment ID: " + paymentID);
+        System.out.println("Rental ID: " + rentalID);
+        System.out.println("Amount: ₱" + amount);
+        
+        try {
+            // Validate amount
+            if (amount == null || amount.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                System.out.println(":( Invalid payment amount");
+                return false;
+            }
+            
+            // Validate rental exists
+            RentalTransaction rental = rentalDAO.getRentalById(rentalID);
+            if (rental == null) {
+                System.out.println(":( Rental not found: " + rentalID);
+                return false;
+            }
+            
+            // Create payment record
+            PaymentTransaction payment = new PaymentTransaction(paymentID, amount, rentalID, paymentDate);
+            boolean success = paymentDAO.insertPayment(payment);
+            
+            if (success) {
+                System.out.println(":) Payment processed successfully");
+                System.out.println("Receipt: " + paymentID);
+            } else {
+                System.out.println(":( Failed to process payment");
+            }
+            
+            return success;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error processing payment: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
     
-    // TODO: Implement calculateLateFee()
+    /**
+     * Calculate rental fee based on time rented and vehicle rate.
+     * Formula: (hours rented ÷ 24) × daily rate
+     * 
+     * @param rentalID The rental to calculate fee for
+     * @return Total rental fee
+     */
+    public java.math.BigDecimal calculateRentalFee(String rentalID) {
+        System.out.println("\n=== CALCULATING RENTAL FEE ===");
+        System.out.println("Rental ID: " + rentalID);
+        
+        try {
+            // Get rental details
+            RentalTransaction rental = rentalDAO.getRentalById(rentalID);
+            if (rental == null) {
+                System.out.println(":( Rental not found");
+                return java.math.BigDecimal.ZERO;
+            }
+            
+            // Get vehicle rate
+            Vehicle vehicle = vehicleDAO.getVehicleById(rental.getPlateID());
+            if (vehicle == null) {
+                System.out.println(":( Vehicle not found");
+                return java.math.BigDecimal.ZERO;
+            }
+            
+            java.math.BigDecimal dailyRate = java.math.BigDecimal.valueOf(vehicle.getRentalPrice());
+            
+            // Calculate rental duration
+            java.sql.Timestamp startTime = rental.getStartTime();
+            java.sql.Timestamp endTime = rental.getEndTime();
+            
+            if (startTime == null) {
+                System.out.println(":( Start time not set");
+                return java.math.BigDecimal.ZERO;
+            }
+            
+            // If rental not ended, use current time
+            if (endTime == null) {
+                endTime = new java.sql.Timestamp(System.currentTimeMillis());
+                System.out.println("(Rental ongoing, calculating up to current time)");
+            }
+            
+            // Calculate hours
+            long durationMillis = endTime.getTime() - startTime.getTime();
+            
+            // Calculate fractional hours (not rounded)
+            double hoursDecimal = durationMillis / (1000.0 * 60.0 * 60.0);
+            
+            // Minimum 1 hour charge
+            if (hoursDecimal < 1.0) {
+                hoursDecimal = 1.0;
+            }
+            
+            // Calculate fee: (hours / 24) * daily rate
+            // Use high precision for calculation, then round final result
+            java.math.BigDecimal hours = java.math.BigDecimal.valueOf(hoursDecimal);
+            java.math.BigDecimal hoursPerDay = java.math.BigDecimal.valueOf(24);
+            java.math.BigDecimal rentalFee = hours.divide(hoursPerDay, 10, java.math.RoundingMode.HALF_UP)
+                                                   .multiply(dailyRate)
+                                                   .setScale(2, java.math.RoundingMode.HALF_UP);
+            
+            java.math.BigDecimal days = hours.divide(hoursPerDay, 2, java.math.RoundingMode.HALF_UP);
+            System.out.println("Duration: " + String.format("%.2f", hoursDecimal) + " hours (" + days + " days)");
+            System.out.println("Daily Rate: ₱" + dailyRate);
+            System.out.println("Rental Fee: ₱" + rentalFee);
+            System.out.println(":) Rental fee calculated");
+            
+            return rentalFee;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error calculating rental fee: " + e.getMessage());
+            e.printStackTrace();
+            return java.math.BigDecimal.ZERO;
+        }
+    }
     
-    // TODO: Implement getTotalPaymentsByRental()
-    
-    // TODO: Implement getOutstandingBalance()
-    
-    // TODO: Implement generateReceiptNumber()
+    /**
+     * Get payment record for a specific rental.
+     * 
+     * @param rentalID The rental ID
+     * @return PaymentTransaction object or null if no payment found
+     */
+    public PaymentTransaction getPaymentByRental(String rentalID) {
+        System.out.println("\n=== GETTING PAYMENT FOR RENTAL ===");
+        System.out.println("Rental ID: " + rentalID);
+        
+        try {
+            java.util.List<PaymentTransaction> payments = paymentDAO.getPaymentsByRental(rentalID);
+            
+            if (payments == null || payments.isEmpty()) {
+                System.out.println("No payment found for this rental");
+                return null;
+            }
+            
+            // Since we assume one payment per rental, return the first one
+            PaymentTransaction payment = payments.get(0);
+            System.out.println(":) Payment found: " + payment.getPaymentID() + " - ₱" + payment.getAmount());
+            
+            return payment;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error retrieving payment: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
