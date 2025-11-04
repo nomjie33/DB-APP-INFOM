@@ -19,27 +19,34 @@
 
 USE vehicle_rental_db;
 
--- Disable foreign key checks temporarily for clean slate
+-- =====================================================
+-- DROP AND RECREATE ALL TABLES FOR CLEAN START
+-- =====================================================
+-- This ensures a completely fresh start every time
 SET FOREIGN_KEY_CHECKS = 0;
 
--- =====================================================
--- CLEAR ALL EXISTING DATA
--- =====================================================
+-- Drop all tables
+DROP TABLE IF EXISTS penalty;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS maintenance_cheque;
+DROP TABLE IF EXISTS maintenance;
+DROP TABLE IF EXISTS deployments;
+DROP TABLE IF EXISTS rentals;
+DROP TABLE IF EXISTS vehicles;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS technicians;
+DROP TABLE IF EXISTS parts;
+DROP TABLE IF EXISTS locations;
+DROP TABLE IF EXISTS staff;
 
-DELETE FROM penalty;
-DELETE FROM payments;
-DELETE FROM maintenance_cheque;
-DELETE FROM maintenance;
--- DELETE FROM deployments;  -- Commented out - not ready yet
--- DELETE FROM rentals;        -- Commented out - not ready yet
-DELETE FROM customers;
-DELETE FROM vehicles;
-DELETE FROM technicians;
-DELETE FROM parts;
-DELETE FROM locations;
-
--- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- =====================================================
+-- Note: Now run database_schema.sql to recreate tables
+-- =====================================================
+-- This file only contains test data.
+-- Make sure to run database_schema.sql FIRST to create the table structure.
+-- =====================================================
 
 -- =====================================================
 -- 1. LOCATIONS TABLE

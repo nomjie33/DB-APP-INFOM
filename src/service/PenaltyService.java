@@ -77,8 +77,8 @@ public class PenaltyService {
             BigDecimal laborCost = hoursWorked.multiply(rate).setScale(2, RoundingMode.HALF_UP);
             
             System.out.println("Hours Worked: " + hoursWorked);
-            System.out.println("Technician Rate: ₱" + rate);
-            System.out.println("Labor Cost: ₱" + laborCost);
+            System.out.println("Technician Rate: Php" + rate);
+            System.out.println("Labor Cost: Php" + laborCost);
             System.out.println(":) Labor cost calculated successfully");
             
             return laborCost;
@@ -130,10 +130,10 @@ public class PenaltyService {
                 BigDecimal partCost = partPrice.multiply(quantityUsed).setScale(2, RoundingMode.HALF_UP);
                 totalPartsCost = totalPartsCost.add(partCost);
                 
-                System.out.println("- " + part.getPartName() + ": " + quantityUsed + " × ₱" + partPrice + " = ₱" + partCost);
+                System.out.println("- " + part.getPartName() + ": " + quantityUsed + " × Php" + partPrice + " = Php" + partCost);
             }
             
-            System.out.println("\nTotal Parts Cost: ₱" + totalPartsCost);
+            System.out.println("\nTotal Parts Cost: Php" + totalPartsCost);
             System.out.println(":) Parts cost calculated successfully");
             
             return totalPartsCost;
@@ -160,10 +160,10 @@ public class PenaltyService {
         BigDecimal totalCost = laborCost.add(partsCost).setScale(2, RoundingMode.HALF_UP);
         
         System.out.println("\n--- COST SUMMARY ---");
-        System.out.println("Labor Cost:  ₱" + laborCost);
-        System.out.println("Parts Cost:  ₱" + partsCost);
+        System.out.println("Labor Cost:  Php" + laborCost);
+        System.out.println("Parts Cost:  Php" + partsCost);
         System.out.println("-------------------");
-        System.out.println("TOTAL COST:  ₱" + totalCost);
+        System.out.println("TOTAL COST:  Php" + totalCost);
         System.out.println("========================================");
         
         return totalCost;
@@ -202,7 +202,7 @@ public class PenaltyService {
             
             if (success) {
                 System.out.println(":) Penalty created successfully!");
-                System.out.println("Penalty Amount: ₱" + amount);
+                System.out.println("Penalty Amount: Php" + amount);
                 System.out.println("Status: UNPAID");
             } else {
                 System.out.println(":( Failed to create penalty");
@@ -233,7 +233,7 @@ public class PenaltyService {
             
             System.out.println(":) Found " + penalties.size() + " penalty/penalties");
             for (PenaltyTransaction penalty : penalties) {
-                System.out.println("- " + penalty.getPenaltyID() + ": ₱" + penalty.getTotalPenalty() + " (" + penalty.getPenaltyStatus() + ")");
+                System.out.println("- " + penalty.getPenaltyID() + ": Php" + penalty.getTotalPenalty() + " (" + penalty.getPenaltyStatus() + ")");
             }
             
             return penalties;
@@ -303,8 +303,8 @@ public class PenaltyService {
             if (tech != null && maintenance.getHoursWorked() != null) {
                 breakdown.append("Technician: ").append(tech.getFullName()).append("\n");
                 breakdown.append("Hours Worked: ").append(maintenance.getHoursWorked()).append(" hours\n");
-                breakdown.append("Rate: ₱").append(tech.getRate()).append("/hour\n");
-                breakdown.append("Labor Cost: ₱").append(laborCost).append("\n");
+                breakdown.append("Rate: Php").append(tech.getRate()).append("/hour\n");
+                breakdown.append("Labor Cost: Php").append(laborCost).append("\n");
             } else {
                 breakdown.append("Labor details not available\n");
             }
@@ -321,11 +321,11 @@ public class PenaltyService {
                         BigDecimal itemCost = part.getPrice().multiply(cheque.getQuantityUsed());
                         breakdown.append("- ").append(part.getPartName())
                                  .append(": ").append(cheque.getQuantityUsed())
-                                 .append(" × ₱").append(part.getPrice())
-                                 .append(" = ₱").append(itemCost).append("\n");
+                                 .append(" × Php").append(part.getPrice())
+                                 .append(" = Php").append(itemCost).append("\n");
                     }
                 }
-                breakdown.append("Parts Cost: ₱").append(partsCost).append("\n");
+                breakdown.append("Parts Cost: Php").append(partsCost).append("\n");
             } else {
                 breakdown.append("No parts used\n");
             }
@@ -333,7 +333,7 @@ public class PenaltyService {
             // Total
             BigDecimal totalCost = laborCost.add(partsCost);
             breakdown.append("\n========================================\n");
-            breakdown.append("TOTAL MAINTENANCE COST: ₱").append(totalCost).append("\n");
+            breakdown.append("TOTAL MAINTENANCE COST: Php").append(totalCost).append("\n");
             breakdown.append("========================================\n");
             
             return breakdown.toString();

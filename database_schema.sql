@@ -13,11 +13,26 @@
 -- =====================================================
 CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
 USE vehicle_rental_db;
--- DROP TABLE IF EXISTS locations;
--- DROP TABLE IF EXISTS vehicles;
--- DROP TABLE IF EXISTS customers;
+
+-- =====================================================
+-- DROP ALL TABLES IN CORRECT ORDER (respecting foreign keys)
+-- =====================================================
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS penalty;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS maintenance_cheque;
+DROP TABLE IF EXISTS maintenance;
 DROP TABLE IF EXISTS deployments;
 DROP TABLE IF EXISTS rentals;
+DROP TABLE IF EXISTS vehicles;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS technicians;
+DROP TABLE IF EXISTS parts;
+DROP TABLE IF EXISTS locations;
+DROP TABLE IF EXISTS staff;
+
+SET FOREIGN_KEY_CHECKS = 1; 
 
 -- =====================================================
 -- 1. LOCATIONS TABLE
