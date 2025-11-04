@@ -44,7 +44,6 @@ import java.util.ArrayList;
  * 
  * 3. flagVehicleAsDefective(String plateID, String defectDescription, String technicianID, Date dateReported)
  *    - Update vehicle status to "Maintenance" (VehicleDAO)
- *    - Create maintenance record with "DEFECTIVE:" prefix
  *    - Return generated maintenanceID
  * 
  * 4. getMaintenanceHistory(String plateID)
@@ -59,8 +58,8 @@ import java.util.ArrayList;
  * 7. getTechnicianWorkload(String technicianID)
  *    - Return all maintenance records assigned to a technician
  * 
- * 8. calculatePartsCost(String maintenanceID)
- *    - Calculate total parts cost (placeholder - requires part pricing in schema)
+ * NOTE: Cost calculations are handled by PenaltyService.
+ * A penalty transaction must be created to charge maintenance costs to customers.
  */
 public class MaintenanceService {
     
@@ -138,16 +137,17 @@ public class MaintenanceService {
     }
     
     /**
-     * Complete a maintenance job by recording repair date and parts used.
+     * Complete a maintenance job by recording repair date, hours worked, and parts used.
      * Updates MaintenanceTransaction with repair date and creates MaintenanceCheque records for parts.
      * 
      * @param maintenanceID Maintenance record to complete
      * @param dateRepaired Date when repair was completed
+     * @param hoursWorked Hours spent on the maintenance work
      * @param partsUsed List of PartUsage objects (partID and quantity)
      * @return true if completion successful, false otherwise
      */
     public boolean completeMaintenance(String maintenanceID, Date dateRepaired, 
-                                      List<PartUsage> partsUsed) {
+                                      BigDecimal hoursWorked, List<PartUsage> partsUsed) {
         try {
             // Get maintenance record
             MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceById(maintenanceID);
@@ -194,13 +194,16 @@ public class MaintenanceService {
                 }
             }
             
-            // Update maintenance record with repair date
+            // Update maintenance record with repair date and hours worked
             maintenance.setDateRepaired(dateRepaired);
+            maintenance.setHoursWorked(hoursWorked);
             boolean updateSuccess = maintenanceDAO.updateMaintenance(maintenance);
             if (!updateSuccess) {
                 System.out.println("Error: Failed to update maintenance record.");
                 return false;
             }
+            
+            System.out.println("Hours worked logged: " + hoursWorked + " hours");
             
             // Update vehicle status back to "Available"
             boolean statusUpdate = vehicleDAO.updateVehicleStatus(
@@ -357,31 +360,6 @@ public class MaintenanceService {
             System.out.println("Error retrieving technician workload: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
-        }
-    }
-    
-    /**
-     * Calculate total parts cost for a maintenance job.
-     * Note: This requires part pricing in the database (not currently in schema).
-     * 
-     * @param maintenanceID Maintenance record ID
-     * @return Total cost (currently returns 0.0 as placeholder)
-     */
-    public BigDecimal calculatePartsCost(String maintenanceID) {
-        try {
-            List<MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenance(maintenanceID);
-            
-            // Note: Current schema doesn't have part prices
-            // This method would sum (quantity * partPrice) for each part
-            System.out.println("Note: Part pricing not implemented in current schema.");
-            System.out.println("Parts used in maintenance " + maintenanceID + ": " + cheques.size());
-            
-            return BigDecimal.ZERO;
-            
-        } catch (Exception e) {
-            System.out.println("Error calculating parts cost: " + e.getMessage());
-            e.printStackTrace();
-            return BigDecimal.ZERO;
         }
     }
     

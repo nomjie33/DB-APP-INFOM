@@ -13,11 +13,20 @@ import java.util.ArrayList;
  * 
  * PURPOSE: Calculates and manages customer penalties based on maintenance costs.
  * 
+ * IMPORTANT: PenaltyService is the ONLY service that calculates costs.
+ * MaintenanceService only tracks maintenance work (parts used, hours worked).
+ * A penalty must be created to charge maintenance costs to customers.
+ * 
  * COST FORMULAS:
  * - Labor Cost = hoursWorked × technician rate
  * - Parts Cost = Σ(part price × quantity used)
  * - Total Maintenance Cost = Labor Cost + Parts Cost
  * - Penalty Amount = Total Maintenance Cost
+ * 
+ * WORKFLOW:
+ * 1. MaintenanceService completes maintenance and logs hours/parts
+ * 2. PenaltyService calculates total cost from maintenance record
+ * 3. PenaltyService creates penalty transaction to charge customer
  */
 public class PenaltyService {
     
@@ -179,13 +188,13 @@ public class PenaltyService {
                 return false;
             }
             
-            // Create penalty transaction
+            // Create penalty transaction with maintenance link
             PenaltyTransaction penalty = new PenaltyTransaction(
                 penaltyID,
                 rentalID,
                 amount,
                 "UNPAID",
-                null,  // maintenanceID will be linked separately if needed
+                maintenanceID,  // Link penalty to maintenance record
                 dateIssued
             );
             
