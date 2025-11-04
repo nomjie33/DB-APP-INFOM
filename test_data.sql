@@ -160,26 +160,31 @@ SELECT * FROM parts;
 
 
 -- =====================================================
--- 6. RENTALS TABLE (NOT READY YET - COMMENTED OUT)
+-- 6. RENTALS TABLE
 -- =====================================================
 -- Active and completed rental transactions
+-- startDateTime/endDateTime use DATETIME format (removed redundant rentalDate column)
 
-INSERT INTO rentals (rentalID, customerID, plateID, locationID, startTime, endTime, rentalDate) VALUES
-('RNT-001', 'CUST-003', 'ES-003', 'LOC-001', '2024-10-28 09:00:00', NULL, '2024-10-28'),
-('RNT-002', 'CUST-009', 'ES-008', 'LOC-001', '2024-10-28 10:30:00', NULL, '2024-10-28'),
-('RNT-003', 'CUST-005', 'EB-003', 'LOC-005', '2024-10-28 08:00:00', NULL, '2024-10-28'),
-('RNT-004', 'CUST-007', 'ET-003', 'LOC-001', '2024-10-28 11:00:00', NULL, '2024-10-28'),
-('RNT-005', 'CUST-001', 'ES-001', 'LOC-001', '2024-10-27 09:00:00', '2024-10-27 11:45:00', '2024-10-27'),
-('RNT-006', 'CUST-002', 'EB-001', 'LOC-002', '2024-10-27 14:00:00', '2024-10-27 17:30:00', '2024-10-27'),
-('RNT-007', 'CUST-004', 'ES-002', 'LOC-004', '2024-10-26 10:00:00', '2024-10-26 12:50:00', '2024-10-26'),
-('RNT-008', 'CUST-006', 'ET-001', 'LOC-006', '2024-10-26 15:00:00', '2024-10-26 18:00:00', '2024-10-26'),
-('RNT-009', 'CUST-008', 'EB-002', 'LOC-008', '2024-10-25 09:00:00', '2024-10-25 11:30:00', '2024-10-25'),
-('RNT-010', 'CUST-010', 'ES-004', 'LOC-002', '2024-10-25 13:00:00', '2024-10-25 16:15:00', '2024-10-25'),
-('RNT-011', 'CUST-001', 'ES-006', 'LOC-001', '2024-10-24 10:00:00', '2024-10-24 12:00:00', '2024-10-24'),
-('RNT-012', 'CUST-003', 'EB-004', 'LOC-003', '2024-10-24 14:00:00', '2024-10-24 16:30:00', '2024-10-24'),
-('RNT-013', 'CUST-002', 'ES-007', 'LOC-002', '2024-10-23 09:00:00', '2024-10-23 11:00:00', '2024-10-23'),
-('RNT-014', 'CUST-004', 'ET-002', 'LOC-004', '2024-10-23 15:00:00', '2024-10-23 18:00:00', '2024-10-23'),
-('RNT-015', 'CUST-006', 'ES-009', 'LOC-006', '2024-10-22 10:00:00', '2024-10-22 13:00:00', '2024-10-22');
+INSERT INTO rentals (rentalID, customerID, plateID, locationID, startDateTime, endDateTime) VALUES
+-- Active rentals (ongoing, no end time yet)
+('RNT-001', 'CUST-003', 'ES-003', 'LOC-001', '2024-10-28 09:00:00', NULL),
+('RNT-002', 'CUST-009', 'ES-008', 'LOC-001', '2024-10-28 10:30:00', NULL),
+('RNT-003', 'CUST-005', 'EB-003', 'LOC-005', '2024-10-28 08:00:00', NULL),
+('RNT-004', 'CUST-007', 'ET-003', 'LOC-001', '2024-10-28 11:00:00', NULL),
+-- Completed rentals with precise start and end times
+('RNT-005', 'CUST-001', 'ES-001', 'LOC-001', '2024-10-27 09:00:00', '2024-10-27 11:45:00'),
+('RNT-006', 'CUST-002', 'EB-001', 'LOC-002', '2024-10-27 14:00:00', '2024-10-27 17:30:00'),
+('RNT-007', 'CUST-004', 'ES-002', 'LOC-004', '2024-10-26 10:00:00', '2024-10-26 12:50:00'),
+('RNT-008', 'CUST-006', 'ET-001', 'LOC-006', '2024-10-26 15:00:00', '2024-10-26 18:00:00'),
+('RNT-009', 'CUST-008', 'EB-002', 'LOC-008', '2024-10-25 09:00:00', '2024-10-25 11:30:00'),
+('RNT-010', 'CUST-010', 'ES-004', 'LOC-002', '2024-10-25 13:00:00', '2024-10-25 16:15:00'),
+('RNT-011', 'CUST-001', 'ES-006', 'LOC-001', '2024-10-24 10:00:00', '2024-10-24 12:00:00'),
+('RNT-012', 'CUST-003', 'EB-004', 'LOC-003', '2024-10-24 14:00:00', '2024-10-24 16:30:00'),
+('RNT-013', 'CUST-002', 'ES-007', 'LOC-002', '2024-10-23 09:00:00', '2024-10-23 11:00:00'),
+('RNT-014', 'CUST-004', 'ET-002', 'LOC-004', '2024-10-23 15:00:00', '2024-10-23 18:00:00'),
+('RNT-015', 'CUST-006', 'ES-009', 'LOC-006', '2024-10-22 10:00:00', '2024-10-22 13:00:00');
+
+SELECT * FROM rentals;
 
 
 -- =====================================================
@@ -225,35 +230,38 @@ SELECT * FROM payments;
 -- =====================================================
 -- Maintenance records without part information
 -- Parts tracked separately in maintenance_cheque table
+-- startDateTime/endDateTime use DATETIME format, hoursWorked removed (calculated dynamically)
 
-INSERT INTO maintenance (maintenanceID, dateReported, dateRepaired, notes, technicianID, plateID, hoursWorked) VALUES
--- Recent maintenance - E-Scooters
-('MAINT-001', '2024-10-20', '2024-10-21', 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001', 3.50),
-('MAINT-002', '2024-10-22', '2024-10-22', 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002', 1.00),
-('MAINT-003', '2024-10-25', '2024-10-26', 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005', 2.50),
-('MAINT-004', '2024-10-23', '2024-10-23', 'LED headlight and throttle replacement', 'TECH-001', 'ES-006', 1.50),
-('MAINT-005', '2024-10-24', '2024-10-24', 'Front tire puncture - replaced', 'TECH-002', 'ES-007', 0.75),
-('MAINT-006', '2024-10-21', '2024-10-21', 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009', 0.50),
-('MAINT-007', '2024-10-19', '2024-10-19', 'Brake cable fraying - preventive', 'TECH-002', 'ES-010', 0.50),
+INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, notes, technicianID, plateID) VALUES
+-- Recent maintenance - E-Scooters (completed)
+('MAINT-001', '2024-10-20 08:00:00', '2024-10-21 11:30:00', 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001'),
+('MAINT-002', '2024-10-22 09:00:00', '2024-10-22 10:00:00', 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002'),
+('MAINT-003', '2024-10-25 10:00:00', '2024-10-26 12:30:00', 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005'),
+('MAINT-004', '2024-10-23 13:00:00', '2024-10-23 14:30:00', 'LED headlight and throttle replacement', 'TECH-001', 'ES-006'),
+('MAINT-005', '2024-10-24 09:00:00', '2024-10-24 09:45:00', 'Front tire puncture - replaced', 'TECH-002', 'ES-007'),
+('MAINT-006', '2024-10-21 14:00:00', '2024-10-21 14:30:00', 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009'),
+('MAINT-007', '2024-10-19 08:00:00', '2024-10-19 08:30:00', 'Brake cable fraying - preventive', 'TECH-002', 'ES-010'),
 
--- E-Bikes maintenance
-('MAINT-008', '2024-10-18', '2024-10-19', 'Battery and display replacement', 'TECH-003', 'EB-001', 4.00),
-('MAINT-009', '2024-10-20', '2024-10-21', 'Chain and brake maintenance', 'TECH-002', 'EB-002', 1.25),
-('MAINT-010', '2024-10-22', '2024-10-22', 'Brake pads and cables replaced', 'TECH-005', 'EB-004', 1.00),
-('MAINT-011', '2024-10-23', '2024-10-23', 'Display screen malfunction', 'TECH-001', 'EB-005', 2.00),
-('MAINT-012', '2024-10-26', '2024-10-27', 'Battery capacity critical - emergency', 'TECH-006', 'EB-006', 3.00),
-('MAINT-013', '2024-10-24', '2024-10-24', 'Pedal and seat replacement', 'TECH-002', 'EB-007', 1.50),
-('MAINT-014', '2024-10-25', '2024-10-25', 'Rear light and brake maintenance', 'TECH-004', 'EB-008', 1.00),
+-- E-Bikes maintenance (completed)
+('MAINT-008', '2024-10-18 09:00:00', '2024-10-19 13:00:00', 'Battery and display replacement', 'TECH-003', 'EB-001'),
+('MAINT-009', '2024-10-20 10:00:00', '2024-10-21 11:15:00', 'Chain and brake maintenance', 'TECH-002', 'EB-002'),
+('MAINT-010', '2024-10-22 14:00:00', '2024-10-22 15:00:00', 'Brake pads and cables replaced', 'TECH-005', 'EB-004'),
+('MAINT-011', '2024-10-23 09:00:00', '2024-10-23 11:00:00', 'Display screen malfunction', 'TECH-001', 'EB-005'),
+('MAINT-012', '2024-10-26 08:00:00', '2024-10-27 11:00:00', 'Battery capacity critical - emergency', 'TECH-006', 'EB-006'),
+('MAINT-013', '2024-10-24 13:00:00', '2024-10-24 14:30:00', 'Pedal and seat replacement', 'TECH-002', 'EB-007'),
+('MAINT-014', '2024-10-25 09:00:00', '2024-10-25 10:00:00', 'Rear light and brake maintenance', 'TECH-004', 'EB-008'),
 
--- E-Trikes maintenance
-('MAINT-015', '2024-10-21', '2024-10-22', 'Tire and brake inspection', 'TECH-002', 'ET-001', 1.25),
-('MAINT-016', '2024-10-19', '2024-10-20', 'Battery and controller check', 'TECH-003', 'ET-002', 2.50),
-('MAINT-017', '2024-10-23', '2024-10-23', 'Complete brake system service', 'TECH-005', 'ET-004', 2.00),
-('MAINT-018', '2024-10-24', '2024-10-25', 'Motor controller replacement', 'TECH-007', 'ET-005', 2.50),
+-- E-Trikes maintenance (completed)
+('MAINT-015', '2024-10-21 10:00:00', '2024-10-22 11:15:00', 'Tire and brake inspection', 'TECH-002', 'ET-001'),
+('MAINT-016', '2024-10-19 09:00:00', '2024-10-20 11:30:00', 'Battery and controller check', 'TECH-003', 'ET-002'),
+('MAINT-017', '2024-10-23 13:00:00', '2024-10-23 15:00:00', 'Complete brake system service', 'TECH-005', 'ET-004'),
+('MAINT-018', '2024-10-24 08:00:00', '2024-10-25 10:30:00', 'Motor controller replacement', 'TECH-007', 'ET-005'),
 
--- Ongoing maintenance (not yet completed - no hours logged yet)
-('MAINT-019', '2024-10-27', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005', 0.00),
-('MAINT-020', '2024-10-27', NULL, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006', 0.00);
+-- Ongoing maintenance (not yet completed - endDateTime is NULL)
+('MAINT-019', '2024-10-27 09:00:00', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005'),
+('MAINT-020', '2024-10-27 10:00:00', NULL, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006');
+
+SELECT * FROM maintenance;
 
 SELECT * FROM maintenance;
 

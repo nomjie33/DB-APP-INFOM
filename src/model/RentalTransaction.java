@@ -6,56 +6,47 @@ import java.sql.Date;
  * 
  * PURPOSE: Maps to the 'rentals' table in MySQL database.
  * 
- * FIELDS TO IMPLEMENT:
- * - rentalId (int/String) - Primary key
- * - customerId (int/String) - Foreign key to Customer
- * - vehicleId (int/String) - Foreign key to Vehicle
- * - startDate (Date/Timestamp) - When rental begins
- * - endDate (Date/Timestamp) - When rental is scheduled to end
- * - actualReturnDate (Date/Timestamp) - Actual return date (null if ongoing)
- * - totalCost (double) - Calculated rental cost
- * - status (String) - "Active", "Completed", "Overdue"
- * - pickupLocationId (int/String) - Where vehicle was picked up
- * - returnLocationId (int/String) - Where vehicle should be/was returned
+ * SCHEMA ALIGNMENT:
+ * - rentalID        : String (primary key, VARCHAR(11))
+ * - customerID      : String (foreign key to Customer, VARCHAR(11))
+ * - plateID         : String (foreign key to Vehicle, VARCHAR(11))
+ * - locationID      : String (foreign key to Location, VARCHAR(11))
+ * - startDateTime   : java.sql.Timestamp (rental start date + time, DATETIME)
+ * - endDateTime     : java.sql.Timestamp (rental end date + time, DATETIME, NULL if ongoing)
  * 
- * METHODS TO IMPLEMENT:
- * - Constructor(s)
- * - Getters and Setters for all fields
- * - toString() for debugging
- * - equals() and hashCode()
+ * DURATION CALCULATION:
+ * - Rental duration calculated dynamically from (endDateTime - startDateTime)
+ * - No need to store rentalDate separately (extract from startDateTime)
  * 
- * COLLABORATOR NOTES:
- * - Core transaction for the rental business
- * - Links Customer and Vehicle entities
- * - actualReturnDate null = rental still active
+ * STATUS:
+ * - Active: endDateTime is NULL (vehicle not returned)
+ * - Completed: endDateTime is set (vehicle returned)
  */
 public class RentalTransaction {
-    // TODO: Add private fields for rental transaction attributes
     private String rentalID;
     private String customerID;
     private String plateID;
     private String locationID;
-    private Timestamp startTime;
-    private Timestamp endTime;      // NULL if rental is still active
-    private Date rentalDate;
-    // TODO: Add constructors (default and parameterized)
+    private Timestamp startDateTime;
+    private Timestamp endDateTime;      // NULL if rental is still active
+    
+    // Default constructor
     public RentalTransaction() {
     }
 
+    // Parameterized constructor
     public RentalTransaction(String rentalID, String customerID, String plateID, 
-                             String locationID, Timestamp startTime, Timestamp endTime, 
-                             Date rentalDate) {
+                             String locationID, Timestamp startDateTime, Timestamp endDateTime) {
         this.rentalID = rentalID;
         this.customerID = customerID;
         this.plateID = plateID;
         this.locationID = locationID;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.rentalDate = rentalDate;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
     }
     
-    // TODO: Add getters and setters
-      public String getRentalID() {
+    // Getters and setters
+    public String getRentalID() {
         return rentalID;
     }
     
@@ -87,36 +78,39 @@ public class RentalTransaction {
         this.locationID = locationID;
     }
     
-    public Timestamp getStartTime() {
-        return startTime;
+    public Timestamp getStartDateTime() {
+        return startDateTime;
     }
     
-    public void setStartTime(Timestamp startTime) {
-        this.startTime = startTime;
+    public void setStartDateTime(Timestamp startDateTime) {
+        this.startDateTime = startDateTime;
     }
     
-    public Timestamp getEndTime() {
-        return endTime;
+    public Timestamp getEndDateTime() {
+        return endDateTime;
     }
     
-    public void setEndTime(Timestamp endTime) {
-        this.endTime = endTime;
+    public void setEndDateTime(Timestamp endDateTime) {
+        this.endDateTime = endDateTime;
     }
     
+    /**
+     * Extract rental date from startDateTime
+     * @return Date portion of startDateTime
+     */
     public Date getRentalDate() {
-        return rentalDate;
+        if (startDateTime == null) {
+            return null;
+        }
+        return new Date(startDateTime.getTime());
     }
     
-    public void setRentalDate(Date rentalDate) {
-        this.rentalDate = rentalDate;
-    }
-    // TODO: Add toString(), equals(), hashCode()
-        /**
+    /**
      * Check if rental is still active (vehicle not returned yet)
      * @return true if active, false if completed
      */
     public boolean isActive() {
-        return endTime == null;
+        return endDateTime == null;
     }
     
     /**
@@ -124,7 +118,7 @@ public class RentalTransaction {
      * @return true if completed, false if active
      */
     public boolean isCompleted() {
-        return endTime != null;
+        return endDateTime != null;
     }
     
     /**
@@ -132,29 +126,29 @@ public class RentalTransaction {
      * @return hours (0 if still active)
      */
     public long getRentalHours() {
-        if (endTime == null || startTime == null) {
+        if (endDateTime == null || startDateTime == null) {
             return 0;
         }
-        long milliseconds = endTime.getTime() - startTime.getTime();
+        long milliseconds = endDateTime.getTime() - startDateTime.getTime();
         return milliseconds / (1000 * 60 * 60); // Convert to hours
     }
     
     /**
      * Calculate current duration (even if still active)
-     * @return hours from start until now or until endTime
+     * @return hours from start until now or until endDateTime
      */
     public long getCurrentDurationHours() {
-        if (startTime == null) {
+        if (startDateTime == null) {
             return 0;
         }
         
-        Timestamp end = endTime;
+        Timestamp end = endDateTime;
         if (end == null) {
             // Still active - calculate until now
             end = new Timestamp(System.currentTimeMillis());
         }
         
-        long milliseconds = end.getTime() - startTime.getTime();
+        long milliseconds = end.getTime() - startDateTime.getTime();
         return milliseconds / (1000 * 60 * 60);
     }
     
@@ -166,8 +160,6 @@ public class RentalTransaction {
         return isActive() ? "Active" : "Completed";
     }
     
-    // ===== STANDARD METHODS =====
-    
     /**
      * String representation for debugging
      */
@@ -178,9 +170,8 @@ public class RentalTransaction {
                 ", customerID='" + customerID + '\'' +
                 ", plateID='" + plateID + '\'' +
                 ", locationID='" + locationID + '\'' +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", rentalDate=" + rentalDate +
+                ", startDateTime=" + startDateTime +
+                ", endDateTime=" + endDateTime +
                 ", status='" + getStatus() + '\'' +
                 '}';
     }

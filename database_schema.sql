@@ -106,16 +106,20 @@ CREATE TABLE parts (
 -- =====================================================
 -- Stores rental transaction records
 -- Links customers, vehicles, and locations
--- Tracks rental period and pricing
+-- Tracks rental period with datetime precision
+-- 
+-- TIMESTAMP FIELDS:
+-- - startDateTime: When rental begins (date + time)
+-- - endDateTime: When rental ends (NULL if ongoing)
+-- - Duration calculated dynamically from start/end difference
 
 CREATE TABLE rentals (
     rentalID VARCHAR(11) PRIMARY KEY,
     customerID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,
     locationID VARCHAR(11) NOT NULL,
-    startTime TIMESTAMP NOT NULL,
-    endTime TIMESTAMP NULL,
-    rentalDate DATE NOT NULL,
+    startDateTime TIMESTAMP NOT NULL,
+    endDateTime TIMESTAMP NULL,
     
     CONSTRAINT fk_rental_customer 
         FOREIGN KEY (customerID) REFERENCES customers(customerID)
@@ -135,7 +139,7 @@ CREATE TABLE rentals (
 
 CREATE INDEX idx_rental_customer ON rentals(customerID);
 CREATE INDEX idx_rental_vehicle ON rentals(plateID);
-CREATE INDEX idx_rental_date ON rentals(rentalDate);
+CREATE INDEX idx_rental_start_date ON rentals(startDateTime);
 
 
 -- =====================================================
@@ -162,14 +166,20 @@ CREATE TABLE payments (
 -- =====================================================
 -- Stores vehicle maintenance/repair records
 -- Parts used are tracked separately in maintenance_cheque table
+--
+-- TIMESTAMP FIELDS:
+-- - startDateTime: When maintenance/repair work begins (date + time)
+-- - endDateTime: When maintenance/repair work completes (NULL if in progress)
+-- - Labor hours calculated dynamically from start/end difference
+-- - Cost = (endDateTime - startDateTime in hours) × technician rate + parts
+
 CREATE TABLE maintenance (
     maintenanceID VARCHAR(11) PRIMARY KEY,
-    dateReported DATE NOT NULL,
-    dateRepaired DATE,
+    startDateTime TIMESTAMP NOT NULL,
+    endDateTime TIMESTAMP NULL,
     notes VARCHAR(125),
     technicianID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,
-    hoursWorked DECIMAL(5, 2) DEFAULT 0.00 COMMENT 'Hours spent on maintenance work',
     
     -- Foreign key constraints
     CONSTRAINT fk_maintenance_technician 
@@ -185,7 +195,7 @@ CREATE TABLE maintenance (
     -- Indexes for performance
     INDEX idx_maintenance_vehicle (plateID),
     INDEX idx_maintenance_technician (technicianID),
-    INDEX idx_maintenance_report_date (dateReported)
+    INDEX idx_maintenance_start_date (startDateTime)
 );
 
 -- =====================================================

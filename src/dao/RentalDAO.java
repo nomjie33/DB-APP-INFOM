@@ -64,7 +64,7 @@ public class RentalDAO {
      */
     public boolean insertRental(RentalTransaction rental) {
         String sql = "INSERT INTO rentals (rentalID, customerID, plateID, locationID, " +
-                     "startTime, endTime, rentalDate) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                     "startDateTime, endDateTime) VALUES (?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -73,9 +73,8 @@ public class RentalDAO {
             stmt.setString(2, rental.getCustomerID());
             stmt.setString(3, rental.getPlateID());
             stmt.setString(4, rental.getLocationID());
-            stmt.setTimestamp(5, rental.getStartTime());
-            stmt.setTimestamp(6, rental.getEndTime());
-            stmt.setDate(7, rental.getRentalDate());
+            stmt.setTimestamp(5, rental.getStartDateTime());
+            stmt.setTimestamp(6, rental.getEndDateTime());
             
             int rowsAffected = stmt.executeUpdate();
             
@@ -129,7 +128,7 @@ public class RentalDAO {
      */
     public List<RentalTransaction> getAllRentals() {
         List<RentalTransaction> rentals = new ArrayList<>();
-        String sql = "SELECT * FROM rentals ORDER BY startTime DESC";
+        String sql = "SELECT * FROM rentals ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -150,13 +149,13 @@ public class RentalDAO {
     }
     
     /**
-     * Get active rentals (endTime is NULL)
+     * Get active rentals (endDateTime is NULL)
      * 
      * @return List of active rentals
      */
     public List<RentalTransaction> getActiveRentals() {
         List<RentalTransaction> rentals = new ArrayList<>();
-        String sql = "SELECT * FROM rentals WHERE endTime IS NULL ORDER BY startTime DESC";
+        String sql = "SELECT * FROM rentals WHERE endDateTime IS NULL ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -177,13 +176,13 @@ public class RentalDAO {
     }
     
     /**
-     * Get completed rentals (endTime is NOT NULL)
+     * Get completed rentals (endDateTime is NOT NULL)
      * 
      * @return List of completed rentals
      */
     public List<RentalTransaction> getCompletedRentals() {
         List<RentalTransaction> rentals = new ArrayList<>();
-        String sql = "SELECT * FROM rentals WHERE endTime IS NOT NULL ORDER BY endTime DESC";
+        String sql = "SELECT * FROM rentals WHERE endDateTime IS NOT NULL ORDER BY endDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -209,7 +208,7 @@ public class RentalDAO {
      */
     public List<RentalTransaction> getRentalsByCustomer(String customerID) {
         List<RentalTransaction> rentals = new ArrayList<>();
-        String sql = "SELECT * FROM rentals WHERE customerID = ? ORDER BY startTime DESC";
+        String sql = "SELECT * FROM rentals WHERE customerID = ? ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -237,7 +236,7 @@ public class RentalDAO {
      */
     public List<RentalTransaction> getRentalsByVehicle(String plateID) {
         List<RentalTransaction> rentals = new ArrayList<>();
-        String sql = "SELECT * FROM rentals WHERE plateID = ? ORDER BY startTime DESC";
+        String sql = "SELECT * FROM rentals WHERE plateID = ? ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -265,7 +264,7 @@ public class RentalDAO {
      */
     public List<RentalTransaction> getRentalsByLocation(String locationID) {
         List<RentalTransaction> rentals = new ArrayList<>();
-        String sql = "SELECT * FROM rentals WHERE locationID = ? ORDER BY startTime DESC";
+        String sql = "SELECT * FROM rentals WHERE locationID = ? ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -292,7 +291,7 @@ public class RentalDAO {
      * @return true if vehicle is currently rented, false otherwise
      */
     public boolean hasActiveRental(String plateID) {
-        String sql = "SELECT COUNT(*) FROM rentals WHERE plateID = ? AND endTime IS NULL";
+        String sql = "SELECT COUNT(*) FROM rentals WHERE plateID = ? AND endDateTime IS NULL";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -319,7 +318,7 @@ public class RentalDAO {
      * @return Active rental or null if none
      */
     public RentalTransaction getActiveRentalByVehicle(String plateID) {
-        String sql = "SELECT * FROM rentals WHERE plateID = ? AND endTime IS NULL";
+        String sql = "SELECT * FROM rentals WHERE plateID = ? AND endDateTime IS NULL";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -342,14 +341,14 @@ public class RentalDAO {
     // ==================== UPDATE ====================
     
     /**
-     * Update rental record
+     * Update existing rental
      * 
      * @param rental The rental object with updated data
      * @return true if successful, false otherwise
      */
     public boolean updateRental(RentalTransaction rental) {
         String sql = "UPDATE rentals SET customerID = ?, plateID = ?, locationID = ?, " +
-                     "startTime = ?, endTime = ?, rentalDate = ? WHERE rentalID = ?";
+                     "startDateTime = ?, endDateTime = ? WHERE rentalID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -357,10 +356,9 @@ public class RentalDAO {
             stmt.setString(1, rental.getCustomerID());
             stmt.setString(2, rental.getPlateID());
             stmt.setString(3, rental.getLocationID());
-            stmt.setTimestamp(4, rental.getStartTime());
-            stmt.setTimestamp(5, rental.getEndTime());
-            stmt.setDate(6, rental.getRentalDate());
-            stmt.setString(7, rental.getRentalID());
+            stmt.setTimestamp(4, rental.getStartDateTime());
+            stmt.setTimestamp(5, rental.getEndDateTime());
+            stmt.setString(6, rental.getRentalID());
             
             int rowsAffected = stmt.executeUpdate();
             
@@ -381,16 +379,16 @@ public class RentalDAO {
      * Complete a rental by setting the end time
      * 
      * @param rentalID The rental ID
-     * @param endTime The return time
+     * @param endDateTime The return time
      * @return true if successful, false otherwise
      */
-    public boolean completeRental(String rentalID, Timestamp endTime) {
-        String sql = "UPDATE rentals SET endTime = ? WHERE rentalID = ?";
+    public boolean completeRental(String rentalID, Timestamp endDateTime) {
+        String sql = "UPDATE rentals SET endDateTime = ? WHERE rentalID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setTimestamp(1, endTime);
+            stmt.setTimestamp(1, endDateTime);
             stmt.setString(2, rentalID);
             
             int rowsAffected = stmt.executeUpdate();
@@ -455,9 +453,8 @@ public class RentalDAO {
         rental.setCustomerID(rs.getString("customerID"));
         rental.setPlateID(rs.getString("plateID"));
         rental.setLocationID(rs.getString("locationID"));
-        rental.setStartTime(rs.getTimestamp("startTime"));
-        rental.setEndTime(rs.getTimestamp("endTime"));
-        rental.setRentalDate(rs.getDate("rentalDate"));
+        rental.setStartDateTime(rs.getTimestamp("startDateTime"));
+        rental.setEndDateTime(rs.getTimestamp("endDateTime"));
         return rental;
     }
 }

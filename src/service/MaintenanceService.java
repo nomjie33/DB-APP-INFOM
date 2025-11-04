@@ -3,7 +3,7 @@ package service;
 import dao.*;
 import model.*;
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -89,11 +89,11 @@ public class MaintenanceService {
      * @param plateID Vehicle plate ID
      * @param technicianID Technician assigned to the job
      * @param notes Description of the maintenance/issue
-     * @param dateReported Date when issue was reported
+     * @param startDateTime Timestamp when maintenance started
      * @return true if scheduling successful, false otherwise
      */
     public boolean scheduleMaintenance(String maintenanceID, String plateID, 
-                                      String technicianID, String notes, Date dateReported) {
+                                      String technicianID, String notes, Timestamp startDateTime) {
         try {
             // Verify vehicle exists
             Vehicle vehicle = vehicleDAO.getVehicleById(plateID);
@@ -109,9 +109,9 @@ public class MaintenanceService {
                 return false;
             }
             
-            // Create maintenance transaction (dateRepaired is null until completed)
+            // Create maintenance transaction (endDateTime is null until completed)
             MaintenanceTransaction maintenance = new MaintenanceTransaction(
-                maintenanceID, dateReported, null, notes, technicianID, plateID
+                maintenanceID, startDateTime, null, notes, technicianID, plateID
             );
             
             boolean insertSuccess = maintenanceDAO.insertMaintenance(maintenance);
@@ -137,17 +137,16 @@ public class MaintenanceService {
     }
     
     /**
-     * Complete a maintenance job by recording repair date, hours worked, and parts used.
-     * Updates MaintenanceTransaction with repair date and creates MaintenanceCheque records for parts.
+     * Complete a maintenance job by recording repair end time and parts used.
+     * Updates MaintenanceTransaction with endDateTime and creates MaintenanceCheque records for parts.
      * 
      * @param maintenanceID Maintenance record to complete
-     * @param dateRepaired Date when repair was completed
-     * @param hoursWorked Hours spent on the maintenance work
+     * @param endDateTime Timestamp when repair was completed
      * @param partsUsed List of PartUsage objects (partID and quantity)
      * @return true if completion successful, false otherwise
      */
-    public boolean completeMaintenance(String maintenanceID, Date dateRepaired, 
-                                      BigDecimal hoursWorked, List<PartUsage> partsUsed) {
+    public boolean completeMaintenance(String maintenanceID, Timestamp endDateTime, 
+                                      List<PartUsage> partsUsed) {
         try {
             // Get maintenance record
             MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceById(maintenanceID);
@@ -194,16 +193,17 @@ public class MaintenanceService {
                 }
             }
             
-            // Update maintenance record with repair date and hours worked
-            maintenance.setDateRepaired(dateRepaired);
-            maintenance.setHoursWorked(hoursWorked);
+            // Update maintenance record with endDateTime
+            maintenance.setEndDateTime(endDateTime);
             boolean updateSuccess = maintenanceDAO.updateMaintenance(maintenance);
             if (!updateSuccess) {
                 System.out.println("Error: Failed to update maintenance record.");
                 return false;
             }
             
-            System.out.println("Hours worked logged: " + hoursWorked + " hours");
+            // Calculate hours worked
+            BigDecimal hoursWorked = maintenance.getHoursWorked();
+            System.out.println("Hours worked calculated: " + hoursWorked + " hours");
             
             // Update vehicle status back to "Available"
             boolean statusUpdate = vehicleDAO.updateVehicleStatus(
@@ -229,11 +229,11 @@ public class MaintenanceService {
      * @param plateID Vehicle to flag
      * @param defectDescription Description of the defect
      * @param technicianID Technician to assign (optional, can be null)
-     * @param dateReported Date when defect was detected
+     * @param startDateTime Timestamp when defect was detected
      * @return maintenanceID if successful, null otherwise
      */
     public String flagVehicleAsDefective(String plateID, String defectDescription, 
-                                        String technicianID, Date dateReported) {
+                                        String technicianID, Timestamp startDateTime) {
         try {
             // Verify vehicle exists
             Vehicle vehicle = vehicleDAO.getVehicleById(plateID);
@@ -254,7 +254,7 @@ public class MaintenanceService {
             
             // Create maintenance record
             MaintenanceTransaction maintenance = new MaintenanceTransaction(
-                maintenanceID, dateReported, null, 
+                maintenanceID, startDateTime, null, 
                 defectDescription, technicianID, plateID
             );
             
