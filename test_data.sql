@@ -132,22 +132,22 @@ SELECT * FROM technicians;
 -- Spare parts inventory for maintenance
 -- Common parts for e-scooters, e-bikes, and e-trikes
 
-INSERT INTO parts (part_id, part_name, quantity) VALUES
-('PART-001', 'Lithium Battery Pack', 50),
-('PART-002', 'Motor Controller', 30),
-('PART-003', 'Brake Pads', 100),
-('PART-004', 'LED Headlight', 75),
-('PART-005', 'Tire (Front)', 40),
-('PART-006', 'Tire (Rear)', 40),
-('PART-007', 'Throttle Assembly', 25),
-('PART-008', 'Handlebar Grip', 60),
-('PART-009', 'Kickstand', 35),
-('PART-010', 'Chain', 20),
-('PART-011', 'Brake Cable', 80),
-('PART-012', 'Display Screen', 15),
-('PART-013', 'Seat', 30),
-('PART-014', 'Pedal Set', 25),
-('PART-015', 'Rear Light', 70);
+INSERT INTO parts (part_id, part_name, quantity, price) VALUES
+('PART-001', 'Lithium Battery Pack', 50, 2500.00),
+('PART-002', 'Motor Controller', 30, 1800.00),
+('PART-003', 'Brake Pads', 100, 150.00),
+('PART-004', 'LED Headlight', 75, 350.00),
+('PART-005', 'Tire (Front)', 40, 450.00),
+('PART-006', 'Tire (Rear)', 40, 450.00),
+('PART-007', 'Throttle Assembly', 25, 280.00),
+('PART-008', 'Handlebar Grip', 60, 80.00),
+('PART-009', 'Kickstand', 35, 120.00),
+('PART-010', 'Chain', 20, 200.00),
+('PART-011', 'Brake Cable', 80, 95.00),
+('PART-012', 'Display Screen', 15, 1200.00),
+('PART-013', 'Seat', 30, 350.00),
+('PART-014', 'Pedal Set', 25, 180.00),
+('PART-015', 'Rear Light', 70, 150.00);
 
 SELECT * FROM parts;
 
@@ -204,34 +204,34 @@ INSERT INTO payments (paymentID, rentalID, amount, paymentMethod, paymentDate) V
 -- Maintenance records without part information
 -- Parts tracked separately in maintenance_cheque table
 
-INSERT INTO maintenance (maintenanceID, dateReported, dateRepaired, notes, technicianID, plateID) VALUES
+INSERT INTO maintenance (maintenanceID, dateReported, dateRepaired, notes, technicianID, plateID, hoursWorked) VALUES
 -- Recent maintenance - E-Scooters
-('MAINT-001', '2024-10-20', '2024-10-21', 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001'),
-('MAINT-002', '2024-10-22', '2024-10-22', 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002'),
-('MAINT-003', '2024-10-25', '2024-10-26', 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005'),
-('MAINT-004', '2024-10-23', '2024-10-23', 'LED headlight and throttle replacement', 'TECH-001', 'ES-006'),
-('MAINT-005', '2024-10-24', '2024-10-24', 'Front tire puncture - replaced', 'TECH-002', 'ES-007'),
-('MAINT-006', '2024-10-21', '2024-10-21', 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009'),
-('MAINT-007', '2024-10-19', '2024-10-19', 'Brake cable fraying - preventive', 'TECH-002', 'ES-010'),
+('MAINT-001', '2024-10-20', '2024-10-21', 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001', 3.50),
+('MAINT-002', '2024-10-22', '2024-10-22', 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002', 1.00),
+('MAINT-003', '2024-10-25', '2024-10-26', 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005', 2.50),
+('MAINT-004', '2024-10-23', '2024-10-23', 'LED headlight and throttle replacement', 'TECH-001', 'ES-006', 1.50),
+('MAINT-005', '2024-10-24', '2024-10-24', 'Front tire puncture - replaced', 'TECH-002', 'ES-007', 0.75),
+('MAINT-006', '2024-10-21', '2024-10-21', 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009', 0.50),
+('MAINT-007', '2024-10-19', '2024-10-19', 'Brake cable fraying - preventive', 'TECH-002', 'ES-010', 0.50),
 
 -- E-Bikes maintenance
-('MAINT-008', '2024-10-18', '2024-10-19', 'Battery and display replacement', 'TECH-003', 'EB-001'),
-('MAINT-009', '2024-10-20', '2024-10-21', 'Chain and brake maintenance', 'TECH-002', 'EB-002'),
-('MAINT-010', '2024-10-22', '2024-10-22', 'Brake pads and cables replaced', 'TECH-005', 'EB-004'),
-('MAINT-011', '2024-10-23', '2024-10-23', 'Display screen malfunction', 'TECH-001', 'EB-005'),
-('MAINT-012', '2024-10-26', '2024-10-27', 'Battery capacity critical - emergency', 'TECH-006', 'EB-006'),
-('MAINT-013', '2024-10-24', '2024-10-24', 'Pedal and seat replacement', 'TECH-002', 'EB-007'),
-('MAINT-014', '2024-10-25', '2024-10-25', 'Rear light and brake maintenance', 'TECH-004', 'EB-008'),
+('MAINT-008', '2024-10-18', '2024-10-19', 'Battery and display replacement', 'TECH-003', 'EB-001', 4.00),
+('MAINT-009', '2024-10-20', '2024-10-21', 'Chain and brake maintenance', 'TECH-002', 'EB-002', 1.25),
+('MAINT-010', '2024-10-22', '2024-10-22', 'Brake pads and cables replaced', 'TECH-005', 'EB-004', 1.00),
+('MAINT-011', '2024-10-23', '2024-10-23', 'Display screen malfunction', 'TECH-001', 'EB-005', 2.00),
+('MAINT-012', '2024-10-26', '2024-10-27', 'Battery capacity critical - emergency', 'TECH-006', 'EB-006', 3.00),
+('MAINT-013', '2024-10-24', '2024-10-24', 'Pedal and seat replacement', 'TECH-002', 'EB-007', 1.50),
+('MAINT-014', '2024-10-25', '2024-10-25', 'Rear light and brake maintenance', 'TECH-004', 'EB-008', 1.00),
 
 -- E-Trikes maintenance
-('MAINT-015', '2024-10-21', '2024-10-22', 'Tire and brake inspection', 'TECH-002', 'ET-001'),
-('MAINT-016', '2024-10-19', '2024-10-20', 'Battery and controller check', 'TECH-003', 'ET-002'),
-('MAINT-017', '2024-10-23', '2024-10-23', 'Complete brake system service', 'TECH-005', 'ET-004'),
-('MAINT-018', '2024-10-24', '2024-10-25', 'Motor controller replacement', 'TECH-007', 'ET-005'),
+('MAINT-015', '2024-10-21', '2024-10-22', 'Tire and brake inspection', 'TECH-002', 'ET-001', 1.25),
+('MAINT-016', '2024-10-19', '2024-10-20', 'Battery and controller check', 'TECH-003', 'ET-002', 2.50),
+('MAINT-017', '2024-10-23', '2024-10-23', 'Complete brake system service', 'TECH-005', 'ET-004', 2.00),
+('MAINT-018', '2024-10-24', '2024-10-25', 'Motor controller replacement', 'TECH-007', 'ET-005', 2.50),
 
--- Ongoing maintenance (not yet completed)
-('MAINT-019', '2024-10-27', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005'),
-('MAINT-020', '2024-10-27', NULL, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006');
+-- Ongoing maintenance (not yet completed - no hours logged yet)
+('MAINT-019', '2024-10-27', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005', 0.00),
+('MAINT-020', '2024-10-27', NULL, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006', 0.00);
 
 SELECT * FROM maintenance;
 
@@ -316,9 +316,25 @@ SELECT * FROM maintenance_cheque;
 
 
 -- =====================================================
--- 9. PENALTIES TABLE (NOT READY YET - COMMENTED OUT)
+-- 9. PENALTIES TABLE
 -- =====================================================
--- Late return penalties
+-- Penalty records for damage/repair costs charged to customers
+-- Linked to maintenance records via maintenanceID
+
+INSERT INTO penalty (penaltyID, rentalID, totalPenalty, penaltyStatus, maintenanceID, dateIssued) VALUES
+-- Penalties for completed maintenance (customer charged for damages)
+('PEN-001', 'RNT-005', 3725.00, 'UNPAID', 'MAINT-001', '2024-10-21'),  -- Battery replacement: 3.5h × ₱350 + ₱2500 = ₱3,725
+('PEN-002', 'RNT-007', 745.00, 'PAID', 'MAINT-002', '2024-10-22'),     -- Brake maintenance: 1.0h × ₱330 + (2×₱150 + ₱95) = ₱725
+('PEN-003', 'RNT-006', 3535.00, 'UNPAID', 'MAINT-008', '2024-10-19'),  -- Battery + display: 4.0h × ₱380 + (₱2500 + ₱1200) = ₱5,220
+('PEN-004', 'RNT-009', 565.00, 'PAID', 'MAINT-009', '2024-10-21'),     -- Chain + brakes: 1.25h × ₱320 + (₱200 + 2×₱150) = ₱900
+('PEN-005', 'RNT-012', 1275.00, 'UNPAID', 'MAINT-011', '2024-10-23'),  -- Display screen: 2.0h × ₱350 + ₱1200 = ₱1,900
+('PEN-006', 'RNT-013', 562.50, 'PAID', 'MAINT-004', '2024-10-23'),     -- Headlight + throttle: 1.5h × ₱350 + (₱350 + ₱280) = ₱1,155
+('PEN-007', 'RNT-014', 1470.00, 'UNPAID', 'MAINT-016', '2024-10-20'),  -- Battery + controller: 2.5h × ₱380 + (₱2500 + ₱1800) = ₱5,250
+('PEN-008', 'RNT-015', 600.00, 'PAID', 'MAINT-005', '2024-10-24'),     -- Tire replacement: 0.75h × ₱320 + ₱450 = ₱690
+('PEN-009', 'RNT-011', 1130.00, 'UNPAID', 'MAINT-013', '2024-10-24'),  -- Pedal + seat: 1.5h × ₱320 + (₱180 + ₱350) = ₱1,010
+('PEN-010', 'RNT-010', 925.00, 'PAID', 'MAINT-017', '2024-10-23');     -- Complete brake system: 2.0h × ₱330 + (4×₱150 + 2×₱95) = ₱1,450
+
+SELECT * FROM penalty;
 
 
 
