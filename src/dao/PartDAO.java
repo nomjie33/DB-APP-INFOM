@@ -322,7 +322,8 @@ public class PartDAO {
         return new Part(
             rs.getString("part_id"),
             rs.getString("part_name"),
-            rs.getInt("quantity")
+            rs.getInt("quantity"),
+            rs.getBigDecimal("price")
         );
     }
     

@@ -40,7 +40,7 @@ public class MaintenanceDAO {
      */
     public boolean insertMaintenance(MaintenanceTransaction maintenance) {
         String sql = "INSERT INTO maintenance (maintenanceID, dateReported, dateRepaired, " +
-                     "notes, technicianID, plateID) VALUES (?, ?, ?, ?, ?, ?)";
+                     "notes, technicianID, plateID, hoursWorked) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -51,6 +51,13 @@ public class MaintenanceDAO {
             stmt.setString(4, maintenance.getNotes());
             stmt.setString(5, maintenance.getTechnicianID());
             stmt.setString(6, maintenance.getPlateID());
+            
+            // Handle hoursWorked - default to 0 if null
+            if (maintenance.getHoursWorked() != null) {
+                stmt.setBigDecimal(7, maintenance.getHoursWorked());
+            } else {
+                stmt.setBigDecimal(7, java.math.BigDecimal.ZERO);
+            }
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -70,7 +77,7 @@ public class MaintenanceDAO {
      */
     public boolean updateMaintenance(MaintenanceTransaction maintenance) {
         String sql = "UPDATE maintenance SET dateReported = ?, dateRepaired = ?, notes = ?, " +
-                     "technicianID = ?, plateID = ? WHERE maintenanceID = ?";
+                     "technicianID = ?, plateID = ?, hoursWorked = ? WHERE maintenanceID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -80,7 +87,15 @@ public class MaintenanceDAO {
             stmt.setString(3, maintenance.getNotes());
             stmt.setString(4, maintenance.getTechnicianID());
             stmt.setString(5, maintenance.getPlateID());
-            stmt.setString(6, maintenance.getMaintenanceID());
+            
+            // Handle hoursWorked - default to 0 if null
+            if (maintenance.getHoursWorked() != null) {
+                stmt.setBigDecimal(6, maintenance.getHoursWorked());
+            } else {
+                stmt.setBigDecimal(6, java.math.BigDecimal.ZERO);
+            }
+            
+            stmt.setString(7, maintenance.getMaintenanceID());
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -238,7 +253,8 @@ public class MaintenanceDAO {
             rs.getDate("dateRepaired"),
             rs.getString("notes"),
             rs.getString("technicianID"),
-            rs.getString("plateID")
+            rs.getString("plateID"),
+            rs.getBigDecimal("hoursWorked")
         );
     }
     

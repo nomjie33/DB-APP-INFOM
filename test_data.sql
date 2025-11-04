@@ -26,7 +26,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- CLEAR ALL EXISTING DATA
 -- =====================================================
 
-DELETE FROM penalties;
+DELETE FROM penalty;
 DELETE FROM payments;
 DELETE FROM maintenance_cheque;
 DELETE FROM maintenance;
