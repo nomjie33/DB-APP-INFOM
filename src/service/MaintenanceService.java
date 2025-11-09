@@ -264,7 +264,7 @@ public class MaintenanceService {
                 return null;
             }
             
-            System.out.println("Vehicle flagged as defective. Maintenance ID: " + maintenanceID);
+            System.out.println("Vehicle flagged as under maintenance. Maintenance ID: " + maintenanceID);
             return maintenanceID;
             
         } catch (Exception e) {
