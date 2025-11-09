@@ -69,6 +69,9 @@ CREATE TABLE vehicles (
     vehicleModel VARCHAR(30) NOT NULL, 
     status VARCHAR(15) NOT NULL DEFAULT 'Available',
     rentalPrice DECIMAL (10, 2) NOT NULL
+
+    CONSTRAINT chk_vehicle_status 
+        CHECK (status IN ('Available', 'In Use', 'Maintenance'))
 );
 
 -- =====================================================

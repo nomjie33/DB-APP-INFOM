@@ -103,7 +103,7 @@ public class Vehicle {
      * @return true if status is "Rented"
      */
     public boolean isRented() {
-        return "Rented".equalsIgnoreCase(status);
+        return "In Use".equalsIgnoreCase(status);
     }
     
     /**

@@ -124,10 +124,10 @@ INSERT INTO customers (customerID, lastName, firstName, contactNumber, address, 
 INSERT INTO technicians (technician_id, last_name, first_name, specialization_id, rate, contact_number) VALUES
 ('TECH-001', 'Santos', 'Mario', 'ELECTRICAL', 350.00, '09171234567'),
 ('TECH-002', 'Garcia', 'Rosa', 'MECHANICAL', 320.00, '09281234567'),
-('TECH-003', 'Reyes', 'Pedro', 'BATTERY', 380.00, '09391234567'),
+('TECH-003', 'Reyes', 'Pedro', 'BODYWORK', 380.00, '09391234567'),
 ('TECH-004', 'Dela Cruz', 'Ana', 'ELECTRICAL', 340.00, '09171234568'),
 ('TECH-005', 'Mendoza', 'Carlos', 'MECHANICAL', 330.00, '09281234568'),
-('TECH-006', 'Villanueva', 'Sofia', 'BATTERY', 370.00, '09391234568'),
+('TECH-006', 'Villanueva', 'Sofia', 'BODYWORK', 370.00, '09391234568'),
 ('TECH-007', 'Torres', 'Miguel', 'ELECTRICAL', 360.00, '09171234569'),
 ('TECH-008', 'Ramos', 'Elena', 'MECHANICAL', 315.00, '09281234569');
 
