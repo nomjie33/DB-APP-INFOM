@@ -3,8 +3,6 @@ package service;
 import dao.*;
 import model.*;
 import java.sql.Timestamp;
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -139,17 +137,15 @@ public class RentalService {
 
 
         // CREATE RENTAL RECORD
-        Timestamp startTime = new Timestamp(System.currentTimeMillis());
-        Date rentalDate = Date.valueOf(LocalDate.now());
+        Timestamp startDateTime = new Timestamp(System.currentTimeMillis());
         
         RentalTransaction rental = new RentalTransaction(
             rentalID,
             customerID,
             plateID,
             locationID,
-            startTime,
-            null,  // endTime is null (rental is active)
-            rentalDate
+            startDateTime,
+            null  // endDateTime is null (rental is active)
         );
         
         boolean rentalCreated = rentalDAO.insertRental(rental);
@@ -189,7 +185,7 @@ public class RentalService {
         System.out.println("   Customer: " + customer.getFullName());
         System.out.println("   Vehicle: " + vehicle.getVehicleModel());
         System.out.println("   Location: " + location.getName());
-        System.out.println("   Start Time: " + startTime);
+        System.out.println("   Start Time: " + startDateTime);
         System.out.println("   Rate: ₱" + vehicle.getRentalPrice() + "/hour");
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
         
@@ -200,21 +196,21 @@ public class RentalService {
     // TODO: Implement completeRental()
     public double completeRental(String rentalID){
         // FETCH RENTAL RECORD
-        RentalTransaction rental = rentalDAO.getRentalById(null);
+        RentalTransaction rental = rentalDAO.getRentalById(rentalID);
 
         if (rental == null){
-            System.err.println("Err: Rental " + rentalID + "not found!");
+            System.err.println("Err: Rental " + rentalID + " not found!");
             return -1;
         }
         System.out.println("Rental found!");
         System.out.println("   Customer: " + rental.getCustomerID());
         System.out.println("   Vehicle: " + rental.getPlateID());
-        System.out.println("   Start Time: " + rental.getStartTime());
+        System.out.println("   Start Time: " + rental.getStartDateTime());
 
         // VALIDATE IF RENTAL IS STILL ACTIVE
         if (!rental.isActive()) {
             System.err.println("Err: Rental is already completed!");
-            System.err.println("   End Time: " + rental.getEndTime());
+            System.err.println("   End Time: " + rental.getEndDateTime());
             return -1;
         }
         
@@ -233,7 +229,7 @@ public class RentalService {
         }
 
         // get the duration
-        long milliseconds = endTime.getTime() - rental.getStartTime().getTime();
+        long milliseconds = endTime.getTime() - rental.getStartDateTime().getTime();
         double hours = milliseconds / (1000.0 * 60 * 60);
 
         // round up to nearest hour

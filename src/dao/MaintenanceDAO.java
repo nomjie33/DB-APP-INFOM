@@ -39,25 +39,18 @@ public class MaintenanceDAO {
      * @return true if insert successful, false otherwise
      */
     public boolean insertMaintenance(MaintenanceTransaction maintenance) {
-        String sql = "INSERT INTO maintenance (maintenanceID, dateReported, dateRepaired, " +
-                     "notes, technicianID, plateID, hoursWorked) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, " +
+                     "notes, technicianID, plateID) VALUES (?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, maintenance.getMaintenanceID());
-            stmt.setDate(2, maintenance.getDateReported());
-            stmt.setDate(3, maintenance.getDateRepaired());
+            stmt.setTimestamp(2, maintenance.getStartDateTime());
+            stmt.setTimestamp(3, maintenance.getEndDateTime());
             stmt.setString(4, maintenance.getNotes());
             stmt.setString(5, maintenance.getTechnicianID());
             stmt.setString(6, maintenance.getPlateID());
-            
-            // Handle hoursWorked - default to 0 if null
-            if (maintenance.getHoursWorked() != null) {
-                stmt.setBigDecimal(7, maintenance.getHoursWorked());
-            } else {
-                stmt.setBigDecimal(7, java.math.BigDecimal.ZERO);
-            }
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -76,26 +69,18 @@ public class MaintenanceDAO {
      * @return true if update successful, false otherwise
      */
     public boolean updateMaintenance(MaintenanceTransaction maintenance) {
-        String sql = "UPDATE maintenance SET dateReported = ?, dateRepaired = ?, notes = ?, " +
-                     "technicianID = ?, plateID = ?, hoursWorked = ? WHERE maintenanceID = ?";
+        String sql = "UPDATE maintenance SET startDateTime = ?, endDateTime = ?, notes = ?, " +
+                     "technicianID = ?, plateID = ? WHERE maintenanceID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setDate(1, maintenance.getDateReported());
-            stmt.setDate(2, maintenance.getDateRepaired());
+            stmt.setTimestamp(1, maintenance.getStartDateTime());
+            stmt.setTimestamp(2, maintenance.getEndDateTime());
             stmt.setString(3, maintenance.getNotes());
             stmt.setString(4, maintenance.getTechnicianID());
             stmt.setString(5, maintenance.getPlateID());
-            
-            // Handle hoursWorked - default to 0 if null
-            if (maintenance.getHoursWorked() != null) {
-                stmt.setBigDecimal(6, maintenance.getHoursWorked());
-            } else {
-                stmt.setBigDecimal(6, java.math.BigDecimal.ZERO);
-            }
-            
-            stmt.setString(7, maintenance.getMaintenanceID());
+            stmt.setString(6, maintenance.getMaintenanceID());
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -165,7 +150,7 @@ public class MaintenanceDAO {
      */
     public List<MaintenanceTransaction> getAllMaintenance() {
         List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance ORDER BY dateReported DESC";
+        String sql = "SELECT * FROM maintenance ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -191,7 +176,7 @@ public class MaintenanceDAO {
      */
     public List<MaintenanceTransaction> getMaintenanceByVehicle(String plateID) {
         List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance WHERE plateID = ? ORDER BY dateReported DESC";
+        String sql = "SELECT * FROM maintenance WHERE plateID = ? ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -219,7 +204,7 @@ public class MaintenanceDAO {
      */
     public List<MaintenanceTransaction> getMaintenanceByTechnician(String technicianID) {
         List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance WHERE technicianID = ? ORDER BY dateReported DESC";
+        String sql = "SELECT * FROM maintenance WHERE technicianID = ? ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -249,12 +234,11 @@ public class MaintenanceDAO {
     private MaintenanceTransaction extractMaintenanceFromResultSet(ResultSet rs) throws SQLException {
         return new MaintenanceTransaction(
             rs.getString("maintenanceID"),
-            rs.getDate("dateReported"),
-            rs.getDate("dateRepaired"),
+            rs.getTimestamp("startDateTime"),
+            rs.getTimestamp("endDateTime"),
             rs.getString("notes"),
             rs.getString("technicianID"),
-            rs.getString("plateID"),
-            rs.getBigDecimal("hoursWorked")
+            rs.getString("plateID")
         );
     }
     

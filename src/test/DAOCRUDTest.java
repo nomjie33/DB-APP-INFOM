@@ -10,8 +10,7 @@ import model.Part;
 import model.Technician;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.time.LocalDate;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -93,7 +92,7 @@ public class DAOCRUDTest {
                 System.out.println(":) SELECT by ID successful:");
                 System.out.println("  Name: " + retrieved.getFullName());
                 System.out.println("  Specialization: " + retrieved.getSpecializationId());
-                System.out.println("  Rate: ₱" + retrieved.getRate());
+                System.out.println("  Rate: Php" + retrieved.getRate());
                 System.out.println("  Contact: " + retrieved.getContactNumber());
             } else {
                 System.out.println(":( SELECT by ID failed - Record not found");
@@ -125,7 +124,7 @@ public class DAOCRUDTest {
                 // Verify update
                 Technician updated = dao.getTechnicianById(testId);
                 if (updated != null) {
-                    System.out.println("  New Rate: ₱" + updated.getRate());
+                    System.out.println("  New Rate: Php" + updated.getRate());
                     System.out.println("  New Specialization: " + updated.getSpecializationId());
                     System.out.println("  New Contact: " + updated.getContactNumber());
                 }
@@ -144,7 +143,7 @@ public class DAOCRUDTest {
                 ":) Verified: Record no longer exists" : 
                 ":( Warning: Record still exists");
             
-            System.out.println("\n► TechnicianDAO Tests Complete\n");
+            System.out.println("\n> TechnicianDAO Tests Complete\n");
             
         } catch (Exception e) {
             System.out.println(":( ERROR in TechnicianDAO test: " + e.getMessage());
@@ -253,7 +252,7 @@ public class DAOCRUDTest {
                 ":) Verified: Record no longer exists" : 
                 ":( Warning: Record still exists");
             
-            System.out.println("\n► PartDAO Tests Complete\n");
+            System.out.println("\n> PartDAO Tests Complete\n");
             
         } catch (Exception e) {
             System.out.println(":( ERROR in PartDAO test: " + e.getMessage());
@@ -288,8 +287,8 @@ public class DAOCRUDTest {
             System.out.println("\n─── 3.1 CREATE: Inserting Maintenance Record ───");
             MaintenanceTransaction maintenance = new MaintenanceTransaction(
                 testMaintenanceId,
-                Date.valueOf(LocalDate.now().minusDays(2)),
-                Date.valueOf(LocalDate.now().minusDays(1)),
+                new Timestamp(System.currentTimeMillis() - 172800000L),  // 2 days ago
+                new Timestamp(System.currentTimeMillis() - 86400000L),   // 1 day ago
                 "Test maintenance - battery replacement",
                 testTechnicianId,
                 "ES-001"  // Must exist in vehicles table
@@ -308,8 +307,8 @@ public class DAOCRUDTest {
                 System.out.println(":) SELECT by ID successful:");
                 System.out.println("  Vehicle: " + retrieved.getPlateID());
                 System.out.println("  Technician: " + retrieved.getTechnicianID());
-                System.out.println("  Date Reported: " + retrieved.getDateReported());
-                System.out.println("  Date Repaired: " + retrieved.getDateRepaired());
+                System.out.println("  Start DateTime: " + retrieved.getStartDateTime());
+                System.out.println("  End DateTime: " + retrieved.getEndDateTime());
                 System.out.println("  Notes: " + retrieved.getNotes());
             } else {
                 System.out.println(":( SELECT by ID failed - Record not found");
@@ -341,7 +340,7 @@ public class DAOCRUDTest {
             // === UPDATE ===
             System.out.println("\n─── 3.6 UPDATE: Modifying Maintenance Record ───");
             if (retrieved != null) {
-                retrieved.setDateRepaired(Date.valueOf(LocalDate.now()));
+                retrieved.setEndDateTime(new Timestamp(System.currentTimeMillis()));
                 retrieved.setNotes("Updated test maintenance - completed successfully");
                 
                 boolean updateSuccess = mDao.updateMaintenance(retrieved);
@@ -353,7 +352,7 @@ public class DAOCRUDTest {
                 MaintenanceTransaction updated = mDao.getMaintenanceById(testMaintenanceId);
                 if (updated != null) {
                     System.out.println("  New Notes: " + updated.getNotes());
-                    System.out.println("  New Repair Date: " + updated.getDateRepaired());
+                    System.out.println("  New End DateTime: " + updated.getEndDateTime());
                 }
             }
             
@@ -375,7 +374,7 @@ public class DAOCRUDTest {
             tDao.deleteTechnician(testTechnicianId);
             System.out.println(":) Cleanup complete");
             
-            System.out.println("\n► MaintenanceDAO Tests Complete\n");
+            System.out.println("\n> MaintenanceDAO Tests Complete\n");
             
         } catch (Exception e) {
             System.out.println(":( ERROR in MaintenanceDAO test: " + e.getMessage());
@@ -417,8 +416,8 @@ public class DAOCRUDTest {
             
             MaintenanceTransaction maintenance = new MaintenanceTransaction(
                 testMaintenanceId,
-                Date.valueOf(LocalDate.now().minusDays(1)),
-                Date.valueOf(LocalDate.now()),
+                new Timestamp(System.currentTimeMillis() - 86400000L),  // 1 day ago
+                new Timestamp(System.currentTimeMillis()),               // now
                 "Test brake system maintenance",
                 testTechnicianId,
                 "ES-002"
@@ -523,7 +522,7 @@ public class DAOCRUDTest {
             pDao.deletePart(testPart2Id);
             System.out.println(":) Cleanup complete");
             
-            System.out.println("\n► MaintenanceChequeDAO Tests Complete\n");
+            System.out.println("\n> MaintenanceChequeDAO Tests Complete\n");
             
         } catch (Exception e) {
             System.out.println(":( ERROR in MaintenanceChequeDAO test: " + e.getMessage());

@@ -116,22 +116,22 @@ public class PaymentService {
             java.math.BigDecimal dailyRate = java.math.BigDecimal.valueOf(vehicle.getRentalPrice());
             
             // Calculate rental duration
-            java.sql.Timestamp startTime = rental.getStartTime();
-            java.sql.Timestamp endTime = rental.getEndTime();
+            java.sql.Timestamp startDateTime = rental.getStartDateTime();
+            java.sql.Timestamp endDateTime = rental.getEndDateTime();
             
-            if (startTime == null) {
+            if (startDateTime == null) {
                 System.out.println(":( Start time not set");
                 return java.math.BigDecimal.ZERO;
             }
             
             // If rental not ended, use current time
-            if (endTime == null) {
-                endTime = new java.sql.Timestamp(System.currentTimeMillis());
+            if (endDateTime == null) {
+                endDateTime = new java.sql.Timestamp(System.currentTimeMillis());
                 System.out.println("(Rental ongoing, calculating up to current time)");
             }
             
             // Calculate hours
-            long durationMillis = endTime.getTime() - startTime.getTime();
+            long durationMillis = endDateTime.getTime() - startDateTime.getTime();
             
             // Calculate fractional hours (not rounded)
             double hoursDecimal = durationMillis / (1000.0 * 60.0 * 60.0);

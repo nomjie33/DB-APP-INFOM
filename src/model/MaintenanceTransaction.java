@@ -7,56 +7,47 @@ package model;
  * This represents the main maintenance record without part details.
  * Parts used are tracked separately in MaintenanceCheque table.
  *
- * SCHEMA:
+ * SCHEMA ALIGNMENT:
  * - maintenanceID   : String (primary key, VARCHAR(11))
- * - dateReported    : java.sql.Date (when the issue was reported)
- * - dateRepaired    : java.sql.Date (when repair was completed)
+ * - startDateTime   : java.sql.Timestamp (when maintenance/repair starts, DATETIME)
+ * - endDateTime     : java.sql.Timestamp (when maintenance/repair completes, DATETIME, NULL if in progress)
  * - notes           : String (notes about repair, VARCHAR(125))
  * - technicianID    : String (foreign key to Technician, VARCHAR(11))
  * - plateID         : String (foreign key to Vehicle, VARCHAR(11))
- * - hoursWorked     : java.math.BigDecimal (hours spent on maintenance, DECIMAL(5,2))
+ *
+ * DURATION CALCULATION:
+ * - Labor hours calculated dynamically from (endDateTime - startDateTime)
+ * - No need to store hoursWorked separately
+ * - Cost = hoursWorked × technician rate + parts cost
  *
  * RELATIONSHIP:
  * - One maintenance record can have many parts (one-to-many with MaintenanceCheque)
  */
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
 
 public class MaintenanceTransaction {
     private String maintenanceID;
-    private Date dateReported;
-    private Date dateRepaired;
+    private Timestamp startDateTime;
+    private Timestamp endDateTime;
     private String notes;
     private String technicianID;
     private String plateID;
-    private BigDecimal hoursWorked;
 
     // Default constructor
     public MaintenanceTransaction() {
     }
 
     // Parameterized constructor 
-    public MaintenanceTransaction(String maintenanceID, Date dateReported, Date dateRepaired,
+    public MaintenanceTransaction(String maintenanceID, Timestamp startDateTime, Timestamp endDateTime,
                                   String notes, String technicianID, String plateID) {
         this.maintenanceID = maintenanceID;
-        this.dateReported = dateReported;
-        this.dateRepaired = dateRepaired;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
         this.notes = notes;
         this.technicianID = technicianID;
         this.plateID = plateID;
-        this.hoursWorked = BigDecimal.ZERO;
-    }
-    
-    // Parameterized constructor
-    public MaintenanceTransaction(String maintenanceID, Date dateReported, Date dateRepaired,
-                                  String notes, String technicianID, String plateID, BigDecimal hoursWorked) {
-        this.maintenanceID = maintenanceID;
-        this.dateReported = dateReported;
-        this.dateRepaired = dateRepaired;
-        this.notes = notes;
-        this.technicianID = technicianID;
-        this.plateID = plateID;
-        this.hoursWorked = hoursWorked;
     }
 
     // Getters and setters
@@ -68,20 +59,20 @@ public class MaintenanceTransaction {
         this.maintenanceID = maintenanceID;
     }
 
-    public Date getDateReported() {
-        return dateReported;
+    public Timestamp getStartDateTime() {
+        return startDateTime;
     }
 
-    public void setDateReported(Date dateReported) {
-        this.dateReported = dateReported;
+    public void setStartDateTime(Timestamp startDateTime) {
+        this.startDateTime = startDateTime;
     }
 
-    public Date getDateRepaired() {
-        return dateRepaired;
+    public Timestamp getEndDateTime() {
+        return endDateTime;
     }
 
-    public void setDateRepaired(Date dateRepaired) {
-        this.dateRepaired = dateRepaired;
+    public void setEndDateTime(Timestamp endDateTime) {
+        this.endDateTime = endDateTime;
     }
 
     public String getNotes() {
@@ -108,24 +99,49 @@ public class MaintenanceTransaction {
         this.plateID = plateID;
     }
 
+    /**
+     * Calculate hours worked on maintenance.
+     * Returns hours between startDateTime and endDateTime.
+     * @return Hours worked as BigDecimal, or ZERO if not completed
+     */
     public BigDecimal getHoursWorked() {
-        return hoursWorked;
+        if (startDateTime == null || endDateTime == null) {
+            return BigDecimal.ZERO;
+        }
+        
+        long durationMillis = endDateTime.getTime() - startDateTime.getTime();
+        double hours = durationMillis / (1000.0 * 60.0 * 60.0);
+        
+        return BigDecimal.valueOf(hours).setScale(2, RoundingMode.HALF_UP);
     }
-
-    public void setHoursWorked(BigDecimal hoursWorked) {
-        this.hoursWorked = hoursWorked;
+    
+    /**
+     * Check if maintenance is completed
+     * @return true if completed, false if in progress
+     */
+    public boolean isCompleted() {
+        return endDateTime != null;
+    }
+    
+    /**
+     * Check if maintenance is in progress
+     * @return true if in progress, false if completed
+     */
+    public boolean isInProgress() {
+        return endDateTime == null;
     }
 
     @Override
     public String toString() {
         return "MaintenanceTransaction{" +
                 "maintenanceID='" + maintenanceID + '\'' +
-                ", dateReported=" + dateReported +
-                ", dateRepaired=" + dateRepaired +
+                ", startDateTime=" + startDateTime +
+                ", endDateTime=" + endDateTime +
                 ", notes='" + notes + '\'' +
                 ", technicianID='" + technicianID + '\'' +
                 ", plateID='" + plateID + '\'' +
-                ", hoursWorked=" + hoursWorked +
+                ", hoursWorked=" + getHoursWorked() +
+                ", status='" + (isCompleted() ? "Completed" : "In Progress") + '\'' +
                 '}';
     }
 
