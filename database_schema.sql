@@ -93,14 +93,19 @@ CREATE TABLE technicians (
 -- 5. PARTS TABLE
 -- =====================================================
 -- Stores parts inventory
+-- Uses soft delete: status field marks records as 'Active' or 'Inactive'
 CREATE TABLE parts (
     part_id VARCHAR(11) PRIMARY KEY,
     part_name VARCHAR(25) NOT NULL,
     quantity INT(3) NOT NULL DEFAULT 0,
     price DECIMAL(10, 2) DEFAULT 0.00 COMMENT 'Price per unit of part',
+    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
     
     CONSTRAINT chk_part_quantity 
-        CHECK (quantity >= 0)
+        CHECK (quantity >= 0),
+    
+    CONSTRAINT chk_part_status
+        CHECK (status IN ('Active', 'Inactive'))
 );
 
 

@@ -114,8 +114,8 @@ public class PenaltyService {
                 String partID = cheque.getPartID();
                 BigDecimal quantityUsed = cheque.getQuantityUsed();
                 
-                // Get part details including price
-                Part part = partDAO.getPartById(partID);
+                // Get part details including price (including inactive parts for historical accuracy)
+                Part part = partDAO.getPartByIdIncludingInactive(partID);
                 if (part == null) {
                     System.out.println(":( Part not found: " + partID);
                     continue;

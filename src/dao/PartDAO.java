@@ -10,41 +10,54 @@ import java.util.List;
  * Data Access Object for PART table operations.
  * 
  * PURPOSE: Handles all database CRUD operations for parts/inventory table.
+ * Uses SOFT DELETE pattern - records are marked inactive instead of being deleted.
  * 
- *  SCHEMA ALIGNMENT:
+ * SCHEMA ALIGNMENT:
  * This DAO assumes the parts table has columns:
  * - part_id    VARCHAR(11) PRIMARY KEY
  * - part_name  VARCHAR(25)
  * - quantity   INT(3)
+ * - price      DECIMAL(10,2)
+ * - status     VARCHAR(15) DEFAULT 'Active'
+ * 
+ * SOFT DELETE IMPLEMENTATION:
+ * - deletePart() now sets status to 'Inactive' instead of DELETE
+ * - All retrieval methods filter WHERE status = 'Active' by default
+ * - New methods: deactivatePart(), reactivatePart(), getAllPartsIncludingInactive()
  * 
  * METHODS IMPLEMENTED:
- * 1. insertPart()           - INSERT new part into inventory
+ * 1. insertPart()           - INSERT new part (status defaults to 'Active')
  * 2. updatePart()           - UPDATE existing part record
- * 3. deletePart()           - DELETE part by ID
- * 4. getPartById()          - SELECT part by ID
- * 5. getAllParts()          - SELECT all parts in inventory
- * 6. updatePartQuantity()   - UPDATE quantity (for restocking)
- * 7. decrementPartQuantity() - Reduce quantity when part is used (with validation)
- * 8. incrementPartQuantity() - Add to quantity when restocking
- * 9. getLowStockParts()      - SELECT parts with quantity below threshold
- * 10. extractPartFromResultSet() - Helper to map ResultSet to Part object
+ * 3. deletePart()           - SOFT DELETE (sets status to 'Inactive')
+ * 4. deactivatePart()       - Alias for deletePart() - marks as inactive
+ * 5. reactivatePart()       - Sets status back to 'Active'
+ * 6. getPartById()          - SELECT active part by ID
+ * 7. getAllParts()          - SELECT all active parts
+ * 8. getAllPartsIncludingInactive() - SELECT all parts regardless of status
+ * 9. updatePartQuantity()   - UPDATE quantity (for restocking)
+ * 10. decrementPartQuantity() - Reduce quantity when part is used (with validation)
+ * 11. incrementPartQuantity() - Add to quantity when restocking
+ * 12. getLowStockParts()    - SELECT active parts with quantity below threshold
+ * 13. extractPartFromResultSet() - Helper to map ResultSet to Part object
  * 
  * COLLABORATOR NOTES:
  * - Track inventory carefully
  * - Validate quantities before decrementing (prevent negative stock)
  * - Use decrementPartQuantity() during maintenance operations
  * - Use incrementPartQuantity() when restocking
+ * - All queries default to active parts only unless explicitly requesting inactive
  */
 public class PartDAO {
     
     /**
      * Insert a new part into the inventory.
+     * Status defaults to 'Active' in the model constructor.
      * 
      * @param part Part object to insert
      * @return true if insert successful, false otherwise
      */
     public boolean insertPart(Part part) {
-        String sql = "INSERT INTO parts (part_id, part_name, quantity) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO parts (part_id, part_name, quantity, price, status) VALUES (?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -52,6 +65,8 @@ public class PartDAO {
             stmt.setString(1, part.getPartId());
             stmt.setString(2, part.getPartName());
             stmt.setInt(3, part.getQuantity());
+            stmt.setBigDecimal(4, part.getPrice());
+            stmt.setString(5, part.getStatus() != null ? part.getStatus() : "Active");
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -65,19 +80,21 @@ public class PartDAO {
     
     /**
      * Update an existing part record.
+     * Note: Does not update status field (use deactivatePart/reactivatePart for that)
      * 
      * @param part Part object with updated data
      * @return true if update successful, false otherwise
      */
     public boolean updatePart(Part part) {
-        String sql = "UPDATE parts SET part_name = ?, quantity = ? WHERE part_id = ?";
+        String sql = "UPDATE parts SET part_name = ?, quantity = ?, price = ? WHERE part_id = ? AND status = 'Active'";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, part.getPartName());
             stmt.setInt(2, part.getQuantity());
-            stmt.setString(3, part.getPartId());
+            stmt.setBigDecimal(3, part.getPrice());
+            stmt.setString(4, part.getPartId());
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -90,36 +107,83 @@ public class PartDAO {
     }
     
     /**
-     * Delete a part by ID.
+     * SOFT DELETE: Mark a part as inactive instead of physically deleting it.
+     * This preserves historical data and maintains referential integrity.
      * 
-     * @param partId Part ID to delete
-     * @return true if delete successful, false otherwise
+     * @param partId Part ID to mark as inactive
+     * @return true if soft delete successful, false otherwise
      */
     public boolean deletePart(String partId) {
-        String sql = "DELETE FROM parts WHERE part_id = ?";
+        return deactivatePart(partId);
+    }
+    
+    /**
+     * Deactivate a part (mark as Inactive).
+     * Same as deletePart() - soft delete implementation.
+     * 
+     * @param partId Part ID to deactivate
+     * @return true if deactivation successful, false otherwise
+     */
+    public boolean deactivatePart(String partId) {
+        String sql = "UPDATE parts SET status = 'Inactive' WHERE part_id = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, partId);
             int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+            
+            if (rowsAffected > 0) {
+                System.out.println("Part " + partId + " has been marked as Inactive (soft deleted)");
+                return true;
+            }
             
         } catch (SQLException e) {
-            System.err.println("Error deleting part: " + e.getMessage());
+            System.err.println("Error deactivating part: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        
+        return false;
     }
     
     /**
-     * Get a part by ID.
+     * Reactivate a previously deactivated part.
+     * Sets status back to 'Active'.
+     * 
+     * @param partId Part ID to reactivate
+     * @return true if reactivation successful, false otherwise
+     */
+    public boolean reactivatePart(String partId) {
+        String sql = "UPDATE parts SET status = 'Active' WHERE part_id = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, partId);
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                System.out.println("Part " + partId + " has been reactivated");
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error reactivating part: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Get an active part by ID.
+     * Only returns parts with status = 'Active'.
      * 
      * @param partId Part ID to retrieve
-     * @return Part object or null if not found
+     * @return Part object or null if not found or inactive
      */
     public Part getPartById(String partId) {
-        String sql = "SELECT * FROM parts WHERE part_id = ?";
+        String sql = "SELECT * FROM parts WHERE part_id = ? AND status = 'Active'";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -140,13 +204,42 @@ public class PartDAO {
     }
     
     /**
-     * Get all parts in inventory.
+     * Get a part by ID regardless of status (Active or Inactive).
+     * Used for historical lookups, such as calculating costs for past maintenance.
      * 
-     * @return List of all Part objects
+     * @param partId Part ID to retrieve
+     * @return Part object or null if not found
+     */
+    public Part getPartByIdIncludingInactive(String partId) {
+        String sql = "SELECT * FROM parts WHERE part_id = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, partId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return extractPartFromResultSet(rs);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error retrieving part (including inactive): " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get all active parts in inventory.
+     * Only returns parts with status = 'Active'.
+     * 
+     * @return List of all active Part objects
      */
     public List<Part> getAllParts() {
         List<Part> partList = new ArrayList<>();
-        String sql = "SELECT * FROM parts ORDER BY part_name";
+        String sql = "SELECT * FROM parts WHERE status = 'Active' ORDER BY part_name";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -165,7 +258,34 @@ public class PartDAO {
     }
     
     /**
+     * Get all parts including inactive ones.
+     * Returns both Active and Inactive parts.
+     * 
+     * @return List of all Part objects regardless of status
+     */
+    public List<Part> getAllPartsIncludingInactive() {
+        List<Part> partList = new ArrayList<>();
+        String sql = "SELECT * FROM parts ORDER BY status DESC, part_name";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                partList.add(extractPartFromResultSet(rs));
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error retrieving all parts (including inactive): " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return partList;
+    }
+    
+    /**
      * Update part quantity directly (for restocking or manual adjustments).
+     * Only updates active parts.
      * 
      * @param partId Part ID to update
      * @param newQuantity New quantity value
@@ -177,7 +297,7 @@ public class PartDAO {
             return false;
         }
         
-        String sql = "UPDATE parts SET quantity = ? WHERE part_id = ?";
+        String sql = "UPDATE parts SET quantity = ? WHERE part_id = ? AND status = 'Active'";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -198,6 +318,7 @@ public class PartDAO {
     /**
      * Decrement part quantity when part is used in maintenance.
      * Validates that sufficient quantity exists before decrementing.
+     * Only works with active parts.
      * 
      * @param partId Part ID to decrement
      * @param usedQuantity Quantity to subtract
@@ -209,10 +330,10 @@ public class PartDAO {
             return false;
         }
         
-        // First, check current quantity
+        // First, check current quantity (only for active parts)
         Part part = getPartById(partId);
         if (part == null) {
-            System.err.println("Error: Part not found with ID: " + partId);
+            System.err.println("Error: Active part not found with ID: " + partId);
             return false;
         }
         
@@ -223,8 +344,8 @@ public class PartDAO {
             return false;
         }
         
-        // Perform the decrement
-        String sql = "UPDATE parts SET quantity = quantity - ? WHERE part_id = ?";
+        // Perform the decrement (only for active parts)
+        String sql = "UPDATE parts SET quantity = quantity - ? WHERE part_id = ? AND status = 'Active'";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -249,6 +370,7 @@ public class PartDAO {
     
     /**
      * Increment part quantity when restocking.
+     * Only works with active parts.
      * 
      * @param partId Part ID to increment
      * @param addedQuantity Quantity to add
@@ -260,7 +382,7 @@ public class PartDAO {
             return false;
         }
         
-        String sql = "UPDATE parts SET quantity = quantity + ? WHERE part_id = ?";
+        String sql = "UPDATE parts SET quantity = quantity + ? WHERE part_id = ? AND status = 'Active'";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -283,15 +405,16 @@ public class PartDAO {
     }
     
     /**
-     * Get parts with low stock (quantity below threshold).
+     * Get active parts with low stock (quantity below threshold).
      * Useful for inventory alerts and reorder notifications.
+     * Only returns active parts.
      * 
      * @param threshold Minimum quantity threshold (e.g., 10)
-     * @return List of parts with quantity <= threshold
+     * @return List of active parts with quantity <= threshold
      */
     public List<Part> getLowStockParts(int threshold) {
         List<Part> lowStockParts = new ArrayList<>();
-        String sql = "SELECT * FROM parts WHERE quantity <= ? ORDER BY quantity ASC";
+        String sql = "SELECT * FROM parts WHERE quantity <= ? AND status = 'Active' ORDER BY quantity ASC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -315,7 +438,7 @@ public class PartDAO {
      * Helper method to extract Part object from ResultSet.
      * 
      * @param rs ResultSet positioned at a part record row
-     * @return Part object
+     * @return Part object with all fields including status
      * @throws SQLException if column access fails
      */
     private Part extractPartFromResultSet(ResultSet rs) throws SQLException {
@@ -323,7 +446,8 @@ public class PartDAO {
             rs.getString("part_id"),
             rs.getString("part_name"),
             rs.getInt("quantity"),
-            rs.getBigDecimal("price")
+            rs.getBigDecimal("price"),
+            rs.getString("status")
         );
     }
     
