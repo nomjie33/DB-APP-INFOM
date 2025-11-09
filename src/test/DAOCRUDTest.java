@@ -132,7 +132,7 @@ public class DAOCRUDTest {
             
             // === DELETE ===
             System.out.println("\n─── 1.5 DELETE: Removing Technician ───");
-            boolean deleteSuccess = dao.deleteTechnician(testId);
+            boolean deleteSuccess = dao.deactivateTechnician(testId);
             System.out.println(deleteSuccess ? 
                 ":) DELETE successful" : 
                 ":( DELETE failed");
@@ -241,7 +241,7 @@ public class DAOCRUDTest {
             
             // === DELETE ===
             System.out.println("\n─── 2.6 DELETE: Removing Part ───");
-            boolean deleteSuccess = dao.deletePart(testId);
+            boolean deleteSuccess = dao.deactivatePart(testId);
             System.out.println(deleteSuccess ? 
                 ":) DELETE successful" : 
                 ":( DELETE failed");
@@ -371,7 +371,7 @@ public class DAOCRUDTest {
             
             // Cleanup: Remove supporting records
             System.out.println("\n─── 3.8 CLEANUP: Removing supporting records ───");
-            tDao.deleteTechnician(testTechnicianId);
+            tDao.deactivateTechnician(testTechnicianId);
             System.out.println(":) Cleanup complete");
             
             System.out.println("\n> MaintenanceDAO Tests Complete\n");
@@ -517,9 +517,9 @@ public class DAOCRUDTest {
             // Cleanup
             System.out.println("\n─── 4.8 CLEANUP: Removing supporting records ───");
             mDao.deleteMaintenance(testMaintenanceId);
-            tDao.deleteTechnician(testTechnicianId);
-            pDao.deletePart(testPart1Id);
-            pDao.deletePart(testPart2Id);
+            tDao.deactivateTechnician(testTechnicianId);
+            pDao.deactivatePart(testPart1Id);
+            pDao.deactivatePart(testPart2Id);
             System.out.println(":) Cleanup complete");
             
             System.out.println("\n> MaintenanceChequeDAO Tests Complete\n");

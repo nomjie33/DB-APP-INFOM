@@ -21,16 +21,15 @@ import java.util.List;
  * - status     VARCHAR(15) DEFAULT 'Active'
  * 
  * SOFT DELETE IMPLEMENTATION:
- * - deletePart() now sets status to 'Inactive' instead of DELETE
+ * - deactivatePart() sets status to 'Inactive' instead of DELETE
  * - All retrieval methods filter WHERE status = 'Active' by default
  * - New methods: deactivatePart(), reactivatePart(), getAllPartsIncludingInactive()
  * 
  * METHODS IMPLEMENTED:
  * 1. insertPart()           - INSERT new part (status defaults to 'Active')
- * 2. updatePart()           - UPDATE existing part record
- * 3. deletePart()           - SOFT DELETE (sets status to 'Inactive')
- * 4. deactivatePart()       - Alias for deletePart() - marks as inactive
- * 5. reactivatePart()       - Sets status back to 'Active'
+ * 2. updatePart()           - UPDATE part record (only active parts)
+ * 3. deactivatePart()       - SOFT DELETE (sets status to 'Inactive')
+ * 4. reactivatePart()       - Sets status back to 'Active'
  * 6. getPartById()          - SELECT active part by ID
  * 7. getAllParts()          - SELECT all active parts
  * 8. getAllPartsIncludingInactive() - SELECT all parts regardless of status
@@ -107,19 +106,9 @@ public class PartDAO {
     }
     
     /**
-     * SOFT DELETE: Mark a part as inactive instead of physically deleting it.
+     * SOFT DELETE: Mark a part as inactive instead of physically deleting.
      * This preserves historical data and maintains referential integrity.
-     * 
-     * @param partId Part ID to mark as inactive
-     * @return true if soft delete successful, false otherwise
-     */
-    public boolean deletePart(String partId) {
-        return deactivatePart(partId);
-    }
-    
-    /**
      * Deactivate a part (mark as Inactive).
-     * Same as deletePart() - soft delete implementation.
      * 
      * @param partId Part ID to deactivate
      * @return true if deactivation successful, false otherwise

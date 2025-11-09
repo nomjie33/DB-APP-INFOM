@@ -15,11 +15,18 @@ import java.math.BigDecimal;
  * - specializationID  : VARCHAR(15) - Specialization reference (e.g., "SPEC01")
  * - rate              : DECIMAL(10,2) - Hourly or service rate
  * - contactNumber     : VARCHAR(15) - Contact phone number (stored as String for formatting)
+ * - status            : VARCHAR(15) - 'Active' or 'Inactive' (soft delete flag)
  *
+ * SOFT DELETE:
+ * - Records are never physically deleted from database
+ * - Instead, status is set to 'Inactive' to mark as deleted
+ * - Default status is 'Active' for new records
+ * 
  * COLLABORATOR NOTES:
  * - Used in maintenance transactions to assign repairs
  * - Rate is used to calculate maintenance labor costs
  * - Specialization links to maintenance requirements
+ * - TechnicianDAO filters out inactive records in queries
  */
 public class Technician {
     private String technicianID;
@@ -28,9 +35,11 @@ public class Technician {
     private String specializationID;
     private BigDecimal rate;
     private String contactNumber;
+    private String status;
     
     // Default constructor
     public Technician() {
+        this.status = "Active"; // Default to Active
     }
     
     // Parameterized constructor
@@ -42,6 +51,19 @@ public class Technician {
         this.specializationID = specializationID;
         this.rate = rate;
         this.contactNumber = contactNumber;
+        this.status = "Active"; // Default to Active
+    }
+    
+    // Full parameterized constructor (includes status)
+    public Technician(String technicianId, String lastName, String firstName, 
+                     String specializationID, BigDecimal rate, String contactNumber, String status) {
+        this.technicianID = technicianId;
+        this.lastName = lastName;
+        this.firstName = firstName;
+        this.specializationID = specializationID;
+        this.rate = rate;
+        this.contactNumber = contactNumber;
+        this.status = status;
     }
     
     // Getters and setters
@@ -93,6 +115,30 @@ public class Technician {
         this.contactNumber = contactNumber;
     }
     
+    public String getStatus() {
+        return status;
+    }
+    
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    /**
+     * Check if technician is active (not soft-deleted)
+     * @return true if status is "Active"
+     */
+    public boolean isActive() {
+        return "Active".equalsIgnoreCase(status);
+    }
+    
+    /**
+     * Check if technician is inactive (soft-deleted)
+     * @return true if status is "Inactive"
+     */
+    public boolean isInactive() {
+        return "Inactive".equalsIgnoreCase(status);
+    }
+    
     // Utility method to get full name
     public String getFullName() {
         return firstName + " " + lastName;
@@ -103,9 +149,10 @@ public class Technician {
         return "Technician{" +
                 "technicianID='" + technicianID + '\'' +
                 ", name='" + getFullName() + '\'' +
-                ", specializationID='" + specializationID + '\'' +
+                ", specialization='" + specializationID + '\'' +
                 ", rate=" + rate +
-                ", contactNumber='" + contactNumber + '\'' +
+                ", contact='" + contactNumber + '\'' +
+                ", status='" + status + '\'' +
                 '}';
     }
     

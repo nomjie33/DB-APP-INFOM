@@ -66,8 +66,8 @@ public class PenaltyService {
                 return BigDecimal.ZERO;
             }
             
-            // Get technician rate
-            Technician technician = technicianDAO.getTechnicianById(maintenance.getTechnicianID());
+            // Get technician rate (including inactive for historical records)
+            Technician technician = technicianDAO.getTechnicianByIdIncludingInactive(maintenance.getTechnicianID());
             if (technician == null) {
                 System.out.println(":( Technician not found");
                 return BigDecimal.ZERO;
@@ -295,9 +295,9 @@ public class PenaltyService {
                 return "Maintenance record not found";
             }
             
-            // Labor details
+            // Labor details (including inactive for historical records)
             BigDecimal laborCost = calculateLaborCost(maintenanceID);
-            Technician tech = technicianDAO.getTechnicianById(maintenance.getTechnicianID());
+            Technician tech = technicianDAO.getTechnicianByIdIncludingInactive(maintenance.getTechnicianID());
             
             breakdown.append("\nLABOR:\n");
             if (tech != null && maintenance.getHoursWorked() != null) {

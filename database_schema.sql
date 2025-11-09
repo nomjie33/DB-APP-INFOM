@@ -78,6 +78,7 @@ CREATE TABLE vehicles (
 -- 4. TECHNICIANS TABLE
 -- =====================================================
 -- Stores technician/mechanic information
+-- Uses soft delete: status field marks records as 'Active' or 'Inactive'
 CREATE TABLE technicians (
     technician_id VARCHAR(11) PRIMARY KEY,
     last_name VARCHAR(25) NOT NULL,
@@ -85,8 +86,12 @@ CREATE TABLE technicians (
     specialization_id VARCHAR(15),
     rate DECIMAL(10, 2) NOT NULL,
     contact_number VARCHAR(15),
+    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
     
-    INDEX idx_technician_specialization (specialization_id)
+    INDEX idx_technician_specialization (specialization_id),
+    
+    CONSTRAINT chk_technician_status
+        CHECK (status IN ('Active', 'Inactive'))
 );
 
 -- =====================================================
