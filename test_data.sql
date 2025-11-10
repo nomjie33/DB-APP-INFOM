@@ -120,16 +120,17 @@ INSERT INTO customers (customerID, lastName, firstName, contactNumber, address, 
 -- =====================================================
 -- Maintenance staff for vehicle repairs
 -- Specializations: ELECTRICAL, MECHANICAL, BATTERY
+-- Status: 'Active' for all test technicians (soft delete support)
 
-INSERT INTO technicians (technician_id, last_name, first_name, specialization_id, rate, contact_number) VALUES
-('TECH-001', 'Santos', 'Mario', 'ELECTRICAL', 350.00, '09171234567'),
-('TECH-002', 'Garcia', 'Rosa', 'MECHANICAL', 320.00, '09281234567'),
-('TECH-003', 'Reyes', 'Pedro', 'BODYWORK', 380.00, '09391234567'),
-('TECH-004', 'Dela Cruz', 'Ana', 'ELECTRICAL', 340.00, '09171234568'),
-('TECH-005', 'Mendoza', 'Carlos', 'MECHANICAL', 330.00, '09281234568'),
-('TECH-006', 'Villanueva', 'Sofia', 'BODYWORK', 370.00, '09391234568'),
-('TECH-007', 'Torres', 'Miguel', 'ELECTRICAL', 360.00, '09171234569'),
-('TECH-008', 'Ramos', 'Elena', 'MECHANICAL', 315.00, '09281234569');
+INSERT INTO technicians (technician_id, last_name, first_name, specialization_id, rate, contact_number, status) VALUES
+('TECH-001', 'Santos', 'Mario', 'ELECTRICAL', 350.00, '09171234567', 'Active'),
+('TECH-002', 'Garcia', 'Rosa', 'MECHANICAL', 320.00, '09281234567', 'Active'),
+('TECH-003', 'Reyes', 'Pedro', 'BODYWORK', 380.00, '09391234567', 'Active'),
+('TECH-004', 'Dela Cruz', 'Ana', 'ELECTRICAL', 340.00, '09171234568', 'Active'),
+('TECH-005', 'Mendoza', 'Carlos', 'MECHANICAL', 330.00, '09281234568', 'Active'),
+('TECH-006', 'Villanueva', 'Sofia', 'BODYWORK', 370.00, '09391234568', 'Active'),
+('TECH-007', 'Torres', 'Miguel', 'ELECTRICAL', 360.00, '09171234569', 'Active'),
+('TECH-008', 'Ramos', 'Elena', 'MECHANICAL', 315.00, '09281234569', 'Active');
 
 SELECT * FROM technicians;
 
@@ -138,23 +139,24 @@ SELECT * FROM technicians;
 -- =====================================================
 -- Spare parts inventory for maintenance
 -- Common parts for e-scooters, e-bikes, and e-trikes
+-- Status: 'Active' for all test parts (soft delete support)
 
-INSERT INTO parts (part_id, part_name, quantity, price) VALUES
-('PART-001', 'Lithium Battery Pack', 50, 2500.00),
-('PART-002', 'Motor Controller', 30, 1800.00),
-('PART-003', 'Brake Pads', 100, 150.00),
-('PART-004', 'LED Headlight', 75, 350.00),
-('PART-005', 'Tire (Front)', 40, 450.00),
-('PART-006', 'Tire (Rear)', 40, 450.00),
-('PART-007', 'Throttle Assembly', 25, 280.00),
-('PART-008', 'Handlebar Grip', 60, 80.00),
-('PART-009', 'Kickstand', 35, 120.00),
-('PART-010', 'Chain', 20, 200.00),
-('PART-011', 'Brake Cable', 80, 95.00),
-('PART-012', 'Display Screen', 15, 1200.00),
-('PART-013', 'Seat', 30, 350.00),
-('PART-014', 'Pedal Set', 25, 180.00),
-('PART-015', 'Rear Light', 70, 150.00);
+INSERT INTO parts (part_id, part_name, quantity, price, status) VALUES
+('PART-001', 'Lithium Battery Pack', 50, 2500.00, 'Active'),
+('PART-002', 'Motor Controller', 30, 1800.00, 'Active'),
+('PART-003', 'Brake Pads', 100, 150.00, 'Active'),
+('PART-004', 'LED Headlight', 75, 350.00, 'Active'),
+('PART-005', 'Tire (Front)', 40, 450.00, 'Active'),
+('PART-006', 'Tire (Rear)', 40, 450.00, 'Active'),
+('PART-007', 'Throttle Assembly', 25, 280.00, 'Active'),
+('PART-008', 'Handlebar Grip', 60, 80.00, 'Active'),
+('PART-009', 'Kickstand', 35, 120.00, 'Active'),
+('PART-010', 'Chain', 20, 200.00, 'Active'),
+('PART-011', 'Brake Cable', 80, 95.00, 'Active'),
+('PART-012', 'Display Screen', 15, 1200.00, 'Active'),
+('PART-013', 'Seat', 30, 350.00, 'Active'),
+('PART-014', 'Pedal Set', 25, 180.00, 'Active'),
+('PART-015', 'Rear Light', 70, 150.00, 'Active');
 
 SELECT * FROM parts;
 
