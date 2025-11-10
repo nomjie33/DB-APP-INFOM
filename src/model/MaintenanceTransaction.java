@@ -34,12 +34,14 @@ public class MaintenanceTransaction {
     private String notes;
     private String technicianID;
     private String plateID;
+    private String status;  // 'Active' or 'Inactive' for soft delete
 
     // Default constructor
     public MaintenanceTransaction() {
+        this.status = "Active";  // Default to Active
     }
 
-    // Parameterized constructor 
+    // Parameterized constructor (without status - defaults to Active)
     public MaintenanceTransaction(String maintenanceID, Timestamp startDateTime, Timestamp endDateTime,
                                   String notes, String technicianID, String plateID) {
         this.maintenanceID = maintenanceID;
@@ -48,6 +50,19 @@ public class MaintenanceTransaction {
         this.notes = notes;
         this.technicianID = technicianID;
         this.plateID = plateID;
+        this.status = "Active";  // Default to Active
+    }
+    
+    // Full constructor (with status)
+    public MaintenanceTransaction(String maintenanceID, Timestamp startDateTime, Timestamp endDateTime,
+                                  String notes, String technicianID, String plateID, String status) {
+        this.maintenanceID = maintenanceID;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
+        this.notes = notes;
+        this.technicianID = technicianID;
+        this.plateID = plateID;
+        this.status = status;
     }
 
     // Getters and setters
@@ -99,6 +114,30 @@ public class MaintenanceTransaction {
         this.plateID = plateID;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    /**
+     * Check if maintenance record is active (not soft deleted).
+     * @return true if active, false if inactive
+     */
+    public boolean isActive() {
+        return "Active".equals(status);
+    }
+    
+    /**
+     * Check if maintenance record is inactive (soft deleted).
+     * @return true if inactive, false if active
+     */
+    public boolean isInactive() {
+        return "Inactive".equals(status);
+    }
+
     /**
      * Calculate hours worked on maintenance.
      * Returns hours between startDateTime and endDateTime.
@@ -141,7 +180,8 @@ public class MaintenanceTransaction {
                 ", technicianID='" + technicianID + '\'' +
                 ", plateID='" + plateID + '\'' +
                 ", hoursWorked=" + getHoursWorked() +
-                ", status='" + (isCompleted() ? "Completed" : "In Progress") + '\'' +
+                ", completionStatus='" + (isCompleted() ? "Completed" : "In Progress") + '\'' +
+                ", status='" + status + '\'' +
                 '}';
     }
 

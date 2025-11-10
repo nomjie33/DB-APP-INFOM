@@ -179,6 +179,7 @@ CREATE TABLE payments (
 -- =====================================================
 -- Stores vehicle maintenance/repair records
 -- Parts used are tracked separately in maintenance_cheque table
+-- Uses soft delete: status field marks records as 'Active' or 'Inactive'
 --
 -- TIMESTAMP FIELDS:
 -- - startDateTime: When maintenance/repair work begins (date + time)
@@ -193,6 +194,7 @@ CREATE TABLE maintenance (
     notes VARCHAR(125),
     technicianID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,
+    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
     
     -- Foreign key constraints
     CONSTRAINT fk_maintenance_technician 
@@ -205,6 +207,10 @@ CREATE TABLE maintenance (
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
     
+    -- Check constraint for status
+    CONSTRAINT chk_maintenance_status
+        CHECK (status IN ('Active', 'Inactive')),
+    
     -- Indexes for performance
     INDEX idx_maintenance_vehicle (plateID),
     INDEX idx_maintenance_technician (technicianID),
@@ -216,10 +222,12 @@ CREATE TABLE maintenance (
 -- =====================================================
 -- Junction table tracking parts used in maintenance
 -- Supports multiple parts per maintenance with quantity tracking
+-- Uses soft delete: status field marks records as 'Active' or 'Inactive'
 CREATE TABLE maintenance_cheque (
     maintenanceID VARCHAR(11),
     partID VARCHAR(11),
     quantityUsed DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
     
     -- Composite primary key
     PRIMARY KEY (maintenanceID, partID),
@@ -238,6 +246,10 @@ CREATE TABLE maintenance_cheque (
     -- Business rule: quantity must be positive
     CONSTRAINT chk_quantity_positive 
         CHECK (quantityUsed > 0),
+    
+    -- Check constraint for status
+    CONSTRAINT chk_cheque_status
+        CHECK (status IN ('Active', 'Inactive')),
     
     -- Indexes for performance
     INDEX idx_cheque_maintenance (maintenanceID),
