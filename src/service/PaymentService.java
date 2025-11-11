@@ -194,4 +194,50 @@ public class PaymentService {
             return null;
         }
     }
+    
+    /**
+     * Update an existing payment record with final amount and date.
+     * Used to finalize placeholder payments when rental is completed.
+     * 
+     * @param rentalID The rental ID to find and update payment for
+     * @param finalAmount The calculated rental amount
+     * @param paymentDate The actual payment date
+     * @return true if payment updated successfully
+     */
+    public boolean finalizePaymentForRental(String rentalID, java.math.BigDecimal finalAmount, java.sql.Date paymentDate) {
+        System.out.println("\n=== FINALIZING PAYMENT ===");
+        System.out.println("Rental ID: " + rentalID);
+        System.out.println("Final Amount: ₱" + finalAmount);
+        
+        try {
+            // Get the existing payment
+            PaymentTransaction payment = getPaymentByRental(rentalID);
+            
+            if (payment == null) {
+                System.out.println(":( No payment found to update");
+                return false;
+            }
+            
+            // Update payment details
+            payment.setAmount(finalAmount);
+            payment.setPaymentDate(paymentDate);
+            
+            // Update in database
+            boolean success = paymentDAO.updatePayment(payment);
+            
+            if (success) {
+                System.out.println(":) Payment finalized successfully");
+                System.out.println("Payment ID: " + payment.getPaymentID());
+            } else {
+                System.out.println(":( Failed to finalize payment");
+            }
+            
+            return success;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error finalizing payment: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

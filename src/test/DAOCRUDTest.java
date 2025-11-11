@@ -3,10 +3,12 @@ package test;
 import dao.MaintenanceDAO;
 import dao.MaintenanceChequeDAO;
 import dao.PartDAO;
+import dao.PaymentDAO;
 import dao.TechnicianDAO;
 import model.MaintenanceTransaction;
 import model.MaintenanceCheque;
 import model.Part;
+import model.PaymentTransaction;
 import model.Technician;
 
 import java.math.BigDecimal;
@@ -50,6 +52,7 @@ public class DAOCRUDTest {
         testPartDAO();
         testMaintenanceDAO();
         testMaintenanceChequeDAO();
+        testPaymentDAO();
         
         System.out.println("\n═══════════════════════════════════════════════════");
         System.out.println("   ALL TESTS COMPLETED");
@@ -536,6 +539,149 @@ public class DAOCRUDTest {
             
         } catch (Exception e) {
             System.out.println(":( ERROR in MaintenanceChequeDAO test: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Test 5: Complete CRUD testing for PaymentDAO
+     */
+    private static void testPaymentDAO() {
+        System.out.println("═══════════════════════════════════════════════════");
+        System.out.println("TEST 5: PaymentDAO - CRUD Operations");
+        System.out.println("═══════════════════════════════════════════════════\n");
+        
+        PaymentDAO pDao = new PaymentDAO();
+        
+        String testPaymentId = "CRUD-PAY001";
+        String testRentalId = "RNT-005";  // Using existing rental from test data
+        
+        try {
+            // === CREATE (Insert) ===
+            System.out.println("─── 5.1 CREATE: Inserting Payment ───");
+            PaymentTransaction payment = new PaymentTransaction(
+                testPaymentId,
+                new BigDecimal("150.00"),
+                testRentalId,
+                new java.sql.Date(System.currentTimeMillis())
+            );
+            
+            boolean insertSuccess = pDao.insertPayment(payment);
+            System.out.println(insertSuccess ? 
+                ":) INSERT successful: " + testPaymentId : 
+                ":( INSERT failed");
+            
+            // === READ (Select by ID) ===
+            System.out.println("\n─── 5.2 READ: Retrieving Payment by ID ───");
+            PaymentTransaction retrieved = pDao.getPaymentById(testPaymentId);
+            
+            if (retrieved != null) {
+                System.out.println(":) SELECT by ID successful:");
+                System.out.println("  Payment ID: " + retrieved.getPaymentID());
+                System.out.println("  Amount: ₱" + retrieved.getAmount());
+                System.out.println("  Rental ID: " + retrieved.getRentalID());
+                System.out.println("  Payment Date: " + retrieved.getPaymentDate());
+                System.out.println("  Status: " + retrieved.getStatus());
+            } else {
+                System.out.println(":( SELECT by ID failed - Record not found");
+            }
+            
+            // === READ (Select All) ===
+            System.out.println("\n─── 5.3 READ: Retrieving All Payments ───");
+            List<PaymentTransaction> allPayments = pDao.getAllPayments();
+            System.out.println(":) SELECT ALL successful: Found " + allPayments.size() + " active payments");
+            System.out.println("  First 5 payments:");
+            for (int i = 0; i < Math.min(5, allPayments.size()); i++) {
+                PaymentTransaction p = allPayments.get(i);
+                System.out.println("  - " + p.getPaymentID() + ": ₱" + p.getAmount() + 
+                                 " for " + p.getRentalID() + " (" + p.getStatus() + ")");
+            }
+            
+            // === READ (Select by Rental) ===
+            System.out.println("\n─── 5.4 READ: Retrieving Payments by Rental ───");
+            List<PaymentTransaction> rentalPayments = pDao.getPaymentsByRental(testRentalId);
+            System.out.println(":) SELECT by Rental successful: Found " + rentalPayments.size() + 
+                             " payment(s) for rental " + testRentalId);
+            for (PaymentTransaction p : rentalPayments) {
+                System.out.println("  - " + p.getPaymentID() + ": ₱" + p.getAmount() + 
+                                 " on " + p.getPaymentDate());
+            }
+            
+            // === READ (Select by Date Range) ===
+            System.out.println("\n─── 5.5 READ: Retrieving Payments by Date Range ───");
+            java.sql.Date startDate = java.sql.Date.valueOf("2024-10-22");
+            java.sql.Date endDate = java.sql.Date.valueOf("2024-10-27");
+            
+            List<PaymentTransaction> dateRangePayments = pDao.getPaymentsByDateRange(startDate, endDate);
+            System.out.println(":) SELECT by Date Range successful: Found " + dateRangePayments.size() + 
+                             " payments between " + startDate + " and " + endDate);
+            
+            // === SPECIAL: Revenue Calculation ===
+            System.out.println("\n─── 5.6 SPECIAL: Total Revenue Calculation ───");
+            BigDecimal totalRevenue = pDao.getTotalRevenueByDateRange(startDate, endDate);
+            System.out.println(":) Total Revenue: ₱" + totalRevenue + 
+                             " (from " + startDate + " to " + endDate + ")");
+            
+            // === UPDATE ===
+            System.out.println("\n─── 5.7 UPDATE: Modifying Payment ───");
+            if (retrieved != null) {
+                retrieved.setAmount(new BigDecimal("175.50"));
+                retrieved.setPaymentDate(new java.sql.Date(System.currentTimeMillis()));
+                
+                boolean updateSuccess = pDao.updatePayment(retrieved);
+                System.out.println(updateSuccess ? 
+                    ":) UPDATE successful" : 
+                    ":( UPDATE failed");
+                
+                // Verify update
+                PaymentTransaction updated = pDao.getPaymentById(testPaymentId);
+                if (updated != null) {
+                    System.out.println("  New Amount: ₱" + updated.getAmount());
+                    System.out.println("  New Payment Date: " + updated.getPaymentDate());
+                }
+            }
+            
+            // === SOFT DELETE (Deactivate) ===
+            System.out.println("\n─── 5.8 SOFT DELETE: Deactivating Payment ───");
+            boolean deactivateSuccess = pDao.deactivatePayment(testPaymentId);
+            System.out.println(deactivateSuccess ? 
+                ":) DEACTIVATE successful (status set to 'Inactive')" : 
+                ":( DEACTIVATE failed");
+            
+            // Verify deactivation
+            PaymentTransaction deactivated = pDao.getPaymentById(testPaymentId);
+            System.out.println(deactivated == null ? 
+                ":) Verified: Record is now inactive (not returned by active-only query)" : 
+                ":( Warning: Record still active");
+            
+            // Verify can still retrieve if needed for historical purposes
+            PaymentTransaction historical = pDao.getPaymentByIdIncludingInactive(testPaymentId);
+            System.out.println(historical != null && "Inactive".equals(historical.getStatus()) ? 
+                ":) Verified: Record exists with status='Inactive'" : 
+                ":( Warning: Historical record not found or status incorrect");
+            
+            // === REACTIVATE ===
+            System.out.println("\n─── 5.9 REACTIVATE: Reactivating Payment ───");
+            boolean reactivateSuccess = pDao.reactivatePayment(testPaymentId);
+            System.out.println(reactivateSuccess ? 
+                ":) REACTIVATE successful (status set back to 'Active')" : 
+                ":( REACTIVATE failed");
+            
+            // Verify reactivation
+            PaymentTransaction reactivated = pDao.getPaymentById(testPaymentId);
+            System.out.println(reactivated != null && "Active".equals(reactivated.getStatus()) ? 
+                ":) Verified: Record is active again" : 
+                ":( Warning: Reactivation failed");
+            
+            // Final cleanup - deactivate again
+            System.out.println("\n─── 5.10 CLEANUP: Final deactivation ───");
+            pDao.deactivatePayment(testPaymentId);
+            System.out.println(":) Cleanup complete");
+            
+            System.out.println("\n> PaymentDAO Tests Complete\n");
+            
+        } catch (Exception e) {
+            System.out.println(":( ERROR in PaymentDAO test: " + e.getMessage());
             e.printStackTrace();
         }
     }

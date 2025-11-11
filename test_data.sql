@@ -180,20 +180,21 @@ SELECT * FROM rentals;
 -- Payment records for rentals
 -- Note: Only includes payments for completed rentals (RNT-005 to RNT-015)
 -- Active rentals (RNT-001 to RNT-004) have no payments yet
+-- Status: 'Active' for all test records (soft delete support)
 
-INSERT INTO payments (paymentID, amount, rentalID, paymentDate) VALUES
+INSERT INTO payments (paymentID, amount, rentalID, paymentDate, status) VALUES
 -- Payments for completed rentals (full payments based on rental fees)
-('PAY-001', 5.73, 'RNT-005', '2024-10-27'),   -- ES-001: 2.75h × ₱50/day
-('PAY-002', 10.40, 'RNT-006', '2024-10-27'),  -- EB-001: 3.5h × ₱80/day
-('PAY-003', 6.42, 'RNT-007', '2024-10-26'),   -- ES-002: 2.83h × ₱55/day
-('PAY-004', 12.50, 'RNT-008', '2024-10-26'),  -- ET-001: 3h × ₱100/day
-('PAY-005', 7.81, 'RNT-009', '2024-10-25'),   -- EB-002: 2.5h × ₱75/day
-('PAY-006', 6.09, 'RNT-010', '2024-10-25'),   -- ES-004: 3.25h × ₱45/day
-('PAY-007', 4.33, 'RNT-011', '2024-10-24'),   -- ES-006: 2h × ₱52/day
-('PAY-008', 8.13, 'RNT-012', '2024-10-24'),   -- EB-004: 2.5h × ₱78/day
-('PAY-009', 3.75, 'RNT-013', '2024-10-23'),   -- ES-007: 2h × ₱45/day
-('PAY-010', 11.88, 'RNT-014', '2024-10-23'),  -- ET-002: 3h × ₱95/day
-('PAY-011', 7.25, 'RNT-015', '2024-10-22');   -- ES-009: 3h × ₱58/day
+('PAY-001', 5.73, 'RNT-005', '2024-10-27', 'Active'),   -- ES-001: 2.75h × ₱50/day
+('PAY-002', 10.40, 'RNT-006', '2024-10-27', 'Active'),  -- EB-001: 3.5h × ₱80/day
+('PAY-003', 6.42, 'RNT-007', '2024-10-26', 'Active'),   -- ES-002: 2.83h × ₱55/day
+('PAY-004', 12.50, 'RNT-008', '2024-10-26', 'Active'),  -- ET-001: 3h × ₱100/day
+('PAY-005', 7.81, 'RNT-009', '2024-10-25', 'Active'),   -- EB-002: 2.5h × ₱75/day
+('PAY-006', 6.09, 'RNT-010', '2024-10-25', 'Active'),   -- ES-004: 3.25h × ₱45/day
+('PAY-007', 4.33, 'RNT-011', '2024-10-24', 'Active'),   -- ES-006: 2h × ₱52/day
+('PAY-008', 8.13, 'RNT-012', '2024-10-24', 'Active'),   -- EB-004: 2.5h × ₱78/day
+('PAY-009', 3.75, 'RNT-013', '2024-10-23', 'Active'),   -- ES-007: 2h × ₱45/day
+('PAY-010', 11.88, 'RNT-014', '2024-10-23', 'Active'),  -- ET-002: 3h × ₱95/day
+('PAY-011', 7.25, 'RNT-015', '2024-10-22', 'Active');   -- ES-009: 3h × ₱58/day
 
 -- =====================================================
 -- Placeholder payments for ongoing rentals (one record per rental)
@@ -203,11 +204,11 @@ INSERT INTO payments (paymentID, amount, rentalID, paymentDate) VALUES
 -- updated when the vehicle is returned and payment is processed.
 -- These correspond to RNT-001..RNT-004 (active/ongoing rentals)
 
-INSERT INTO payments (paymentID, amount, rentalID, paymentDate) VALUES
-('PAY-012', 0.00, 'RNT-001', '2024-10-28'),
-('PAY-013', 0.00, 'RNT-002', '2024-10-28'),
-('PAY-014', 0.00, 'RNT-003', '2024-10-28'),
-('PAY-015', 0.00, 'RNT-004', '2024-10-28');
+INSERT INTO payments (paymentID, amount, rentalID, paymentDate, status) VALUES
+('PAY-012', 0.00, 'RNT-001', '2024-10-28', 'Active'),
+('PAY-013', 0.00, 'RNT-002', '2024-10-28', 'Active'),
+('PAY-014', 0.00, 'RNT-003', '2024-10-28', 'Active'),
+('PAY-015', 0.00, 'RNT-004', '2024-10-28', 'Active');
 
 SELECT * FROM payments;
 
