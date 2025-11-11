@@ -86,6 +86,7 @@ public class CustomerDAO {
             stmt.setString(4, customer.getAddress());
             stmt.setString(5, customer.getEmailAddress());
             stmt.setString(6, customer.getCustomerID());
+            stmt.setString(7, "Active");
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;

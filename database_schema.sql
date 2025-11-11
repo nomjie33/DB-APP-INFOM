@@ -56,6 +56,10 @@ CREATE TABLE customers (
     contactNumber VARCHAR(11),
     address VARCHAR(80),
     emailAddress VARCHAR(80)
+    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
+    
+    CONSTRAINT chk_customer_status
+        CHECK (status IN ('Active', 'Inactive'))
 );
 
 
@@ -148,6 +152,9 @@ CREATE TABLE rentals (
         FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
+
+    CONSTRAINT chk_rental_status
+        CHECK (status IN ('Active', 'Completed', 'Cancelled'))
 );
 
 CREATE INDEX idx_rental_customer ON rentals(customerID);
@@ -300,6 +307,9 @@ CREATE TABLE deployments (
         FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
+    
+    CONSTRAINT chk_deployment_status
+        CHECK (status IN ('Active', 'Cancelled'))
 );
 
 CREATE INDEX idx_deployment_vehicle ON deployments(plateID);
