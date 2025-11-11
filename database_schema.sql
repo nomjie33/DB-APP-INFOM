@@ -194,7 +194,6 @@ CREATE TABLE maintenance (
     technicianID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,
     
-    -- Foreign key constraints
     CONSTRAINT fk_maintenance_technician 
         FOREIGN KEY (technicianID) REFERENCES technicians(technician_id)
         ON DELETE RESTRICT
@@ -204,8 +203,7 @@ CREATE TABLE maintenance (
         FOREIGN KEY (plateID) REFERENCES vehicles(plateID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
-    -- Indexes for performance
+
     INDEX idx_maintenance_vehicle (plateID),
     INDEX idx_maintenance_technician (technicianID),
     INDEX idx_maintenance_start_date (startDateTime)
@@ -221,10 +219,8 @@ CREATE TABLE maintenance_cheque (
     partID VARCHAR(11),
     quantityUsed DECIMAL(10, 2) NOT NULL,
     
-    -- Composite primary key
     PRIMARY KEY (maintenanceID, partID),
     
-    -- Foreign key constraints
     CONSTRAINT fk_cheque_maintenance 
         FOREIGN KEY (maintenanceID) REFERENCES maintenance(maintenanceID)
         ON DELETE CASCADE
@@ -235,11 +231,9 @@ CREATE TABLE maintenance_cheque (
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
     
-    -- Business rule: quantity must be positive
     CONSTRAINT chk_quantity_positive 
         CHECK (quantityUsed > 0),
     
-    -- Indexes for performance
     INDEX idx_cheque_maintenance (maintenanceID),
     INDEX idx_cheque_part (partID)
 );
@@ -257,7 +251,6 @@ CREATE TABLE penalty (
     maintenanceID VARCHAR(11),
     dateIssued DATE NOT NULL,
     
-    -- Foreign key constraints
     CONSTRAINT fk_penalty_rental 
         FOREIGN KEY (rentalID) REFERENCES rentals(rentalID)
         ON DELETE RESTRICT
@@ -268,7 +261,6 @@ CREATE TABLE penalty (
         ON DELETE SET NULL
         ON UPDATE CASCADE,
     
-    -- Indexes for performance
     INDEX idx_penalty_rental (rentalID),
     INDEX idx_penalty_status (penaltyStatus),
     INDEX idx_penalty_maintenance (maintenanceID),

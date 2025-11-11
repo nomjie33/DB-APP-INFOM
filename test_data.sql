@@ -24,21 +24,6 @@ USE vehicle_rental_db;
 -- =====================================================
 -- This ensures a completely fresh start every time
 SET FOREIGN_KEY_CHECKS = 0;
-
--- Drop all tables
-DROP TABLE IF EXISTS penalty;
-DROP TABLE IF EXISTS payments;
-DROP TABLE IF EXISTS maintenance_cheque;
-DROP TABLE IF EXISTS maintenance;
-DROP TABLE IF EXISTS deployments;
-DROP TABLE IF EXISTS rentals;
-DROP TABLE IF EXISTS vehicles;
-DROP TABLE IF EXISTS customers;
-DROP TABLE IF EXISTS technicians;
-DROP TABLE IF EXISTS parts;
-DROP TABLE IF EXISTS locations;
-DROP TABLE IF EXISTS staff;
-
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- =====================================================
