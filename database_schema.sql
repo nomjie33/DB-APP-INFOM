@@ -56,6 +56,10 @@ CREATE TABLE customers (
     contactNumber VARCHAR(11),
     address VARCHAR(80),
     emailAddress VARCHAR(80)
+    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
+    
+    CONSTRAINT chk_customer_status
+        CHECK (status IN ('Active', 'Inactive'))
 );
 
 
@@ -148,6 +152,9 @@ CREATE TABLE rentals (
         FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
+
+    CONSTRAINT chk_rental_status
+        CHECK (status IN ('Active', 'Completed', 'Cancelled'))
 );
 
 CREATE INDEX idx_rental_customer ON rentals(customerID);
@@ -199,7 +206,6 @@ CREATE TABLE maintenance (
     plateID VARCHAR(11) NOT NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
     
-    -- Foreign key constraints
     CONSTRAINT fk_maintenance_technician 
         FOREIGN KEY (technicianID) REFERENCES technicians(technician_id)
         ON DELETE RESTRICT
@@ -232,10 +238,8 @@ CREATE TABLE maintenance_cheque (
     quantityUsed DECIMAL(10, 2) NOT NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
     
-    -- Composite primary key
     PRIMARY KEY (maintenanceID, partID),
     
-    -- Foreign key constraints
     CONSTRAINT fk_cheque_maintenance 
         FOREIGN KEY (maintenanceID) REFERENCES maintenance(maintenanceID)
         ON DELETE CASCADE
@@ -246,7 +250,6 @@ CREATE TABLE maintenance_cheque (
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
     
-    -- Business rule: quantity must be positive
     CONSTRAINT chk_quantity_positive 
         CHECK (quantityUsed > 0),
     
@@ -254,7 +257,6 @@ CREATE TABLE maintenance_cheque (
     CONSTRAINT chk_cheque_status
         CHECK (status IN ('Active', 'Inactive')),
     
-    -- Indexes for performance
     INDEX idx_cheque_maintenance (maintenanceID),
     INDEX idx_cheque_part (partID)
 );
@@ -273,7 +275,6 @@ CREATE TABLE penalty (
     dateIssued DATE NOT NULL,
 
     
-    -- Foreign key constraints
     CONSTRAINT fk_penalty_rental 
         FOREIGN KEY (rentalID) REFERENCES rentals(rentalID)
         ON DELETE RESTRICT
@@ -284,7 +285,6 @@ CREATE TABLE penalty (
         ON DELETE SET NULL
         ON UPDATE CASCADE,
     
-    -- Indexes for performance
     INDEX idx_penalty_rental (rentalID),
     INDEX idx_penalty_status (penaltyStatus),
     INDEX idx_penalty_maintenance (maintenanceID),
@@ -311,6 +311,9 @@ CREATE TABLE deployments (
         FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
+    
+    CONSTRAINT chk_deployment_status
+        CHECK (status IN ('Active', 'Cancelled'))
 );
 
 CREATE INDEX idx_deployment_vehicle ON deployments(plateID);
