@@ -195,9 +195,9 @@ public class RentalService {
      * NOTE: Cost calculation handled by PaymentService
      * 
      * @param rentalID Rental to complete
-     * @return true if successful, false otherwise
+     * @return Total rental cost if successful, 0.0 otherwise
      */
-    public boolean completeRental(String rentalID){
+    public double completeRental(String rentalID){
         System.out.println("\n=== Completing Rental ===");
         
         // FETCH RENTAL RECORD
@@ -205,7 +205,7 @@ public class RentalService {
 
         if (rental == null){
             System.err.println("Err: Rental " + rentalID + " not found!");
-            return false;
+            return 0.0;
         }
         
         System.out.println("✓ Rental found!");
@@ -217,12 +217,12 @@ public class RentalService {
         if (rental.isCompleted()) {
             System.err.println("Err: Rental is already completed!");
             System.err.println("   End Time: " + rental.getEndDateTime());
-            return false;
+            return 0.0;
         }
         
         if (rental.isCancelled()) {
             System.err.println("Err: Rental was cancelled!");
-            return false;
+            return 0.0;
         }
         
         System.out.println("✓ Rental is active");
@@ -238,7 +238,7 @@ public class RentalService {
             
             System.err.println("Err: Failed to update rental record!"); 
             
-            return false; 
+            return 0.0; 
         
         }
         

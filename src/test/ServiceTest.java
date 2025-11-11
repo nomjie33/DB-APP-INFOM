@@ -299,9 +299,9 @@ public class ServiceTest {
                     System.out.println("✓ Test payment deactivated");
                 }
                 
-                // Delete rental
-                rentalDAO.deleteRental(testRentalID);
-                System.out.println("✓ Test rental deleted");
+                // Mark as Cancelled
+                rentalDAO.cancelRental(testRentalID);
+                System.out.println("✓ Test rental cancelled (soft deleted)");
                 
                 // Reset vehicle status
                 vehicleDAO.updateVehicleStatus("ES-009", "Available");
