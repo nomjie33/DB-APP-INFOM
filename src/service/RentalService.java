@@ -66,13 +66,17 @@ public class RentalService {
     private VehicleDAO vehicleDAO;
     private LocationDAO locationDAO; 
     private RentalDAO rentalDAO;
+    private PaymentDAO paymentDAO;
+    private PaymentService paymentService;
 
-    // TODO: Initialize DAO objects in constructor
-    public RentalService(CustomerDAO customerDAO, VehicleDAO vehicleDAO, LocationDAO locationDAO, RentalDAO rentalDAO){
+    // Constructor with all dependencies
+    public RentalService(CustomerDAO customerDAO, VehicleDAO vehicleDAO, LocationDAO locationDAO, RentalDAO rentalDAO, PaymentDAO paymentDAO, PaymentService paymentService){
         this.customerDAO = customerDAO;
         this.vehicleDAO = vehicleDAO;
         this.locationDAO = locationDAO;
         this.rentalDAO = rentalDAO;
+        this.paymentDAO = paymentDAO;
+        this.paymentService = paymentService;
     }
     
     // TODO: Implement createRental()
@@ -177,11 +181,34 @@ public class RentalService {
         
         System.out.println("Vehicle status updated to 'In Use'");
         
+        // CREATE PLACEHOLDER PAYMENT
+        System.out.println("Creating placeholder payment...");
+        String paymentID = generatePaymentID();
+        java.sql.Date paymentDate = new java.sql.Date(startDateTime.getTime());
+        
+        PaymentTransaction placeholderPayment = new PaymentTransaction(
+            paymentID,
+            java.math.BigDecimal.ZERO,  // Placeholder amount
+            rentalID,
+            paymentDate
+        );
+        
+        boolean paymentCreated = paymentDAO.insertPayment(placeholderPayment);
+        
+        if (!paymentCreated) {
+            System.err.println("WARNING: Failed to create placeholder payment!");
+            System.err.println("Rental created but payment record is missing");
+            // Note: Could rollback rental here, but continuing for now
+        } else {
+            System.out.println("Placeholder payment created: " + paymentID);
+        }
+        
         // ===== SUCCESS! =====
         System.out.println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         System.out.println("RENTAL CREATED!");
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        System.out.println("   Rental ID: " + vehicle);
+        System.out.println("   Rental ID: " + rentalID);
+        System.out.println("   Payment ID: " + paymentID);
         System.out.println("   Customer: " + customer.getFullName());
         System.out.println("   Vehicle: " + vehicle.getVehicleModel());
         System.out.println("   Location: " + location.getName());
@@ -220,34 +247,35 @@ public class RentalService {
         Timestamp endTime = new Timestamp(System.currentTimeMillis());
         System.out.println("Return time: " + endTime);
 
-        // CALCULATE COST
-        Vehicle vehicle = vehicleDAO.getVehicleById(rental.getPlateID());
-        
-        if (vehicle == null) {
-            System.err.println("Err: Vehicle not found!");
-            return -1;
-        }
-
-        // get the duration
-        long milliseconds = endTime.getTime() - rental.getStartDateTime().getTime();
-        double hours = milliseconds / (1000.0 * 60 * 60);
-
-        // round up to nearest hour
-        hours = Math.ceil(hours);
-
-        double totalCost = hours * vehicle.getRentalPrice();
-
-        System.out.println("Calculated Cost:");
-        System.out.println("   Duration: " + String.format("%.2f", hours) + " hours");
-        System.out.println("   Rate: ₱" + vehicle.getRentalPrice() + "/hour");
-        System.out.println("   Total: ₱" + String.format("%.2f", totalCost));
-
         // UPDATE RENTAL RECORD
         boolean rentalCompleted = rentalDAO.completeRental(rentalID, endTime);
 
-        if(!rentalCompleted) { System.err.println("Err: Failed to update rental record!"); return -1; }
+        if(!rentalCompleted) { 
+            System.err.println("Err: Failed to update rental record!"); 
+            return -1; 
+        }
         
         System.out.println("Rental record updated successfully!");
+
+        // CALCULATE COST (delegated to PaymentService)
+        System.out.println("\nCalculating rental cost...");
+        java.math.BigDecimal totalCost = paymentService.calculateRentalFee(rentalID);
+        
+        if (totalCost == null || totalCost.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            System.err.println("WARNING: Cost calculation failed or returned zero");
+            System.err.println("   Payment may need manual adjustment");
+        }
+        
+        // FINALIZE PAYMENT RECORD
+        System.out.println("\nFinalizing payment...");
+        java.sql.Date paymentDate = new java.sql.Date(System.currentTimeMillis());
+        boolean paymentFinalized = paymentService.finalizePaymentForRental(rentalID, totalCost, paymentDate);
+        
+        if (!paymentFinalized) {
+            System.err.println("WARNING: Failed to finalize payment record");
+            System.err.println("   Payment amount: ₱" + totalCost);
+            System.err.println("   Manual payment update may be required");
+        }
 
         // UPDATE VEHICLE STATUS
         boolean statusUpdated = vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
@@ -258,17 +286,16 @@ public class RentalService {
         } else {
             System.out.println("Vehicle status updated to 'Available'");
         }
+        
         // SUMMARY
-
-                System.out.println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        System.out.println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         System.out.println("RENTAL COMPLETED!");
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         System.out.println("   Rental ID: " + rentalID);
-        System.out.println("   Duration: " + String.format("%.2f", hours) + " hours");
-        System.out.println("   Total Cost: ₱" + String.format("%.2f", totalCost));
+        System.out.println("   Total Cost: ₱" + totalCost);
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
         
-        return totalCost;
+        return totalCost.doubleValue();
     }
 
     // TODO: Implement cancelRental()
@@ -348,5 +375,10 @@ public class RentalService {
     private String generateRentalID() {
         long timestamp = System.currentTimeMillis();
         return "RNT-" + (timestamp % 1000000);
+    }
+    
+    private String generatePaymentID() {
+        long timestamp = System.currentTimeMillis();
+        return "PAY-" + (timestamp % 1000000);
     }
 }

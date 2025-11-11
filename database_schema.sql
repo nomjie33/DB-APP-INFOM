@@ -164,11 +164,14 @@ CREATE TABLE payments (
     amount DECIMAL(10, 2) NOT NULL,
     rentalID VARCHAR(11) NOT NULL,
     paymentDate DATE NOT NULL,
+    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
     
     CONSTRAINT fk_payment_rental
         FOREIGN KEY (rentalID) REFERENCES rentals(rentalID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
+    
+    CONSTRAINT chk_payment_status CHECK (status IN ('Active', 'Inactive')),
     
     INDEX idx_payment_rental (rentalID),
     INDEX idx_payment_date (paymentDate)
@@ -268,6 +271,7 @@ CREATE TABLE penalty (
     penaltyStatus VARCHAR(15) NOT NULL DEFAULT 'UNPAID',
     maintenanceID VARCHAR(11),
     dateIssued DATE NOT NULL,
+
     
     -- Foreign key constraints
     CONSTRAINT fk_penalty_rental 
