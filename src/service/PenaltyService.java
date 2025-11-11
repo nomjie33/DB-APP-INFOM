@@ -53,8 +53,8 @@ public class PenaltyService {
         System.out.println("Maintenance ID: " + maintenanceID);
         
         try {
-            // Get maintenance record
-            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceById(maintenanceID);
+            // Get maintenance record (including inactive for historical penalty calculations)
+            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceByIdIncludingInactive(maintenanceID);
             if (maintenance == null) {
                 System.out.println(":( Maintenance record not found");
                 return BigDecimal.ZERO;
@@ -99,8 +99,8 @@ public class PenaltyService {
         System.out.println("Maintenance ID: " + maintenanceID);
         
         try {
-            // Get all parts used in this maintenance
-            List<model.MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenance(maintenanceID);
+            // Get all parts used in this maintenance (including inactive for historical accuracy)
+            List<model.MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenanceIncludingInactive(maintenanceID);
             
             if (cheques == null || cheques.isEmpty()) {
                 System.out.println("No parts used in this maintenance");
@@ -290,7 +290,8 @@ public class PenaltyService {
         breakdown.append("========================================\n");
         
         try {
-            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceById(maintenanceID);
+            // Get maintenance including inactive for historical penalty breakdown
+            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceByIdIncludingInactive(maintenanceID);
             if (maintenance == null) {
                 return "Maintenance record not found";
             }
@@ -309,9 +310,9 @@ public class PenaltyService {
                 breakdown.append("Labor details not available\n");
             }
             
-            // Parts details
+            // Parts details (including inactive for historical accuracy)
             BigDecimal partsCost = calculatePartsCost(maintenanceID);
-            List<model.MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenance(maintenanceID);
+            List<model.MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenanceIncludingInactive(maintenanceID);
             
             breakdown.append("\nPARTS:\n");
             if (cheques != null && !cheques.isEmpty()) {

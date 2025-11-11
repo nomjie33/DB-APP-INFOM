@@ -105,16 +105,17 @@ INSERT INTO customers (customerID, lastName, firstName, contactNumber, address, 
 -- =====================================================
 -- Maintenance staff for vehicle repairs
 -- Specializations: ELECTRICAL, MECHANICAL, BATTERY
+-- Status: 'Active' for all test technicians (soft delete support)
 
-INSERT INTO technicians (technician_id, last_name, first_name, specialization_id, rate, contact_number) VALUES
-('TECH-001', 'Santos', 'Mario', 'ELECTRICAL', 350.00, '09171234567'),
-('TECH-002', 'Garcia', 'Rosa', 'MECHANICAL', 320.00, '09281234567'),
-('TECH-003', 'Reyes', 'Pedro', 'BODYWORK', 380.00, '09391234567'),
-('TECH-004', 'Dela Cruz', 'Ana', 'ELECTRICAL', 340.00, '09171234568'),
-('TECH-005', 'Mendoza', 'Carlos', 'MECHANICAL', 330.00, '09281234568'),
-('TECH-006', 'Villanueva', 'Sofia', 'BODYWORK', 370.00, '09391234568'),
-('TECH-007', 'Torres', 'Miguel', 'ELECTRICAL', 360.00, '09171234569'),
-('TECH-008', 'Ramos', 'Elena', 'MECHANICAL', 315.00, '09281234569');
+INSERT INTO technicians (technician_id, last_name, first_name, specialization_id, rate, contact_number, status) VALUES
+('TECH-001', 'Santos', 'Mario', 'ELECTRICAL', 350.00, '09171234567', 'Active'),
+('TECH-002', 'Garcia', 'Rosa', 'MECHANICAL', 320.00, '09281234567', 'Active'),
+('TECH-003', 'Reyes', 'Pedro', 'BODYWORK', 380.00, '09391234567', 'Active'),
+('TECH-004', 'Dela Cruz', 'Ana', 'ELECTRICAL', 340.00, '09171234568', 'Active'),
+('TECH-005', 'Mendoza', 'Carlos', 'MECHANICAL', 330.00, '09281234568', 'Active'),
+('TECH-006', 'Villanueva', 'Sofia', 'BODYWORK', 370.00, '09391234568', 'Active'),
+('TECH-007', 'Torres', 'Miguel', 'ELECTRICAL', 360.00, '09171234569', 'Active'),
+('TECH-008', 'Ramos', 'Elena', 'MECHANICAL', 315.00, '09281234569', 'Active');
 
 SELECT * FROM technicians;
 
@@ -123,23 +124,24 @@ SELECT * FROM technicians;
 -- =====================================================
 -- Spare parts inventory for maintenance
 -- Common parts for e-scooters, e-bikes, and e-trikes
+-- Status: 'Active' for all test parts (soft delete support)
 
-INSERT INTO parts (part_id, part_name, quantity, price) VALUES
-('PART-001', 'Lithium Battery Pack', 50, 2500.00),
-('PART-002', 'Motor Controller', 30, 1800.00),
-('PART-003', 'Brake Pads', 100, 150.00),
-('PART-004', 'LED Headlight', 75, 350.00),
-('PART-005', 'Tire (Front)', 40, 450.00),
-('PART-006', 'Tire (Rear)', 40, 450.00),
-('PART-007', 'Throttle Assembly', 25, 280.00),
-('PART-008', 'Handlebar Grip', 60, 80.00),
-('PART-009', 'Kickstand', 35, 120.00),
-('PART-010', 'Chain', 20, 200.00),
-('PART-011', 'Brake Cable', 80, 95.00),
-('PART-012', 'Display Screen', 15, 1200.00),
-('PART-013', 'Seat', 30, 350.00),
-('PART-014', 'Pedal Set', 25, 180.00),
-('PART-015', 'Rear Light', 70, 150.00);
+INSERT INTO parts (part_id, part_name, quantity, price, status) VALUES
+('PART-001', 'Lithium Battery Pack', 50, 2500.00, 'Active'),
+('PART-002', 'Motor Controller', 30, 1800.00, 'Active'),
+('PART-003', 'Brake Pads', 100, 150.00, 'Active'),
+('PART-004', 'LED Headlight', 75, 350.00, 'Active'),
+('PART-005', 'Tire (Front)', 40, 450.00, 'Active'),
+('PART-006', 'Tire (Rear)', 40, 450.00, 'Active'),
+('PART-007', 'Throttle Assembly', 25, 280.00, 'Active'),
+('PART-008', 'Handlebar Grip', 60, 80.00, 'Active'),
+('PART-009', 'Kickstand', 35, 120.00, 'Active'),
+('PART-010', 'Chain', 20, 200.00, 'Active'),
+('PART-011', 'Brake Cable', 80, 95.00, 'Active'),
+('PART-012', 'Display Screen', 15, 1200.00, 'Active'),
+('PART-013', 'Seat', 30, 350.00, 'Active'),
+('PART-014', 'Pedal Set', 25, 180.00, 'Active'),
+('PART-015', 'Rear Light', 70, 150.00, 'Active');
 
 SELECT * FROM parts;
 
@@ -217,34 +219,34 @@ SELECT * FROM payments;
 -- Parts tracked separately in maintenance_cheque table
 -- startDateTime/endDateTime use DATETIME format, hoursWorked removed (calculated dynamically)
 
-INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, notes, technicianID, plateID) VALUES
--- Recent maintenance - E-Scooters (completed)
-('MAINT-001', '2024-10-20 08:00:00', '2024-10-21 11:30:00', 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001'),
-('MAINT-002', '2024-10-22 09:00:00', '2024-10-22 10:00:00', 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002'),
-('MAINT-003', '2024-10-25 10:00:00', '2024-10-26 12:30:00', 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005'),
-('MAINT-004', '2024-10-23 13:00:00', '2024-10-23 14:30:00', 'LED headlight and throttle replacement', 'TECH-001', 'ES-006'),
-('MAINT-005', '2024-10-24 09:00:00', '2024-10-24 09:45:00', 'Front tire puncture - replaced', 'TECH-002', 'ES-007'),
-('MAINT-006', '2024-10-21 14:00:00', '2024-10-21 14:30:00', 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009'),
-('MAINT-007', '2024-10-19 08:00:00', '2024-10-19 08:30:00', 'Brake cable fraying - preventive', 'TECH-002', 'ES-010'),
+INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, notes, technicianID, plateID, status) VALUES
+-- Recent maintenance - E-Scooters (completed) - All Active
+('MAINT-001', '2024-10-20 08:00:00', '2024-10-21 11:30:00', 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001', 'Active'),
+('MAINT-002', '2024-10-22 09:00:00', '2024-10-22 10:00:00', 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002', 'Active'),
+('MAINT-003', '2024-10-25 10:00:00', '2024-10-26 12:30:00', 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005', 'Active'),
+('MAINT-004', '2024-10-23 13:00:00', '2024-10-23 14:30:00', 'LED headlight and throttle replacement', 'TECH-001', 'ES-006', 'Active'),
+('MAINT-005', '2024-10-24 09:00:00', '2024-10-24 09:45:00', 'Front tire puncture - replaced', 'TECH-002', 'ES-007', 'Active'),
+('MAINT-006', '2024-10-21 14:00:00', '2024-10-21 14:30:00', 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009', 'Active'),
+('MAINT-007', '2024-10-19 08:00:00', '2024-10-19 08:30:00', 'Brake cable fraying - preventive', 'TECH-002', 'ES-010', 'Active'),
 
 -- E-Bikes maintenance (completed)
-('MAINT-008', '2024-10-18 09:00:00', '2024-10-19 13:00:00', 'Battery and display replacement', 'TECH-003', 'EB-001'),
-('MAINT-009', '2024-10-20 10:00:00', '2024-10-21 11:15:00', 'Chain and brake maintenance', 'TECH-002', 'EB-002'),
-('MAINT-010', '2024-10-22 14:00:00', '2024-10-22 15:00:00', 'Brake pads and cables replaced', 'TECH-005', 'EB-004'),
-('MAINT-011', '2024-10-23 09:00:00', '2024-10-23 11:00:00', 'Display screen malfunction', 'TECH-001', 'EB-005'),
-('MAINT-012', '2024-10-26 08:00:00', '2024-10-27 11:00:00', 'Battery capacity critical - emergency', 'TECH-006', 'EB-006'),
-('MAINT-013', '2024-10-24 13:00:00', '2024-10-24 14:30:00', 'Pedal and seat replacement', 'TECH-002', 'EB-007'),
-('MAINT-014', '2024-10-25 09:00:00', '2024-10-25 10:00:00', 'Rear light and brake maintenance', 'TECH-004', 'EB-008'),
+('MAINT-008', '2024-10-18 09:00:00', '2024-10-19 13:00:00', 'Battery and display replacement', 'TECH-003', 'EB-001', 'Active'),
+('MAINT-009', '2024-10-20 10:00:00', '2024-10-21 11:15:00', 'Chain and brake maintenance', 'TECH-002', 'EB-002', 'Active'),
+('MAINT-010', '2024-10-22 14:00:00', '2024-10-22 15:00:00', 'Brake pads and cables replaced', 'TECH-005', 'EB-004', 'Active'),
+('MAINT-011', '2024-10-23 09:00:00', '2024-10-23 11:00:00', 'Display screen malfunction', 'TECH-001', 'EB-005', 'Active'),
+('MAINT-012', '2024-10-26 08:00:00', '2024-10-27 11:00:00', 'Battery capacity critical - emergency', 'TECH-006', 'EB-006', 'Active'),
+('MAINT-013', '2024-10-24 13:00:00', '2024-10-24 14:30:00', 'Pedal and seat replacement', 'TECH-002', 'EB-007', 'Active'),
+('MAINT-014', '2024-10-25 09:00:00', '2024-10-25 10:00:00', 'Rear light and brake maintenance', 'TECH-004', 'EB-008', 'Active'),
 
 -- E-Trikes maintenance (completed)
-('MAINT-015', '2024-10-21 10:00:00', '2024-10-22 11:15:00', 'Tire and brake inspection', 'TECH-002', 'ET-001'),
-('MAINT-016', '2024-10-19 09:00:00', '2024-10-20 11:30:00', 'Battery and controller check', 'TECH-003', 'ET-002'),
-('MAINT-017', '2024-10-23 13:00:00', '2024-10-23 15:00:00', 'Complete brake system service', 'TECH-005', 'ET-004'),
-('MAINT-018', '2024-10-24 08:00:00', '2024-10-25 10:30:00', 'Motor controller replacement', 'TECH-007', 'ET-005'),
+('MAINT-015', '2024-10-21 10:00:00', '2024-10-22 11:15:00', 'Tire and brake inspection', 'TECH-002', 'ET-001', 'Active'),
+('MAINT-016', '2024-10-19 09:00:00', '2024-10-20 11:30:00', 'Battery and controller check', 'TECH-003', 'ET-002', 'Active'),
+('MAINT-017', '2024-10-23 13:00:00', '2024-10-23 15:00:00', 'Complete brake system service', 'TECH-005', 'ET-004', 'Active'),
+('MAINT-018', '2024-10-24 08:00:00', '2024-10-25 10:30:00', 'Motor controller replacement', 'TECH-007', 'ET-005', 'Active'),
 
 -- Ongoing maintenance (not yet completed - endDateTime is NULL)
-('MAINT-019', '2024-10-27 09:00:00', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005'),
-('MAINT-020', '2024-10-27 10:00:00', NULL, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006');
+('MAINT-019', '2024-10-27 09:00:00', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005', 'Active'),
+('MAINT-020', '2024-10-27 10:00:00', NULL, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006', 'Active');
 
 SELECT * FROM maintenance;
 
@@ -254,77 +256,78 @@ SELECT * FROM maintenance;
 -- 8B. MAINTENANCE_CHEQUE TABLE (New)
 -- =====================================================
 -- Parts used in each maintenance record with quantities
+-- Status: 'Active' for all test records (soft delete support)
 
-INSERT INTO maintenance_cheque (maintenanceID, partID, quantityUsed) VALUES
+INSERT INTO maintenance_cheque (maintenanceID, partID, quantityUsed, status) VALUES
 -- MAINT-001: Battery replacement
-('MAINT-001', 'PART-001', 1.00),
+('MAINT-001', 'PART-001', 1.00, 'Active'),
 
 -- MAINT-002: Brake maintenance
-('MAINT-002', 'PART-003', 2.00),
-('MAINT-002', 'PART-011', 1.00),
+('MAINT-002', 'PART-003', 2.00, 'Active'),
+('MAINT-002', 'PART-011', 1.00, 'Active'),
 
 -- MAINT-003: Motor controller
-('MAINT-003', 'PART-002', 1.00),
+('MAINT-003', 'PART-002', 1.00, 'Active'),
 
 -- MAINT-004: Headlight and throttle
-('MAINT-004', 'PART-004', 1.00),
-('MAINT-004', 'PART-007', 1.00),
+('MAINT-004', 'PART-004', 1.00, 'Active'),
+('MAINT-004', 'PART-007', 1.00, 'Active'),
 
 -- MAINT-005: Tire replacement
-('MAINT-005', 'PART-005', 1.00),
+('MAINT-005', 'PART-005', 1.00, 'Active'),
 
 -- MAINT-006: Throttle only
-('MAINT-006', 'PART-007', 1.00),
+('MAINT-006', 'PART-007', 1.00, 'Active'),
 
 -- MAINT-007: Brake cable
-('MAINT-007', 'PART-011', 1.00),
+('MAINT-007', 'PART-011', 1.00, 'Active'),
 
 -- MAINT-008: Battery and display
-('MAINT-008', 'PART-001', 1.00),
-('MAINT-008', 'PART-012', 1.00),
+('MAINT-008', 'PART-001', 1.00, 'Active'),
+('MAINT-008', 'PART-012', 1.00, 'Active'),
 
 -- MAINT-009: Chain and brakes
-('MAINT-009', 'PART-010', 1.00),
-('MAINT-009', 'PART-003', 2.00),
+('MAINT-009', 'PART-010', 1.00, 'Active'),
+('MAINT-009', 'PART-003', 2.00, 'Active'),
 
 -- MAINT-010: Brake system
-('MAINT-010', 'PART-003', 2.00),
-('MAINT-010', 'PART-011', 2.00),
+('MAINT-010', 'PART-003', 2.00, 'Active'),
+('MAINT-010', 'PART-011', 2.00, 'Active'),
 
 -- MAINT-011: Display only
-('MAINT-011', 'PART-012', 1.00),
+('MAINT-011', 'PART-012', 1.00, 'Active'),
 
 -- MAINT-012: Battery replacement
-('MAINT-012', 'PART-001', 1.00),
+('MAINT-012', 'PART-001', 1.00, 'Active'),
 
 -- MAINT-013: Pedals and seat
-('MAINT-013', 'PART-014', 1.00),
-('MAINT-013', 'PART-013', 1.00),
+('MAINT-013', 'PART-014', 1.00, 'Active'),
+('MAINT-013', 'PART-013', 1.00, 'Active'),
 
 -- MAINT-014: Light and brakes
-('MAINT-014', 'PART-015', 1.00),
-('MAINT-014', 'PART-003', 2.00),
+('MAINT-014', 'PART-015', 1.00, 'Active'),
+('MAINT-014', 'PART-003', 2.00, 'Active'),
 
 -- MAINT-015: Tire and brakes
-('MAINT-015', 'PART-006', 1.00),
-('MAINT-015', 'PART-003', 2.00),
+('MAINT-015', 'PART-006', 1.00, 'Active'),
+('MAINT-015', 'PART-003', 2.00, 'Active'),
 
 -- MAINT-016: Battery and controller
-('MAINT-016', 'PART-001', 1.00),
-('MAINT-016', 'PART-002', 1.00),
+('MAINT-016', 'PART-001', 1.00, 'Active'),
+('MAINT-016', 'PART-002', 1.00, 'Active'),
 
 -- MAINT-017: Complete brake system (uses more parts)
-('MAINT-017', 'PART-003', 4.00),
-('MAINT-017', 'PART-011', 2.00),
+('MAINT-017', 'PART-003', 4.00, 'Active'),
+('MAINT-017', 'PART-011', 2.00, 'Active'),
 
 -- MAINT-018: Motor controller
-('MAINT-018', 'PART-002', 1.00),
+('MAINT-018', 'PART-002', 1.00, 'Active'),
 
 -- MAINT-019: Brake maintenance in progress
-('MAINT-019', 'PART-003', 2.00),
+('MAINT-019', 'PART-003', 2.00, 'Active'),
 
 -- MAINT-020: Seat replacement (awaiting delivery - no parts used yet)
-('MAINT-020', 'PART-013', 1.00);
+('MAINT-020', 'PART-013', 1.00, 'Active');
 
 SELECT * FROM maintenance_cheque;
 

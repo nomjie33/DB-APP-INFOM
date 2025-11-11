@@ -356,18 +356,24 @@ public class DAOCRUDTest {
                 }
             }
             
-            // === DELETE ===
-            System.out.println("\n─── 3.7 DELETE: Removing Maintenance Record ───");
-            boolean deleteSuccess = mDao.deleteMaintenance(testMaintenanceId);
-            System.out.println(deleteSuccess ? 
-                ":) DELETE successful (also cascades to maintenance_cheque)" : 
-                ":( DELETE failed");
+            // === SOFT DELETE (Deactivate) ===
+            System.out.println("\n─── 3.7 SOFT DELETE: Deactivating Maintenance Record ───");
+            boolean deactivateSuccess = mDao.deactivateMaintenance(testMaintenanceId);
+            System.out.println(deactivateSuccess ? 
+                ":) DEACTIVATE successful (status set to 'Inactive')" : 
+                ":( DEACTIVATE failed");
             
-            // Verify deletion
-            MaintenanceTransaction deleted = mDao.getMaintenanceById(testMaintenanceId);
-            System.out.println(deleted == null ? 
-                ":) Verified: Record no longer exists" : 
-                ":( Warning: Record still exists");
+            // Verify deactivation
+            MaintenanceTransaction deactivated = mDao.getMaintenanceById(testMaintenanceId);
+            System.out.println(deactivated == null ? 
+                ":) Verified: Record is now inactive (not returned by active-only query)" : 
+                ":( Warning: Record still active");
+            
+            // Verify can still retrieve if needed for historical purposes
+            MaintenanceTransaction historical = mDao.getMaintenanceByIdIncludingInactive(testMaintenanceId);
+            System.out.println(historical != null && "Inactive".equals(historical.getStatus()) ? 
+                ":) Verified: Record exists with status='Inactive'" : 
+                ":( Warning: Historical record not found or status incorrect");
             
             // Cleanup: Remove supporting records
             System.out.println("\n─── 3.8 CLEANUP: Removing supporting records ───");
@@ -492,35 +498,39 @@ public class DAOCRUDTest {
                 }
             }
             
-            // === DELETE (Single Part) ===
-            System.out.println("\n─── 4.6 DELETE: Removing Single Part from Maintenance ───");
-            boolean deleteSingle = mcDao.deleteMaintenanceCheque(testMaintenanceId, testPart2Id);
-            System.out.println(deleteSingle ? 
-                ":) DELETE single part successful" : 
-                ":( DELETE failed");
+            // === SOFT DELETE (Single Part) ===
+            System.out.println("\n─── 4.6 SOFT DELETE: Deactivating Single Part from Maintenance ───");
+            boolean deactivateSingle = mcDao.deactivateMaintenanceCheque(testMaintenanceId, testPart2Id);
+            System.out.println(deactivateSingle ? 
+                ":) DEACTIVATE single part successful" : 
+                ":( DEACTIVATE failed");
             
-            List<MaintenanceCheque> afterDelete = mcDao.getPartsByMaintenance(testMaintenanceId);
-            System.out.println("  Parts remaining: " + afterDelete.size());
+            List<MaintenanceCheque> afterDeactivate = mcDao.getPartsByMaintenance(testMaintenanceId);
+            System.out.println("  Active parts remaining: " + afterDeactivate.size());
             
-            // === DELETE (All Parts for Maintenance) ===
-            System.out.println("\n─── 4.7 DELETE: Removing All Parts from Maintenance ───");
-            boolean deleteAll = mcDao.deleteAllByMaintenance(testMaintenanceId);
-            System.out.println(deleteAll ? 
-                ":) DELETE all parts successful" : 
-                ":( DELETE failed");
+            // === SOFT DELETE (All Parts for Maintenance) ===
+            System.out.println("\n─── 4.7 SOFT DELETE: Deactivating All Parts from Maintenance ───");
+            boolean deactivateAll = mcDao.deactivateAllByMaintenance(testMaintenanceId);
+            System.out.println(deactivateAll ? 
+                ":) DEACTIVATE all parts successful" : 
+                ":( DEACTIVATE failed");
             
-            List<MaintenanceCheque> afterDeleteAll = mcDao.getPartsByMaintenance(testMaintenanceId);
-            System.out.println(afterDeleteAll.isEmpty() ? 
-                ":) Verified: No parts remain" : 
-                ":( Warning: Parts still exist");
+            List<MaintenanceCheque> afterDeactivateAll = mcDao.getPartsByMaintenance(testMaintenanceId);
+            System.out.println(afterDeactivateAll.isEmpty() ? 
+                ":) Verified: No active parts remain" : 
+                ":( Warning: Active parts still exist");
             
-            // Cleanup
-            System.out.println("\n─── 4.8 CLEANUP: Removing supporting records ───");
-            mDao.deleteMaintenance(testMaintenanceId);
+            // Verify historical access still works
+            List<MaintenanceCheque> historicalParts = mcDao.getPartsByMaintenanceIncludingInactive(testMaintenanceId);
+            System.out.println("  Historical parts (including inactive): " + historicalParts.size());
+            
+            // Cleanup (use soft delete for consistency)
+            System.out.println("\n─── 4.8 CLEANUP: Deactivating supporting records ───");
+            mDao.deactivateMaintenance(testMaintenanceId);
             tDao.deactivateTechnician(testTechnicianId);
             pDao.deactivatePart(testPart1Id);
             pDao.deactivatePart(testPart2Id);
-            System.out.println(":) Cleanup complete");
+            System.out.println(":) Cleanup complete (all records deactivated)");
             
             System.out.println("\n> MaintenanceChequeDAO Tests Complete\n");
             

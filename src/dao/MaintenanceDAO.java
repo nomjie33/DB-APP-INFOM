@@ -10,37 +10,49 @@ import java.util.List;
  * Data Access Object for MAINTENANCE table operations.
  * 
  * PURPOSE: Handles all database CRUD operations for maintenance table.
+ * Uses SOFT DELETE pattern - records are marked inactive instead of being deleted.
  * 
  * SCHEMA ALIGNMENT:
  * This DAO assumes the maintenance table has columns:
  * - maintenanceID   VARCHAR(11) (primary key)
- * - dateReported    DATE
- * - dateRepaired    DATE
+ * - startDateTime   TIMESTAMP
+ * - endDateTime     TIMESTAMP
  * - notes           VARCHAR(125)
  * - technicianID    VARCHAR(11) (foreign key)
  * - plateID         VARCHAR(11) (foreign key)
+ * - status          VARCHAR(15) DEFAULT 'Active'
+ * 
+ * SOFT DELETE IMPLEMENTATION:
+ * - deactivateMaintenance() sets status to 'Inactive' instead of DELETE
+ * - All retrieval methods filter WHERE status = 'Active' by default
+ * - IncludingInactive methods available for historical data access
+ * - NO HARD DELETE METHODS - only soft delete (deactivate) is supported
  * 
  * METHODS IMPLEMENTED:
- * 1. insertMaintenance()       - INSERT new maintenance record
- * 2. updateMaintenance()       - UPDATE maintenance record
- * 3. deleteMaintenance()       - DELETE maintenance record
- * 4. getMaintenanceById()      - SELECT maintenance by ID
- * 5. getAllMaintenance()       - SELECT all maintenance records
- * 6. getMaintenanceByVehicle() - SELECT maintenance history for a vehicle
- * 7. getMaintenanceByTechnician() - SELECT work assigned to a technician
+ * 1. insertMaintenance()           - INSERT new maintenance record (status defaults to 'Active')
+ * 2. updateMaintenance()           - UPDATE maintenance record (only active)
+ * 3. deactivateMaintenance()       - SOFT DELETE (sets status to 'Inactive')
+ * 4. reactivateMaintenance()       - Sets status back to 'Active'
+ * 5. getMaintenanceById()          - SELECT active maintenance by ID
+ * 6. getMaintenanceByIdIncludingInactive() - SELECT regardless of status (for historical lookups)
+ * 7. getAllMaintenance()           - SELECT all active maintenance records
+ * 8. getAllMaintenanceIncludingInactive() - SELECT all regardless of status
+ * 9. getMaintenanceByVehicle()     - SELECT active maintenance history for a vehicle
+ * 10. getMaintenanceByTechnician() - SELECT active work assigned to a technician
  * 
  */
 public class MaintenanceDAO {
     
     /**
      * Insert a new maintenance record into the database.
+     * Status defaults to 'Active' in the model constructor.
      * 
      * @param maintenance MaintenanceTransaction object to insert
      * @return true if insert successful, false otherwise
      */
     public boolean insertMaintenance(MaintenanceTransaction maintenance) {
         String sql = "INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, " +
-                     "notes, technicianID, plateID) VALUES (?, ?, ?, ?, ?, ?)";
+                     "notes, technicianID, plateID, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -51,6 +63,7 @@ public class MaintenanceDAO {
             stmt.setString(4, maintenance.getNotes());
             stmt.setString(5, maintenance.getTechnicianID());
             stmt.setString(6, maintenance.getPlateID());
+            stmt.setString(7, maintenance.getStatus() != null ? maintenance.getStatus() : "Active");
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -64,13 +77,15 @@ public class MaintenanceDAO {
     
     /**
      * Update an existing maintenance record.
+     * Note: Does not update status field (use deactivateMaintenance/reactivateMaintenance for that)
+     * Only updates active maintenance records.
      * 
      * @param maintenance MaintenanceTransaction object with updated data
      * @return true if update successful, false otherwise
      */
     public boolean updateMaintenance(MaintenanceTransaction maintenance) {
         String sql = "UPDATE maintenance SET startDateTime = ?, endDateTime = ?, notes = ?, " +
-                     "technicianID = ?, plateID = ? WHERE maintenanceID = ?";
+                     "technicianID = ?, plateID = ? WHERE maintenanceID = ? AND status = 'Active'";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -93,37 +108,73 @@ public class MaintenanceDAO {
     }
     
     /**
-     * Delete a maintenance record by ID.
-     * Note: This will also delete related maintenance_cheque records due to CASCADE.
+     * SOFT DELETE: Mark a maintenance record as inactive instead of physically deleting.
+     * This preserves historical data and maintains referential integrity.
+     * Deactivate a maintenance record (mark as Inactive).
      * 
-     * @param maintenanceID Maintenance ID to delete
-     * @return true if delete successful, false otherwise
+     * @param maintenanceID Maintenance ID to deactivate
+     * @return true if deactivation successful, false otherwise
      */
-    public boolean deleteMaintenance(String maintenanceID) {
-        String sql = "DELETE FROM maintenance WHERE maintenanceID = ?";
+    public boolean deactivateMaintenance(String maintenanceID) {
+        String sql = "UPDATE maintenance SET status = 'Inactive' WHERE maintenanceID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, maintenanceID);
             int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+            
+            if (rowsAffected > 0) {
+                System.out.println("Maintenance " + maintenanceID + " has been marked as Inactive (soft deleted)");
+                return true;
+            }
             
         } catch (SQLException e) {
-            System.err.println("Error deleting maintenance record: " + e.getMessage());
+            System.err.println("Error deactivating maintenance record: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        
+        return false;
     }
     
     /**
-     * Get a maintenance record by ID.
+     * Reactivate a previously deactivated maintenance record.
+     * Sets status back to 'Active'.
+     * 
+     * @param maintenanceID Maintenance ID to reactivate
+     * @return true if reactivation successful, false otherwise
+     */
+    public boolean reactivateMaintenance(String maintenanceID) {
+        String sql = "UPDATE maintenance SET status = 'Active' WHERE maintenanceID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, maintenanceID);
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                System.out.println("Maintenance " + maintenanceID + " has been reactivated");
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error reactivating maintenance record: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Get an active maintenance record by ID.
+     * Only returns maintenance records with status = 'Active'.
      * 
      * @param maintenanceID Maintenance ID to retrieve
-     * @return MaintenanceTransaction object or null if not found
+     * @return MaintenanceTransaction object or null if not found or inactive
      */
     public MaintenanceTransaction getMaintenanceById(String maintenanceID) {
-        String sql = "SELECT * FROM maintenance WHERE maintenanceID = ?";
+        String sql = "SELECT * FROM maintenance WHERE maintenanceID = ? AND status = 'Active'";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -144,13 +195,42 @@ public class MaintenanceDAO {
     }
     
     /**
-     * Get all maintenance records.
+     * Get a maintenance record by ID regardless of status (Active or Inactive).
+     * Used for historical lookups, such as calculating penalty costs for past maintenance.
      * 
-     * @return List of all MaintenanceTransaction objects
+     * @param maintenanceID Maintenance ID to retrieve
+     * @return MaintenanceTransaction object or null if not found
+     */
+    public MaintenanceTransaction getMaintenanceByIdIncludingInactive(String maintenanceID) {
+        String sql = "SELECT * FROM maintenance WHERE maintenanceID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, maintenanceID);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return extractMaintenanceFromResultSet(rs);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error retrieving maintenance record (including inactive): " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get all active maintenance records.
+     * Only returns maintenance records with status = 'Active'.
+     * 
+     * @return List of all active MaintenanceTransaction objects
      */
     public List<MaintenanceTransaction> getAllMaintenance() {
         List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance ORDER BY startDateTime DESC";
+        String sql = "SELECT * FROM maintenance WHERE status = 'Active' ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -169,14 +249,41 @@ public class MaintenanceDAO {
     }
     
     /**
-     * Get maintenance history for a specific vehicle.
+     * Get all maintenance records including inactive ones.
+     * Returns both Active and Inactive maintenance records.
+     * 
+     * @return List of all MaintenanceTransaction objects regardless of status
+     */
+    public List<MaintenanceTransaction> getAllMaintenanceIncludingInactive() {
+        List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
+        String sql = "SELECT * FROM maintenance ORDER BY status DESC, startDateTime DESC";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                maintenanceList.add(extractMaintenanceFromResultSet(rs));
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error retrieving all maintenance records (including inactive): " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return maintenanceList;
+    }
+    
+    /**
+     * Get active maintenance history for a specific vehicle.
+     * Only returns active maintenance records.
      * 
      * @param plateID Vehicle plate ID to filter by
-     * @return List of MaintenanceTransaction objects for the vehicle
+     * @return List of active MaintenanceTransaction objects for the vehicle
      */
     public List<MaintenanceTransaction> getMaintenanceByVehicle(String plateID) {
         List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance WHERE plateID = ? ORDER BY startDateTime DESC";
+        String sql = "SELECT * FROM maintenance WHERE plateID = ? AND status = 'Active' ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -197,14 +304,15 @@ public class MaintenanceDAO {
     }
     
     /**
-     * Get maintenance work assigned to a specific technician.
+     * Get active maintenance work assigned to a specific technician.
+     * Only returns active maintenance records.
      * 
      * @param technicianID Technician ID to filter by
-     * @return List of MaintenanceTransaction objects assigned to the technician
+     * @return List of active MaintenanceTransaction objects assigned to the technician
      */
     public List<MaintenanceTransaction> getMaintenanceByTechnician(String technicianID) {
         List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
-        String sql = "SELECT * FROM maintenance WHERE technicianID = ? ORDER BY startDateTime DESC";
+        String sql = "SELECT * FROM maintenance WHERE technicianID = ? AND status = 'Active' ORDER BY startDateTime DESC";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -228,7 +336,7 @@ public class MaintenanceDAO {
      * Helper method to extract MaintenanceTransaction object from ResultSet.
      * 
      * @param rs ResultSet positioned at a maintenance record row
-     * @return MaintenanceTransaction object
+     * @return MaintenanceTransaction object with all fields including status
      * @throws SQLException if column access fails
      */
     private MaintenanceTransaction extractMaintenanceFromResultSet(ResultSet rs) throws SQLException {
@@ -238,7 +346,8 @@ public class MaintenanceDAO {
             rs.getTimestamp("endDateTime"),
             rs.getString("notes"),
             rs.getString("technicianID"),
-            rs.getString("plateID")
+            rs.getString("plateID"),
+            rs.getString("status")
         );
     }
     

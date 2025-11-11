@@ -23,16 +23,27 @@ public class MaintenanceCheque {
     private String maintenanceID;
     private String partID;
     private BigDecimal quantityUsed;
+    private String status;  // 'Active' or 'Inactive' for soft delete
 
     // Default constructor
     public MaintenanceCheque() {
+        this.status = "Active";  // Default to Active
     }
 
-    // Parameterized constructor
+    // Parameterized constructor (without status - defaults to Active)
     public MaintenanceCheque(String maintenanceID, String partID, BigDecimal quantityUsed) {
         this.maintenanceID = maintenanceID;
         this.partID = partID;
         this.quantityUsed = quantityUsed;
+        this.status = "Active";  // Default to Active
+    }
+    
+    // Full constructor (with status)
+    public MaintenanceCheque(String maintenanceID, String partID, BigDecimal quantityUsed, String status) {
+        this.maintenanceID = maintenanceID;
+        this.partID = partID;
+        this.quantityUsed = quantityUsed;
+        this.status = status;
     }
 
     // Getters and setters
@@ -60,12 +71,37 @@ public class MaintenanceCheque {
         this.quantityUsed = quantityUsed;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    /**
+     * Check if record is active (not soft deleted).
+     * @return true if active, false if inactive
+     */
+    public boolean isActive() {
+        return "Active".equals(status);
+    }
+    
+    /**
+     * Check if record is inactive (soft deleted).
+     * @return true if inactive, false if active
+     */
+    public boolean isInactive() {
+        return "Inactive".equals(status);
+    }
+
     @Override
     public String toString() {
         return "MaintenanceCheque{" +
                 "maintenanceID='" + maintenanceID + '\'' +
                 ", partID='" + partID + '\'' +
                 ", quantityUsed=" + quantityUsed +
+                ", status='" + status + '\'' +
                 '}';
     }
 
