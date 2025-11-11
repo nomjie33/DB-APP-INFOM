@@ -37,7 +37,7 @@ public class Vehicle {
     
     // TODO: Add constructors (default and parameterized)
     public Vehicle(){
-
+        this.status ="Available";
     }
 
     public Vehicle(String plateID, String vehicleType, String vehicleModel, String status, double rentalPrice)
@@ -90,28 +90,24 @@ public class Vehicle {
     }
 
     // TODO: Add toString(), equals(), hashCode()
-        /**
-     * Check if vehicle is available for rent
-     * @return true if status is "Available"
-     */
     public boolean isAvailable() {
         return "Available".equalsIgnoreCase(status);
     }
     
-    /**
-     * Check if vehicle is currently rented
-     * @return true if status is "Rented"
-     */
-    public boolean isRented() {
+    public boolean isInUse() {
         return "In Use".equalsIgnoreCase(status);
     }
     
-    /**
-     * Check if vehicle is in maintenance
-     * @return true if status is "Maintenance"
-     */
     public boolean isInMaintenance() {
         return "Maintenance".equalsIgnoreCase(status);
+    }
+    
+    public boolean isActive() {
+        return !"Inactive".equalsIgnoreCase(status);
+    }
+    
+    public String getDisplayName() {
+        return vehicleType + " - " + vehicleModel + " (" + plateID + ")";
     }
     
     /**

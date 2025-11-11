@@ -34,19 +34,23 @@ public class Customer {
     private String contactNumber;
     private String address;
     private String emailAddress;
+    private String status;
     
     // TODO: Add constructors (default and parameterized)
     public Customer() {
+        this.status = "Active";
     }
     
     public Customer(String customerID, String lastName, String firstName, 
-                   String contactNumber, String address, String emailAddress) {
+                   String contactNumber, String address, String emailAddress, String status) {
         this.customerID = customerID;
         this.lastName = lastName;
         this.firstName = firstName;
         this.contactNumber = contactNumber;
         this.address = address;
         this.emailAddress = emailAddress;
+        this.status = "Active";
+
     }
     
     // TODO: Add getters and setters
@@ -102,8 +106,21 @@ public class Customer {
     public String getFullName() {
         return firstName + " " + lastName;
     }
+
+        public String getStatus() {
+        return status;
+    }
     
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    public boolean isActive() {
+        return "Active".equalsIgnoreCase(status);
+    }
+
     // TODO: Add toString(), equals(), hashCode()
+
     @Override
     public String toString() {
         return "Customer{" +

@@ -41,7 +41,11 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Create this first as it's referenced by vehicles and technicians
 CREATE TABLE locations (
     locationID VARCHAR(11) PRIMARY KEY,
-    name VARCHAR(50)
+    name VARCHAR(50),
+    status VARCHAR(15) NOT NULL DEFAULT 'Active',
+
+    CONSTRAINT chk_location_status
+        CHECK (status IN ('Active', 'Inactive'))
 );
 
 
@@ -55,8 +59,8 @@ CREATE TABLE customers (
     firstName VARCHAR(25) NOT NULL,
     contactNumber VARCHAR(11),
     address VARCHAR(80),
-    emailAddress VARCHAR(80)
-    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
+    emailAddress VARCHAR(80),
+    status VARCHAR(15) NOT NULL DEFAULT 'Active',
     
     CONSTRAINT chk_customer_status
         CHECK (status IN ('Active', 'Inactive'))
@@ -90,7 +94,7 @@ CREATE TABLE technicians (
     specialization_id VARCHAR(15),
     rate DECIMAL(10, 2) NOT NULL,
     contact_number VARCHAR(15),
-    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
+    status VARCHAR(15) NOT NULL DEFAULT 'Active',
     
     INDEX idx_technician_specialization (specialization_id),
     
@@ -108,7 +112,7 @@ CREATE TABLE parts (
     part_name VARCHAR(25) NOT NULL,
     quantity INT(3) NOT NULL DEFAULT 0,
     price DECIMAL(10, 2) DEFAULT 0.00 COMMENT 'Price per unit of part',
-    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
+    status VARCHAR(15) NOT NULL DEFAULT 'Active',
     
     CONSTRAINT chk_part_quantity 
         CHECK (quantity >= 0),
@@ -137,6 +141,7 @@ CREATE TABLE rentals (
     locationID VARCHAR(11) NOT NULL,
     startDateTime TIMESTAMP NOT NULL,
     endDateTime TIMESTAMP NULL,
+    status VARCHAR(15) NOT NULL DEFAULT 'Active',
     
     CONSTRAINT fk_rental_customer 
         FOREIGN KEY (customerID) REFERENCES customers(customerID)
@@ -151,7 +156,7 @@ CREATE TABLE rentals (
     CONSTRAINT fk_rental_location 
         FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
-        ON UPDATE CASCADE
+        ON UPDATE CASCADE,
 
     CONSTRAINT chk_rental_status
         CHECK (status IN ('Active', 'Completed', 'Cancelled'))
@@ -201,7 +206,7 @@ CREATE TABLE maintenance (
     notes VARCHAR(125),
     technicianID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,
-    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
+    status VARCHAR(15) NOT NULL DEFAULT 'Active',
     
     CONSTRAINT fk_maintenance_technician 
         FOREIGN KEY (technicianID) REFERENCES technicians(technician_id)
@@ -213,11 +218,9 @@ CREATE TABLE maintenance (
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
     
-    -- Check constraint for status
     CONSTRAINT chk_maintenance_status
         CHECK (status IN ('Active', 'Inactive')),
     
-    -- Indexes for performance
     INDEX idx_maintenance_vehicle (plateID),
     INDEX idx_maintenance_technician (technicianID),
     INDEX idx_maintenance_start_date (startDateTime)
@@ -233,7 +236,7 @@ CREATE TABLE maintenance_cheque (
     maintenanceID VARCHAR(11),
     partID VARCHAR(11),
     quantityUsed DECIMAL(10, 2) NOT NULL,
-    status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
+    status VARCHAR(15) NOT NULL DEFAULT 'Active',
     
     PRIMARY KEY (maintenanceID, partID),
     
@@ -249,8 +252,7 @@ CREATE TABLE maintenance_cheque (
     
     CONSTRAINT chk_quantity_positive 
         CHECK (quantityUsed > 0),
-    
-    -- Check constraint for status
+
     CONSTRAINT chk_cheque_status
         CHECK (status IN ('Active', 'Inactive')),
     
@@ -297,6 +299,7 @@ CREATE TABLE deployments (
     locationID VARCHAR(11) NOT NULL,
     startDate DATE NOT NULL,
     endDate DATE NULL,
+    status VARCHAR(15) NOT NULL DEFAULT 'Active',
     
     CONSTRAINT fk_deployment_vehicle 
         FOREIGN KEY (plateID) REFERENCES vehicles(plateID)
@@ -306,7 +309,7 @@ CREATE TABLE deployments (
     CONSTRAINT fk_deployment_location 
         FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
-        ON UPDATE CASCADE
+        ON UPDATE CASCADE,
     
     CONSTRAINT chk_deployment_status
         CHECK (status IN ('Active', 'Cancelled'))

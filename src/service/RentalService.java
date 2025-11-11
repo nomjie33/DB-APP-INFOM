@@ -7,67 +7,15 @@ import java.util.List;
 
 /**
  * Business Logic Service for RENTAL operations.
- * 
- * PURPOSE: Implements business rules and workflows for vehicle rentals.
- * Acts as intermediary between UI and DAO layers.
- * 
- * DEPENDENCIES:
- * - CustomerDAO (verify customer exists)
- * - VehicleDAO (check availability, update status)
- * - RentalDAO (create rental records)
- * - LocationDAO (validate locations)
- * 
- * METHODS TO IMPLEMENT:
- * 
- * 1. createRental(int customerId, int vehicleId, Timestamp startDate, Timestamp endDate, int pickupLocationId, int returnLocationId)
- *    WORKFLOW:
- *    - Verify customer exists (CustomerDAO)
- *    - Check vehicle availability (VehicleDAO)
- *    - Validate dates (endDate > startDate)
- *    - Calculate total cost (vehicle daily rate × rental days)
- *    - Create rental record (RentalDAO)
- *    - Update vehicle status to "In Use" (VehicleDAO)
- *    - Return rental ID or confirmation
- * 
- * 2. completeRental(int rentalId, Timestamp actualReturnDate)
- *    WORKFLOW:
- *    - Get rental record (RentalDAO)
- *    - Update rental with return date (RentalDAO)
- *    - Update vehicle status to "Available" (VehicleDAO)
- *    - Calculate final cost (adjust for early/late return)
- *    - Return updated rental
- * 
- * 3. cancelRental(int rentalId)
- *    WORKFLOW:
- *    - Get rental record
- *    - Verify rental can be cancelled (not already completed)
- *    - Update vehicle status back to "Available"
- *    - Delete or mark rental as cancelled
- * 
- * 4. getRentalHistory(int customerId)
- *    - Retrieve all rentals for a customer
- *    - For customer rental reports
- * 
- * 5. checkVehicleAvailability(int vehicleId, Timestamp startDate, Timestamp endDate)
- *    - Check if vehicle is available for the requested period
- *    - Check vehicle status
- *    - Check no overlapping rentals
- * 
- * COLLABORATOR NOTES:
- * - Always use database transactions for rental creation
- * - Validate all inputs before calling DAOs
- * - Handle exceptions gracefully
- * - Log important operations
+ * UPDATED: Removed cost calculation (PaymentService handles this)
  */
 public class RentalService {
     
-    // Private DAO instances
     private CustomerDAO customerDAO;
     private VehicleDAO vehicleDAO;
     private LocationDAO locationDAO; 
     private RentalDAO rentalDAO;
 
-    // TODO: Initialize DAO objects in constructor
     public RentalService(CustomerDAO customerDAO, VehicleDAO vehicleDAO, LocationDAO locationDAO, RentalDAO rentalDAO){
         this.customerDAO = customerDAO;
         this.vehicleDAO = vehicleDAO;
@@ -75,12 +23,18 @@ public class RentalService {
         this.rentalDAO = rentalDAO;
     }
     
-    // TODO: Implement createRental()
+    /**
+     * Create a new rental
+     * 
+     * @param customerID Customer renting the vehicle
+     * @param plateID Vehicle being rented
+     * @param locationID Rental location
+     * @return Rental ID if successful, null otherwise
+     */
     public String createRental(String customerID, String plateID, String locationID)
     {
         // VALIDATE CUSTOMER
         System.out.println("Validating Customer 🔎...");
-        // Check if customer exists
         Customer customer = customerDAO.getCustomerById(customerID);
 
         if(customer == null) {
@@ -88,18 +42,30 @@ public class RentalService {
             return null;
         }
 
+        // Check if customer is active
+        if (!customer.isActive()) {
+            System.err.println("Err: Customer account is inactive!");
+            return null;
+        }
+
         System.out.println("Customer found: " + customer.getFullName());
-        System.out.println("Customer Contact: " + customer.getContactNumber());
+        System.out.println("   Contact: " + customer.getContactNumber());
 
         // VALIDATE VEHICLE 
         System.out.println("Validating Vehicle 🚗...");
-        // Check if vehicle exists
         Vehicle vehicle = vehicleDAO.getVehicleById(plateID);
 
         if(vehicle == null) {
             System.err.println("Err: Vehicle " + plateID + " not found!");
             return null;
         }
+        
+        // Check if vehicle is active (not retired)
+        if (!vehicle.isActive()) {
+            System.err.println("Err: Vehicle is retired/inactive!");
+            return null;
+        }
+        
         System.out.println("Vehicle found: " + vehicle.getVehicleModel());
         System.out.println("   Type: " + vehicle.getVehicleType());
         System.out.println("   Price: ₱" + vehicle.getRentalPrice() + "/hour");
@@ -109,16 +75,16 @@ public class RentalService {
         if(!vehicle.isAvailable())
         {
             System.err.println("Err: Vehicle is not available!");
-            System.out.println("Current Status: "+ vehicle.getStatus());
+            System.out.println("   Current Status: "+ vehicle.getStatus());
 
             if ("In Use".equalsIgnoreCase(vehicle.getStatus())) {
-                System.err.println("This vehicle is currently rented");
+                System.err.println("   This vehicle is currently rented");
             } else if (vehicle.isInMaintenance()) {
-                System.err.println("This vehicle is in maintenance");
+                System.err.println("   This vehicle is in maintenance");
             }
             return null;
         }
-        System.out.println("Vehicle is available for rent ");
+        System.out.println("✓ Vehicle is available for rent");
 
         // VALIDATE LOCATION
         System.out.println("Validating location...");
@@ -129,12 +95,17 @@ public class RentalService {
             return null;
         }
         
-        System.out.println("Location found: " + location.getName());
+        // Check if location is active
+        if (!location.isActive()) {
+            System.err.println("Err: Location is closed/inactive!");
+            return null;
+        }
+        
+        System.out.println("✓ Location found: " + location.getName());
 
         // GENERATE RENTAL ID
         String rentalID = generateRentalID();
         System.out.println("Generated Rental ID: " + rentalID);
-
 
         // CREATE RENTAL RECORD
         Timestamp startDateTime = new Timestamp(System.currentTimeMillis());
@@ -155,10 +126,9 @@ public class RentalService {
             return null;
         }
         
-        System.out.println("Rental record created!");
+        System.out.println("✓ Rental record created!");
 
-
-        // Update Vehicle Status
+        // UPDATE VEHICLE STATUS
         System.out.println("Updating vehicle status...");
         
         boolean statusUpdated = vehicleDAO.updateVehicleStatus(plateID, "In Use");
@@ -168,86 +138,88 @@ public class RentalService {
             System.err.println("WARNING: Rental was created but vehicle status not updated");
             System.err.println("Attempting rollback...");
             
-            // ROLLBACK: Delete the rental since we failed to update vehicle
-            rentalDAO.deleteRental(rentalID);
+            // ROLLBACK: Cancel the rental since we failed to update vehicle
+            rentalDAO.cancelRental(rentalID);  // UPDATED: Use cancelRental instead of deleteRental
             System.err.println("Rental rolled back");
             
             return null;
         }
         
-        System.out.println("Vehicle status updated to 'In Use'");
+        System.out.println("✓ Vehicle status updated to 'In Use'");
         
-        // ===== SUCCESS! =====
-        System.out.println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        System.out.println("RENTAL CREATED!");
-        System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        System.out.println("   Rental ID: " + vehicle);
+        // SUCCESS!
+        System.out.println("\n┌────────────────────────────────┐");
+        System.out.println("│   🎉 RENTAL CREATED!          │");
+        System.out.println("└────────────────────────────────┘");
+        System.out.println("📋 Rental Details:");
+        System.out.println("   Rental ID: " + rentalID);
         System.out.println("   Customer: " + customer.getFullName());
-        System.out.println("   Vehicle: " + vehicle.getVehicleModel());
+        System.out.println("   Vehicle: " + vehicle.getVehicleModel() + " (" + vehicle.getPlateID() + ")");
         System.out.println("   Location: " + location.getName());
         System.out.println("   Start Time: " + startDateTime);
         System.out.println("   Rate: ₱" + vehicle.getRentalPrice() + "/hour");
-        System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        System.out.println("────────────────────────────────\n");
         
         return rentalID;
     }
 
-
-    // TODO: Implement completeRental()
-    public double completeRental(String rentalID){
+    /**
+     * Complete a rental (vehicle returned)
+     * NOTE: Cost calculation handled by PaymentService
+     * 
+     * @param rentalID Rental to complete
+     * @return true if successful, false otherwise
+     */
+    public boolean completeRental(String rentalID){
+        System.out.println("\n=== Completing Rental ===");
+        
         // FETCH RENTAL RECORD
         RentalTransaction rental = rentalDAO.getRentalById(rentalID);
 
         if (rental == null){
             System.err.println("Err: Rental " + rentalID + " not found!");
-            return -1;
+            return false;
         }
-        System.out.println("Rental found!");
+        
+        System.out.println("✓ Rental found!");
         System.out.println("   Customer: " + rental.getCustomerID());
         System.out.println("   Vehicle: " + rental.getPlateID());
         System.out.println("   Start Time: " + rental.getStartDateTime());
 
         // VALIDATE IF RENTAL IS STILL ACTIVE
-        if (!rental.isActive()) {
+        if (rental.isCompleted()) {
             System.err.println("Err: Rental is already completed!");
             System.err.println("   End Time: " + rental.getEndDateTime());
-            return -1;
+            return false;
         }
         
-        System.out.println("Rental is active");
+        if (rental.isCancelled()) {
+            System.err.println("Err: Rental was cancelled!");
+            return false;
+        }
+        
+        System.out.println("✓ Rental is active");
 
         // SET END TIME 
         Timestamp endTime = new Timestamp(System.currentTimeMillis());
         System.out.println("Return time: " + endTime);
 
-        // CALCULATE COST
-        Vehicle vehicle = vehicleDAO.getVehicleById(rental.getPlateID());
-        
-        if (vehicle == null) {
-            System.err.println("Err: Vehicle not found!");
-            return -1;
-        }
-
-        // get the duration
+        // CALCULATE DURATION (for display only)
         long milliseconds = endTime.getTime() - rental.getStartDateTime().getTime();
         double hours = milliseconds / (1000.0 * 60 * 60);
-
-        // round up to nearest hour
         hours = Math.ceil(hours);
 
-        double totalCost = hours * vehicle.getRentalPrice();
-
-        System.out.println("Calculated Cost:");
-        System.out.println("   Duration: " + String.format("%.2f", hours) + " hours");
-        System.out.println("   Rate: ₱" + vehicle.getRentalPrice() + "/hour");
-        System.out.println("   Total: ₱" + String.format("%.2f", totalCost));
+        System.out.println("Rental Duration: " + String.format("%.2f", hours) + " hours");
 
         // UPDATE RENTAL RECORD
         boolean rentalCompleted = rentalDAO.completeRental(rentalID, endTime);
 
-        if(!rentalCompleted) { System.err.println("Err: Failed to update rental record!"); return -1; }
+        if(!rentalCompleted) { 
+            System.err.println("Err: Failed to update rental record!"); 
+            return false; 
+        }
         
-        System.out.println("Rental record updated successfully!");
+        System.out.println("✓ Rental record updated successfully!");
 
         // UPDATE VEHICLE STATUS
         boolean statusUpdated = vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
@@ -256,24 +228,33 @@ public class RentalService {
             System.err.println("   Rental was completed but vehicle still shows 'In Use'");
             System.err.println("   Manual intervention may be required");
         } else {
-            System.out.println("Vehicle status updated to 'Available'");
+            System.out.println("✓ Vehicle status updated to 'Available'");
         }
-        // SUMMARY
 
-                System.out.println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        System.out.println("RENTAL COMPLETED!");
-        System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        // SUCCESS SUMMARY
+        System.out.println("\n┌────────────────────────────────┐");
+        System.out.println("│   ✓ RENTAL COMPLETED!         │");
+        System.out.println("└────────────────────────────────┘");
+        System.out.println("📋 Rental Summary:");
         System.out.println("   Rental ID: " + rentalID);
         System.out.println("   Duration: " + String.format("%.2f", hours) + " hours");
-        System.out.println("   Total Cost: ₱" + String.format("%.2f", totalCost));
-        System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        System.out.println("   Start: " + rental.getStartDateTime());
+        System.out.println("   End: " + endTime);
+        System.out.println("\n💡 Note: Payment calculation handled by PaymentService");
+        System.out.println("────────────────────────────────\n");
         
-        return totalCost;
+        return true;
     }
 
-    // TODO: Implement cancelRental()
+    /**
+     * Cancel a rental (SOFT DELETE)
+     * Marks rental as Cancelled, does not delete from database
+     * 
+     * @param rentalID Rental to cancel
+     * @return true if successful, false otherwise
+     */
     public boolean cancelRental(String rentalID) {
-        System.out.println("\nCancelling Rental");
+        System.out.println("\n=== Cancelling Rental ===");
         
         RentalTransaction rental = rentalDAO.getRentalById(rentalID);
         if (rental == null) {
@@ -282,27 +263,35 @@ public class RentalService {
         }
         
         if (!rental.isActive()) {
-            System.err.println("Err: Cannot cancel completed rental");
+            System.err.println("Err: Cannot cancel completed/cancelled rental");
             return false;
         }
         
         // Update vehicle status back to "Available"
-        vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
-        
-        // Delete rental record
-        boolean deleted = rentalDAO.deleteRental(rentalID);
-        
-        if (deleted) {
-            System.out.println("Rental cancelled");
+        boolean statusUpdated = vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
+        if (!statusUpdated) {
+            System.err.println("WARNING: Failed to update vehicle status");
         }
         
-        return deleted;
+        // UPDATED: Use cancelRental (soft delete) instead of deleteRental
+        boolean cancelled = rentalDAO.cancelRental(rentalID);
+        
+        if (cancelled) {
+            System.out.println("✓ Rental cancelled (marked as Cancelled)");
+            System.out.println("   Rental ID: " + rentalID);
+            System.out.println("   Note: Rental data preserved for reporting");
+        }
+        
+        return cancelled;
     }
     
-    
-    // TODO: Implement getRentalHistory()
+    /**
+     * Get rental history for a customer
+     * 
+     * @param customerID Customer to get history for
+     * @return List of rentals
+     */
     public List<RentalTransaction> getRentalHistory(String customerID) {        
-        // Validate customer exists
         Customer customer = customerDAO.getCustomerById(customerID);
         
         if (customer == null) {
@@ -312,16 +301,26 @@ public class RentalService {
         
         List<RentalTransaction> rentals = rentalDAO.getRentalsByCustomer(customerID);
         
-        System.out.println("Found" + rentals.size() + " rental(s)");
+        System.out.println("Found " + rentals.size() + " rental(s) for customer: " + customer.getFullName());
         
         return rentals;
     }
 
-    // TODO: Implement checkVehicleAvailability()
-        public boolean checkVehicleAvailability(String plateID) {
+    /**
+     * Check if vehicle is available for rental
+     * 
+     * @param plateID Vehicle to check
+     * @return true if available, false otherwise
+     */
+    public boolean checkVehicleAvailability(String plateID) {
         Vehicle vehicle = vehicleDAO.getVehicleById(plateID);
         
         if (vehicle == null) {
+            return false;
+        }
+        
+        // Check if vehicle is active (not retired)
+        if (!vehicle.isActive()) {
             return false;
         }
         
@@ -335,6 +334,7 @@ public class RentalService {
     }
 
     // EXTRA QUERY METHODS
+    
     public List<RentalTransaction> getActiveRentals() {
         return rentalDAO.getActiveRentals();
     }
@@ -342,9 +342,17 @@ public class RentalService {
     public List<RentalTransaction> getCompletedRentals() {
         return rentalDAO.getCompletedRentals();
     }
+    
+    public List<RentalTransaction> getAllRentals() {
+        return rentalDAO.getAllRentals();
+    }
 
-
-    // ==== HELPERS =====
+    // HELPER METHODS
+    
+    /**
+     * Generate unique rental ID
+     * Format: RNT-XXXXXX
+     */
     private String generateRentalID() {
         long timestamp = System.currentTimeMillis();
         return "RNT-" + (timestamp % 1000000);

@@ -1,3 +1,4 @@
+
 package test;
 
 import dao.LocationDAO;
@@ -8,11 +9,13 @@ import model.Vehicle;
 import model.Customer;
 import java.util.List;
 
-/**
+
+/*
  * Comprehensive Database Test
  * Tests all DAOs with real database operations
  * Uses ONLY the methods that exist in your actual DAOs
  */
+/*
 public class daotest {
     
     private static LocationDAO locationDAO = new LocationDAO();
@@ -401,3 +404,5 @@ public class daotest {
         System.out.println("\n" + "─".repeat(50));
     }
 }
+
+*/

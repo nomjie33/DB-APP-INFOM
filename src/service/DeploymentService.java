@@ -8,94 +8,65 @@ import java.util.List;
 
 /**
  * Business Logic Service for DEPLOYMENT operations.
- * 
- * PURPOSE: Manages vehicle movements between locations/branches.
- * Handles fleet rebalancing and vehicle transfers.
- * 
- * DEPENDENCIES:
- * - DeploymentDAO (deployment records)
- * - VehicleDAO (update vehicle location, check status)
- * - LocationDAO (validate locations)
- * 
- * METHODS TO IMPLEMENT:
- * 
- * 1. deployVehicle(int vehicleId, int fromLocationId, int toLocationId, String reason, String driverName)
- *    WORKFLOW:
- *    - Verify vehicle exists and is available (VehicleDAO)
- *    - Verify both locations exist (LocationDAO)
- *    - Create deployment record with status "In Transit" (DeploymentDAO)
- *    - Optionally update vehicle status to "In Transit"
- *    - Return deployment ID
- * 
- * 2. completeDeployment(int deploymentId, Timestamp arrivalDate)
- *    WORKFLOW:
- *    - Get deployment record (DeploymentDAO)
- *    - Update deployment with arrival date and status "Completed"
- *    - Update vehicle's locationId to destination (VehicleDAO)
- *    - Update vehicle status back to "Available"
- * 
- * 3. cancelDeployment(int deploymentId)
- *    - Mark deployment as "Cancelled"
- *    - Ensure vehicle location is correct
- * 
- * 4. getVehicleDeploymentHistory(int vehicleId)
- *    - Get all deployments for a vehicle
- *    - Track vehicle movement history
- * 
- * 5. getActiveDeployments()
- *    - Get all deployments currently in transit
- *    - For fleet tracking
- * 
- * 6. getDeploymentsByLocation(int locationId)
- *    - Get deployments to/from a specific location
- *    - For location management
- * 
- * 7. suggestRebalancing()
- *    - Analyze vehicle distribution across locations
- *    - Suggest which vehicles to move where
- *    - Based on rental frequency and availability
- * 
- * COLLABORATOR NOTES:
- * - Update vehicle location when deployment completes
- * - Ensure vehicle is available before deploying
- * - Track deployment reasons for analytics
- * - Use in location rental frequency reports
  */
 public class DeploymentService {
     
-    // Private DAO instances
-    // TODO: Initialize DAO objects in constructor
     private DeploymentDAO deploymentDAO;
     private VehicleDAO vehicleDAO;
     private LocationDAO locationDAO;
     
     public DeploymentService(DeploymentDAO deploymentDAO, VehicleDAO vehicleDAO, LocationDAO locationDAO){
-        this.deploymentDAO = new DeploymentDAO();
-        this.vehicleDAO = new VehicleDAO();
-        this.locationDAO = new LocationDAO();
+        this.deploymentDAO = deploymentDAO;
+        this.vehicleDAO = vehicleDAO;
+        this.locationDAO = locationDAO;
     }
 
-    // TODO: Implement deployVehicle()
+    /**
+     * Deploy a vehicle to a location
+     * 
+     * @param plateID Vehicle to deploy
+     * @param locationID Destination location
+     * @return Deployment ID if successful, null otherwise
+     */
     public String deployVehicle(String plateID, String locationID) {
-        // Validate Vehicle
+        System.out.println("\n=== Deploying Vehicle ===");
+        
+        // VALIDATE VEHICLE
         Vehicle vehicle = vehicleDAO.getVehicleById(plateID);
 
-        if (vehicle == null) { System.err.println("Err: Vehicle " + plateID + " not found!"); return null; }
+        if (vehicle == null) { 
+            System.err.println("Err: Vehicle " + plateID + " not found!"); 
+            return null; 
+        }
+        
+        // Check if vehicle is active (not retired)
+        if (!vehicle.isActive()) {
+            System.err.println("Err: Vehicle is retired/inactive!");
+            return null;
+        }
 
-        System.out.println("Vehicle Found: " + vehicle.getVehicleModel());
-        System.out.println("Type: " + vehicle.getVehicleType());
-        System.out.println("Status:  " + vehicle.getStatus());
+        System.out.println("✓ Vehicle Found: " + vehicle.getVehicleModel());
+        System.out.println("   Type: " + vehicle.getVehicleType());
+        System.out.println("   Status: " + vehicle.getStatus());
 
-        // Validate Location
+        // VALIDATE LOCATION
         Location location = locationDAO.getLocationById(locationID); 
-        if (location == null) { System.err.println("Err: Location " + locationID + " not found!"); return null; }
+        if (location == null) { 
+            System.err.println("Err: Location " + locationID + " not found!"); 
+            return null; 
+        }
+        
+        // Check if location is active
+        if (!location.isActive()) {
+            System.err.println("Err: Location is closed/inactive!");
+            return null;
+        }
 
-        System.out.println("Location Found: " + location.getName());
+        System.out.println("✓ Location Found: " + location.getName());
 
-        // Check Current Deployment
+        // CHECK CURRENT DEPLOYMENT
         DeploymentTransaction currDeployment = deploymentDAO.getCurrentDeploymentByVehicle(plateID);
-       if (currDeployment != null) {
-            // Vehicle is already deployed somewhere
+        if (currDeployment != null) {
             System.out.println("Vehicle is currently deployed:");
             
             Location currentLocation = locationDAO.getLocationById(currDeployment.getLocationID());
@@ -118,17 +89,16 @@ public class DeploymentService {
                 return null;
             }
             
-            System.out.println("Current deployment ended");
+            System.out.println("✓ Current deployment ended");
         } else {
             System.out.println("Vehicle has no current deployment (new vehicle or first deployment)");
         }
         
-        // Generate Deployment ID 
+        // GENERATE DEPLOYMENT ID 
         String deploymentID = generateDeploymentID();
         System.out.println("Generated deployment ID: " + deploymentID);
         
-        // Create New Deployment
-        
+        // CREATE NEW DEPLOYMENT
         Date startDate = Date.valueOf(LocalDate.now());
         
         DeploymentTransaction newDeployment = new DeploymentTransaction(
@@ -146,24 +116,30 @@ public class DeploymentService {
             return null;
         }
         
-        System.out.println("Deployment created");
-        System.out.println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        System.out.println("🎉 DEPLOYMENT SUCCESSFUL!");
-        System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        System.out.println("✓ Deployment created");
+        
+        // SUCCESS!
+        System.out.println("\n┌────────────────────────────────┐");
+        System.out.println("│   🎉 DEPLOYMENT SUCCESSFUL!   │");
+        System.out.println("└────────────────────────────────┘");
         System.out.println("📋 Deployment Details:");
         System.out.println("   Deployment ID: " + deploymentID);
         System.out.println("   Vehicle: " + vehicle.getPlateID() + " - " + vehicle.getVehicleModel());
         System.out.println("   Location: " + location.getName());
         System.out.println("   Start Date: " + startDate);
-        System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+        System.out.println("────────────────────────────────\n");
         
         return deploymentID;
     }
-    
 
-    
-    // TODO: Implement completeDeployment()
+    /**
+     * Complete a deployment (vehicle has arrived at destination)
+     * 
+     * @param deploymentID Deployment to complete
+     * @return true if successful, false otherwise
+     */
     public boolean completeDeployment(String deploymentID) {
+        System.out.println("\n=== Completing Deployment ===");
         
         DeploymentTransaction deployment = deploymentDAO.getDeploymentById(deploymentID);
         if (deployment == null) {
@@ -179,29 +155,51 @@ public class DeploymentService {
         Date endDate = Date.valueOf(LocalDate.now());
         boolean ended = deploymentDAO.endDeployment(deploymentID, endDate);
         
-        if (ended) { System.out.println("Deployment completed"); }
+        if (ended) { 
+            System.out.println("✓ Deployment completed");
+            System.out.println("   Deployment ID: " + deploymentID);
+            System.out.println("   End Date: " + endDate);
+        }
         
         return ended;
     }
 
-    // TODO: Implement cancelDeployment()
-        public boolean cancelDeployment(String deploymentID) {
+    /**
+     * Cancel a deployment (SOFT DELETE)
+     * Marks deployment as Cancelled, does not delete from database
+     * 
+     * @param deploymentID Deployment to cancel
+     * @return true if successful, false otherwise
+     */
+    public boolean cancelDeployment(String deploymentID) {
+        System.out.println("\n=== Cancelling Deployment ===");
+        
         DeploymentTransaction deployment = deploymentDAO.getDeploymentById(deploymentID);
         if (deployment == null) {
             System.err.println("Err: Deployment not found");
             return false;
         }
         
-        boolean deleted = deploymentDAO.deleteDeployment(deploymentID);
+        // UPDATED: Use cancelDeployment (soft delete) instead of deleteDeployment
+        boolean cancelled = deploymentDAO.cancelDeployment(deploymentID);
         
-        if (deleted) { System.out.println("Deployment cancelled");}
+        if (cancelled) { 
+            System.out.println("✓ Deployment cancelled (marked as Cancelled)");
+            System.out.println("   Deployment ID: " + deploymentID);
+            System.out.println("   Note: Deployment data preserved for reporting");
+        }
         
-        return deleted;
+        return cancelled;
     }
 
-    // TODO: Implement getVehicleDeploymentHistory()
-        public List<DeploymentTransaction> getVehicleDeploymentHistory(String plateID) {
-        System.out.println("\n━━━ Getting Deployment History ━━━");
+    /**
+     * Get deployment history for a vehicle
+     * 
+     * @param plateID Vehicle to get history for
+     * @return List of deployments
+     */
+    public List<DeploymentTransaction> getVehicleDeploymentHistory(String plateID) {
+        System.out.println("\n=== Getting Deployment History ===");
         
         Vehicle vehicle = vehicleDAO.getVehicleById(plateID);
         if (vehicle == null) {
@@ -210,14 +208,18 @@ public class DeploymentService {
         }
         
         List<DeploymentTransaction> history = deploymentDAO.getDeploymentsByVehicle(plateID);
-        System.out.println("Found " + history.size() + " deployment(s)");
+        System.out.println("Found " + history.size() + " deployment(s) for vehicle: " + vehicle.getPlateID());
         
         return history;
     }
     
-    // TODO: Implement getActiveDeployments()
+    /**
+     * Get all active deployments
+     * 
+     * @return List of active deployments
+     */
     public List<DeploymentTransaction> getActiveDeployments() {
-        System.out.println("\nGetting Active Deployments");
+        System.out.println("\n=== Getting Active Deployments ===");
         
         List<DeploymentTransaction> active = deploymentDAO.getCurrentDeployments();
         System.out.println("Found " + active.size() + " active deployment(s)");
@@ -225,10 +227,14 @@ public class DeploymentService {
         return active;
     }
     
-    
-    // TODO: Implement getDeploymentsByLocation()
-        public List<DeploymentTransaction> getDeploymentsByLocation(String locationID) {
-        System.out.println("\nGetting Deployments By Location");
+    /**
+     * Get deployments at a specific location
+     * 
+     * @param locationID Location to get deployments for
+     * @return List of deployments
+     */
+    public List<DeploymentTransaction> getDeploymentsByLocation(String locationID) {
+        System.out.println("\n=== Getting Deployments By Location ===");
         
         Location location = locationDAO.getLocationById(locationID);
         if (location == null) {
@@ -242,11 +248,23 @@ public class DeploymentService {
         return deployments;
     }
     
-    // TODO: Implement suggestRebalancing()
+    /**
+     * Get current location of a vehicle
+     * 
+     * @param plateID Vehicle to check
+     * @return Location object if deployed, null if not deployed
+     */
+    public Location getCurrentVehicleLocation(String plateID) {
+        DeploymentTransaction deployment = deploymentDAO.getCurrentDeploymentByVehicle(plateID);
+        
+        if (deployment == null) {
+            return null;
+        }
+        
+        return locationDAO.getLocationById(deployment.getLocationID());
+    }
 
-
-
-        // ==================== HELPER METHODS ====================
+    // HELPER METHODS
     
     /**
      * Generate unique deployment ID

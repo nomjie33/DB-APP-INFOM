@@ -8,72 +8,38 @@ import java.util.List;
 
 /**
  * Data Access Object for LOCATION table operations.
- * 
- * PURPOSE: Handles all database CRUD operations for locations/branches table.
- * 
- * METHODS TO IMPLEMENT:
- * 
- * 1. insertLocation(Location location)
- *    - INSERT new branch/location 
- * 
- * 2. updateLocation(Location location)
- *    - UPDATE existing location record
- * 
- * 3. deleteLocation(int locationId)
- *    - DELETE location by ID
- * 
- * 4. getLocationById(int locationId)
- *    - SELECT location by ID
- * 
- * 5. getAllLocations()
- *    - SELECT all locations
- * 
- * 6. getLocationsByCity(String city)
- *    - SELECT locations in a specific city
- *    - For regional filtering
- * 
- * COLLABORATOR NOTES:
- * - Locations are central to vehicle deployment
- * - Used in reports for location-based analytics
  */
 public class LocationDAO {
     
-    // TODO: Implement insertLocation(Location location)
     public boolean insertLocation(Location location) {
-        String sql = "INSERT INTO locations (locationID, name) VALUES (?, ?)";
+        String sql = "INSERT INTO locations (locationID, name, status) VALUES (?, ?, ?)";
         
-            // Connect to database and prepare statement
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            // Set values for placeholders
-            stmt.setString(1, location.getLocationID());  // 1st ? = locationID
-            stmt.setString(2, location.getName());        // 2nd ? = name
+            stmt.setString(1, location.getLocationID());
+            stmt.setString(2, location.getName());
+            stmt.setString(3, "Active");
             
-            // Execute INSERT
             int rowsAffected = stmt.executeUpdate();
-            
-            // Return true if at least 1 row was inserted
             return rowsAffected > 0;
             
         } catch (SQLException e) {
-            // Handle errors
             System.err.println("Error inserting location: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
     
-    // TODO: Implement updateLocation(Location location)
     public boolean updateLocation(Location location) {
-
-        String sql = "UPDATE locations SET name = ? WHERE locationID = ?";
+        String sql = "UPDATE locations SET name = ?, status = ? WHERE locationID = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, location.getName());        // 1st ? = new name
-            stmt.setString(2, location.getLocationID());  // 2nd ? = which location to update
+            stmt.setString(1, location.getName());
+            stmt.setString(2, location.getStatus());
+            stmt.setString(3, location.getLocationID());
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -85,42 +51,79 @@ public class LocationDAO {
         }
     }
 
-    // TODO: Implement deleteLocation(int locationId)
-    public boolean deleteLocation(String locationID)
-    {
-        String sql = "DELETE FROM locations WHERE locationID = ?";
+    /**
+     * SOFT DELETE: Mark a location as inactive instead of physically deleting.
+     * This preserves historical data and maintains referential integrity.
+     * Deactivate a location (mark as Inactive).
+     * 
+     * @param locationID Location ID to deactivate
+     * @return true if deactivation successful, false otherwise
+     */
+    public boolean deactivateLocation(String locationID) {
+        String sql = "UPDATE locations SET status = 'Inactive' WHERE locationID = ?";
+        
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, locationID);  
-
+            stmt.setString(1, locationID);
             int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+            
+            if (rowsAffected > 0) {
+                System.out.println("Location " + locationID + " has been marked as Inactive (soft deleted)");
+                return true;
+            }
             
         } catch (SQLException e) {
-            System.err.println("Error deleting location: " + e.getMessage());
+            System.err.println("Error deactivating location: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        
+        return false;
+    }
 
+    /**
+     * Reactivate a previously deactivated location.
+     * 
+     * @param locationID Location ID to reactivate
+     * @return true if reactivation successful, false otherwise
+     */
+    public boolean reactivateLocation(String locationID) {
+        String sql = "UPDATE locations SET status = 'Active' WHERE locationID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, locationID);
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                System.out.println("Location " + locationID + " has been reactivated");
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error reactivating location: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
     }
     
-    // TODO: Implement getLocationById(int locationId)
-    public Location getLocationById(String locationID)
-    {
+    public Location getLocationById(String locationID) {
         String sql = "SELECT * FROM locations WHERE locationID = ?";
-            try (Connection conn = DBConnection.getConnection();
+        
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, locationID);
-            
             ResultSet rs = stmt.executeQuery();
             
             if (rs.next()) {
                 Location location = new Location();
                 location.setLocationID(rs.getString("locationID"));
                 location.setName(rs.getString("name"));
-                                return location;
+                location.setStatus(rs.getString("status"));
+                return location;
             }
             
         } catch (SQLException e) {
@@ -131,24 +134,50 @@ public class LocationDAO {
         return null;
     }
 
-
-    // TODO: Implement getAllLocations()
-    public List<Location> getAllLocations(){
+    /**
+     * Get all ACTIVE locations (excludes inactive)
+     */
+    public List<Location> getAllLocations() {
         List<Location> locations = new ArrayList<>();
+        String sql = "SELECT * FROM locations WHERE status = 'Active' ORDER BY name";
 
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Location location = new Location();
+                location.setLocationID(rs.getString("locationID"));
+                location.setName(rs.getString("name"));
+                location.setStatus(rs.getString("status"));
+                locations.add(location);
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting all locations: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return locations;
+    }
+    
+    /**
+     * Get ALL locations including inactive ones.
+     * For reporting purposes.
+     */
+    public List<Location> getAllLocationsIncludingInactive() {
+        List<Location> locations = new ArrayList<>();
         String sql = "SELECT * FROM locations ORDER BY name";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             
-            // Loop through all rows
-            while (rs.next()) {  // Keep going while there are rows
-                
-                // Build Location object from each row
+            while (rs.next()) {
                 Location location = new Location();
                 location.setLocationID(rs.getString("locationID"));
                 location.setName(rs.getString("name"));
+                location.setStatus(rs.getString("status"));
                 locations.add(location);
             }
             

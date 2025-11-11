@@ -8,50 +8,12 @@ import java.util.List;
 
 /**
  * Data Access Object for CUSTOMER table operations.
- * 
- * PURPOSE: Handles all database CRUD operations for customers table.
- * 
- * METHODS TO IMPLEMENT:
- * 
- * 1. insertCustomer(Customer customer)
- *    - INSERT new customer into database
- * 
- * 2. updateCustomer(Customer customer)
- *    - UPDATE existing customer record
- *    - Match by customer ID
- * 
- * 3. deleteCustomer(int customerId)
- *    - DELETE customer by ID
- *    - Consider cascade rules for rentals
- * 
- * 4. getCustomerById(int customerId)
- *    - SELECT customer by ID
- *    - Return Customer object or null
- * 
- * 5. getAllCustomers()
- *    - SELECT all customers
- *    - Return List<Customer>
- * 
- * 6. searchCustomersByName(String name)
- *    - SELECT customers matching name pattern
- *    - Use LIKE for partial matches
- * 
- * 7. getCustomerByEmail(String email)
- *    - SELECT customer by email
- *    - For login/validation
- * 
- * COLLABORATOR NOTES:
- * - Use PreparedStatement to prevent SQL injection
- * - Handle SQLException appropriately
- * - Use DBConnection utility class for connections
- * - Close resources in finally block or use try-with-resources
- * - Return null when record not found
  */
 public class CustomerDAO {
     
     public boolean insertCustomer(Customer customer) {
         String sql = "INSERT INTO customers (customerID, lastName, firstName, " +
-                    "contactNumber, address, emailAddress) VALUES (?, ?, ?, ?, ?, ?)";
+                    "contactNumber, address, emailAddress, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -62,6 +24,7 @@ public class CustomerDAO {
             stmt.setString(4, customer.getContactNumber());
             stmt.setString(5, customer.getAddress());
             stmt.setString(6, customer.getEmailAddress());
+            stmt.setString(7, "Active"); // Default to Active
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -75,7 +38,7 @@ public class CustomerDAO {
     
     public boolean updateCustomer(Customer customer) {
         String sql = "UPDATE customers SET lastName = ?, firstName = ?, " +
-                     "contactNumber = ?, address = ?, emailAddress = ? WHERE customerID = ?";
+                     "contactNumber = ?, address = ?, emailAddress = ?, status = ? WHERE customerID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -85,8 +48,8 @@ public class CustomerDAO {
             stmt.setString(3, customer.getContactNumber());
             stmt.setString(4, customer.getAddress());
             stmt.setString(5, customer.getEmailAddress());
-            stmt.setString(6, customer.getCustomerID());
-            stmt.setString(7, "Active");
+            stmt.setString(6, customer.getStatus());
+            stmt.setString(7, customer.getCustomerID());
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -98,22 +61,62 @@ public class CustomerDAO {
         }
     }
     
-    public boolean deleteCustomer(String customerID) {
-        String sql = "DELETE FROM customers WHERE customerID = ?";
+    /**
+     * SOFT DELETE: Mark a customer as inactive instead of physically deleting.
+     * This preserves historical data and maintains referential integrity.
+     * Deactivate a customer (mark as Inactive).
+     * 
+     * @param customerID Customer ID to deactivate
+     * @return true if deactivation successful, false otherwise
+     */
+    public boolean deactivateCustomer(String customerID) {
+        String sql = "UPDATE customers SET status = 'Inactive' WHERE customerID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, customerID);
-            
             int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+            
+            if (rowsAffected > 0) {
+                System.out.println("Customer " + customerID + " has been marked as Inactive (soft deleted)");
+                return true;
+            }
             
         } catch (SQLException e) {
-            System.err.println("Error deleting customer: " + e.getMessage());
+            System.err.println("Error deactivating customer: " + e.getMessage());
             e.printStackTrace();
-            return false;
         }
+        
+        return false;
+    }
+    
+    /**
+     * Reactivate a previously deactivated customer.
+     * 
+     * @param customerID Customer ID to reactivate
+     * @return true if reactivation successful, false otherwise
+     */
+    public boolean reactivateCustomer(String customerID) {
+        String sql = "UPDATE customers SET status = 'Active' WHERE customerID = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, customerID);
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                System.out.println("Customer " + customerID + " has been reactivated");
+                return true;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error reactivating customer: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
     }
     
     public Customer getCustomerById(String customerID) {
@@ -137,7 +140,34 @@ public class CustomerDAO {
         return null;
     }
     
+    /**
+     * Get all ACTIVE customers (default behavior)
+     * Use getAllCustomersIncludingInactive() for reports
+     */
     public List<Customer> getAllCustomers() {
+        String sql = "SELECT * FROM customers WHERE status = 'Active'";
+        List<Customer> customers = new ArrayList<>();
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                customers.add(extractCustomerFromResultSet(rs));
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting all customers: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return customers;
+    }
+    
+    /**
+     * Get ALL customers including inactive ones
+     * USE THIS FOR REPORTS that need historical data
+     */
+    public List<Customer> getAllCustomersIncludingInactive() {
         String sql = "SELECT * FROM customers";
         List<Customer> customers = new ArrayList<>();
         
@@ -156,8 +186,36 @@ public class CustomerDAO {
         return customers;
     }
     
+    /**
+     * Get customers by status
+     * 
+     * @param status "Active" or "Inactive"
+     * @return List of customers with that status
+     */
+    public List<Customer> getCustomersByStatus(String status) {
+        String sql = "SELECT * FROM customers WHERE status = ?";
+        List<Customer> customers = new ArrayList<>();
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, status);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    customers.add(extractCustomerFromResultSet(rs));
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting customers by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return customers;
+    }
+    
     public List<Customer> searchCustomersByName(String name) {
-        String sql = "SELECT * FROM customers WHERE lastName LIKE ? OR firstName LIKE ?";
+        String sql = "SELECT * FROM customers WHERE (lastName LIKE ? OR firstName LIKE ?) AND status = 'Active'";
         List<Customer> customers = new ArrayList<>();
         
         try (Connection conn = DBConnection.getConnection();
@@ -213,6 +271,7 @@ public class CustomerDAO {
         customer.setContactNumber(rs.getString("contactNumber"));
         customer.setAddress(rs.getString("address"));
         customer.setEmailAddress(rs.getString("emailAddress"));
+        customer.setStatus(rs.getString("status"));  // ADDED
         return customer;
     }
 }

@@ -34,9 +34,11 @@ public class DeploymentTransaction {
     private String locationID;
     private Date startDate;
     private Date endDate; // NULL means vehicle currently at this location
+    private String status;
 
     // TODO: Add constructors (default and parameterized)
     public DeploymentTransaction() {
+        this.status = "Active";
     }
     
     public DeploymentTransaction(String deploymentID, String plateID, String locationID, 
@@ -46,7 +48,19 @@ public class DeploymentTransaction {
         this.locationID = locationID;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.status = "Active";
     }
+
+    public DeploymentTransaction(String deploymentID, String plateID, String locationID, 
+                                 Date startDate, Date endDate, String status) {
+        this.deploymentID = deploymentID;
+        this.plateID = plateID;
+        this.locationID = locationID;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+    }
+
 
     // TODO: Add getters and setters
     public String getDeploymentID() {
@@ -88,45 +102,38 @@ public class DeploymentTransaction {
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
-    // TODO: Add toString(), equals(), hashCode()
-        
-    /**
-     * Check if deployment is current (vehicle still at this location)
-     * @return true if vehicle currently here, false if moved
-     */
-    public boolean isCurrent() {
-        return endDate == null;
-    }
-    
-    /**
-     * Check if deployment is historical (vehicle has moved)
-     * @return true if vehicle moved away, false if still here
-     */
-    public boolean isHistorical() {
-        return endDate != null;
-    }
-    
-    /**
-     * Calculate deployment duration in days
-     * @return days (0 if still current)
-     */
-    public long getDeploymentDays() {
-        if (endDate == null || startDate == null) {
-            return 0;
-        }
-        long milliseconds = endDate.getTime() - startDate.getTime();
-        return milliseconds / (1000 * 60 * 60 * 24); // Convert to days
-    }
-    
-    /**
-     * Get deployment status as string
-     * @return "Current" or "Historical"
-     */
     public String getStatus() {
-        return isCurrent() ? "Current" : "Historical";
+        return status;
     }
     
-    // ===== STANDARD METHODS =====
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    // Utility methods
+    public boolean isActive() {
+        return "Active".equalsIgnoreCase(status);
+    }
+    
+    public boolean isCancelled() {
+        return "Cancelled".equalsIgnoreCase(status);
+    }
+    
+    public boolean isCurrent() {
+        return endDate == null && "Active".equalsIgnoreCase(status);
+    }
+    
+    public boolean isCompleted() {
+        return endDate != null && "Active".equalsIgnoreCase(status);
+    }
+    
+    public long getDurationInDays() {
+        if (endDate != null && startDate != null) {
+            long diffInMillis = endDate.getTime() - startDate.getTime();
+            return diffInMillis / (1000 * 60 * 60 * 24);
+        }
+        return 0;
+    }
     
     @Override
     public String toString() {
@@ -136,7 +143,7 @@ public class DeploymentTransaction {
                 ", locationID='" + locationID + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
-                ", status='" + getStatus() + '\'' +
+                ", status='" + status + '\'' +
                 '}';
     }
     

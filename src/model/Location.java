@@ -27,16 +27,18 @@ public class Location {
     // TODO: Add private fields for location attributes
     private String locationID;
     private String name;
+    private String status;
     
     // TODO: Add constructors (default and parameterized)
     public Location(){
-
+        this.status = "Active";
     }
     
-    public Location(String locationID, String name)
+    public Location(String locationID, String name, String status)
     {
         this.locationID = locationID;
         this.name = name;
+        this.status = status;
     }
 
     public String getLocationID() {
@@ -55,7 +57,18 @@ public class Location {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getStatus() {
+        return status;
+    }
     
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    public boolean isActive() {
+        return "Active".equalsIgnoreCase(status);
+    }
     
     /**
      * String representation for debugging
