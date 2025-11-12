@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_paymentController">
+    <children>
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 24px;" text="Section" />
+        <Label layoutX="38.0" layoutY="65.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #FC7222;" text="Rent a Vehicle" />
+
+        <VBox layoutX="38.0" layoutY="120.0" spacing="15.0">
+            <children>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Vehicle Plate Number" />
+                        <Label fx:id="plateNumberLabel" text="NHS81828182" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Renting Date" />
+                        <Label fx:id="rentingDateLabel" text="October 31, 2025" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Date of Payment" />
+                        <Label fx:id="paymentDateLabel" text="October 31, 2025" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Time" />
+                        <Label fx:id="timeLabel" text="8:00 AM - 5:00 PM" />
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+
+        <Label layoutX="38.0" layoutY="350.0" text="Please pay this amount:" />
+        <Label fx:id="priceLabel" layoutX="38.0" layoutY="370.0" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="2000 PHP" />
+
+        <Pane layoutX="36.0" layoutY="555.0" prefHeight="89.0" prefWidth="428.0" styleClass="heads-up-pane">
+            <children>
+                <Label layoutY="28.0" prefWidth="400.0" style="-fx-text-fill: #F99C03;" text="By Confirming, you agree to our Terms of Services, which includes your responsibility for the rented vehicle and pay potential fees in case any damages occurs." wrapText="true">
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                </Label>
+                <Label layoutY="11.0" style="-fx-font-weight: bold; -fx-text-fill: #F99C03;" text="Heads Up!">
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                </Label>
+            </children>
+        </Pane>
+
+        <Button fx:id="confirmButton" layoutX="38.0" layoutY="660.0" onAction="#handleConfirmPayment" prefHeight="40.0" prefWidth="150.0" styleClass="confirm-button" text="Confirm" />
+        <Button fx:id="cancelButton" layoutX="200.0" layoutY="660.0" onAction="#handleCancel" prefHeight="40.0" prefWidth="100.0" styleClass="cancel-button" text="Go back" />
+
+    </children>
+</AnchorPane>

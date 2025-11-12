@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane stylesheets="@style.css" fx:controller="main.gui.Client_dashboardController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
+   <left>
+      <VBox alignment="CENTER" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: #FC7222;" BorderPane.alignment="CENTER">
+         <children>
+            <AnchorPane prefHeight="769.0" prefWidth="200.0">
+               <children>
+                  <ImageView fitHeight="108.0" fitWidth="172.0" layoutX="14.0" layoutY="37.0" pickOnBounds="true" preserveRatio="true" />
+                  <HBox fx:id="homeButton" onMouseClicked="#handleHome" styleClass="nav-button" alignment="CENTER_LEFT" layoutX="13.0" layoutY="145.0" prefHeight="45.0" prefWidth="200.0">
+                     <children>
+                        <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" />
+                        <Label styleClass="label" text="Home" prefHeight="40.0" textFill="WHITE">
+                        </Label>
+                     </children>
+                  </HBox>
+                  <HBox onMouseClicked="#handleSettings" fx:id="settingsButton" styleClass="nav-button" alignment="CENTER_LEFT" layoutX="12.0" layoutY="191.0" prefHeight="45.0" prefWidth="200.0">
+                     <children>
+                        <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" />
+                        <Label styleClass="label"  prefHeight="40.0" text="Settings" textFill="WHITE">
+                        </Label>
+                     </children>
+                  </HBox>
+                  <HBox fx:id="rentButton" onMouseClicked="#handleRentVehicle" styleClass="nav-button" alignment="CENTER_LEFT" layoutX="13.0" layoutY="285.0" prefHeight="45.0" prefWidth="200.0">
+                     <children>
+                        <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" />
+                        <Label styleClass="label"  prefHeight="40.0" text="Rent a vehicle" textFill="WHITE" />
+                     </children>
+                  </HBox>
+                  <HBox fx:id="resolveButton" onMouseClicked="#handleResolvePenalty" styleClass="nav-button" alignment="CENTER_LEFT" layoutX="12.0" layoutY="331.0" prefHeight="45.0" prefWidth="200.0">
+                     <children>
+                        <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" />
+                        <Label styleClass="label"  prefHeight="40.0" text="Resolve a penalty" textFill="WHITE" />
+                     </children>
+                  </HBox>
+                  <HBox fx:id="historyButton" onMouseClicked="#handleTransactionHistory" styleClass="nav-button" alignment="CENTER_LEFT" layoutX="13.0" layoutY="378.0" prefHeight="45.0" prefWidth="200.0">
+                     <children>
+                        <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" />
+                        <Label styleClass="label"  prefHeight="40.0" text="Transaction History" textFill="WHITE" />
+                     </children>
+                  </HBox>
+                  <Label styleClass="sidebar-title" layoutX="14.0" layoutY="249.0" prefHeight="18.0" text="Transactions" textFill="WHITE" />
+                  <Line layoutX="200.0" layoutY="258.0" startX="-103.0" stroke="WHITE" />
+                  <Button fx:id="quitButton" onAction="#handleLogout" layoutX="25.0" layoutY="700.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="150.0" text="Quit" />
+               </children>
+            </AnchorPane>
+         </children></VBox>
+   </left>
+
+<center>
+<VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+   <children>
+      <AnchorPane fx:id="centerContentPane" prefHeight="771.0" prefWidth="823.0" />
+   </children>
+</VBox>
+</center>
+
+</BorderPane>

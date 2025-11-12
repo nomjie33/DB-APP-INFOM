@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_resolveController">
+    <children>
+        <Label layoutX="38.0" layoutY="174.0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Penalty details:" />
+
+        <VBox layoutX="38.0" layoutY="227.0" spacing="20.0">
+            <children>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Penalty ID" />
+                        <Label fx:id="penaltyIDLabel" text="NHS81828182" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Rental ID" />
+                        <Label fx:id="rentalIDLabel" text="JASJ1929129192" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Date Issued" />
+                        <Label fx:id="dateIssuedLabel" text="HAHSHS8128182812" />
+                    </children>
+                </VBox>
+
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold; -fx-font-size: 16px;" text="Total Penalty Amount Due" />
+                        <Label fx:id="penaltyAmountLabel" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #e8603c;" text="₱0.00" />
+                    </children>
+                </VBox>
+
+            </children>
+        </VBox>
+
+        <ImageView fitHeight="144.0" fitWidth="134.0" layoutX="14.0" layoutY="26.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+                <Image url="@assets/logo2_orig-03.png" />
+            </image>
+        </ImageView>
+
+        <Pane layoutX="36.0" layoutY="553.0" prefHeight="89.0" prefWidth="428.0" styleClass="heads-up-pane">
+            <children>
+                <Label layoutY="28.0" prefWidth="400.0" style="-fx-text-fill: #F99C03;" text="By Confirming, you agree to our Terms of Services, which includes your responsibility for the rented vehicle and pay potential fees in case any damages occurs." wrapText="true">
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                </Label>
+                <Label layoutY="11.0" style="-fx-font-weight: bold; -fx-text-fill: #F99C03;" text="Heads Up!">
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                </Label>
+            </children>
+        </Pane>
+
+        <Button fx:id="confirmButton" layoutX="38.0" layoutY="660.0" onAction="#handleConfirm" prefHeight="40.0" prefWidth="150.0" styleClass="confirm-button" text="Resolve penalty" />
+        <Button fx:id="cancelButton" layoutX="200.0" layoutY="660.0" onAction="#handleCancel" prefHeight="40.0" prefWidth="100.0" styleClass="cancel-button" text="Cancel" />
+
+    </children>
+</AnchorPane>

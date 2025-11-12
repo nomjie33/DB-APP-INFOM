@@ -1,0 +1,263 @@
+/*
+ * ==============================================================================
+ * 1. GENERAL & ROOT STYLES
+ * ==============================================================================
+ */
+.root {
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
+    -fx-font-weight: normal;
+    -fx-font-size: 13px;
+    -fx-background-color: #fcf8ff; /* App Background */
+}
+
+/* Specific Labels/Text */
+.sidebar-title {
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
+    -fx-font-weight: bold;
+}
+
+#welcomeLabel {
+    -fx-text-fill: #016346;
+}
+
+#clientNameLabel {
+    -fx-text-fill: #FC7222;
+}
+
+/*
+ * ==============================================================================
+ * 2. NAVIGATION STYLES (Sidebar & Shortcuts)
+ * ==============================================================================
+ */
+
+/* Navigation Buttons */
+.nav-button .label {
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
+    -fx-font-weight: normal;
+    -fx-font-size: 12px;
+}
+
+/* Active State */
+.nav-button-active .label {
+    -fx-font-weight: bold;
+}
+
+/* Hover Effect */
+.nav-button:hover {
+    -fx-background-color: #E06010; /* Darker orange hover */
+    -fx-cursor: hand;
+}
+
+/* General Shortcut/Action Pane */
+.shortcut-pane:hover {
+    -fx-opacity: 0.8;
+    -fx-cursor: hand;
+}
+
+/*
+ * ==============================================================================
+ * 3. BUTTON STYLES (Confirm/Cancel)
+ * ==============================================================================
+ */
+
+.confirm-button {
+    -fx-background-color: #FC7222; /* Primary Orange */
+    -fx-text-fill: white;
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-background-radius: 8;
+}
+
+.confirm-button:hover {
+    -fx-background-color: #E06010; /* Darker orange hover */
+    -fx-cursor: hand;
+}
+
+.cancel-button {
+    -fx-background-color: #f0f0f0; /* Light Gray */
+    -fx-text-fill: #333333;
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
+    -fx-font-weight: normal;
+    -fx-font-size: 14px;
+    -fx-background-radius: 8;
+    -fx-border-color: #d0d0d0;
+    -fx-border-radius: 8;
+}
+
+.cancel-button:hover {
+    -fx-background-color: #e0e0e0;
+    -fx-cursor: hand;
+}
+
+/*
+ * ==============================================================================
+ * 4. FORM AND INPUT STYLES (TextFields, DatePicker)
+ * ==============================================================================
+ */
+
+.form-text-field {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #d0d0d0;
+    -fx-border-radius: 8;
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
+    -fx-font-size: 13px;
+    -fx-padding: 5px;
+}
+
+.form-text-field-disabled {
+    -fx-background-color: e9e9e9;
+    -fx-background-radius: 8;
+    -fx-border-color: #d0d0d0;
+    -fx-border-radius: 8;
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
+    -fx-font-size: 13px;
+    -fx-padding: 5px;
+}
+
+/* DatePicker Styling */
+.date-picker {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.date-picker .text-input {
+    -fx-background-radius: 8 0 0 8;
+    -fx-border-radius: 8 0 0 8;
+    -fx-border-color: #d0d0d0;
+    -fx-border-width: 1 0 1 1;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: #33a398; /* Teal color for the button */
+    -fx-background-radius: 0 5 5 0;
+}
+
+.date-picker .arrow {
+    -fx-background-color: transparent; /* Hides default black arrow */
+}
+
+.date-picker .arrow-button .open-button {
+    /* Sets a custom icon for the calendar button */
+    -fx-background-image: url("assets/calendar-icon.png");
+    -fx-background-size: 16 16;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+}
+
+/*
+ * ==============================================================================
+ * 5. DATA/CONTENT CONTAINERS (Quick Actions, Vehicles, Heads Up)
+ * ==============================================================================
+ */
+
+/* Quick Action / Report Boxes (Admin Dashboard) */
+.quick-action-box {
+    -fx-background-color: #33a398;
+    -fx-background-radius: 12;
+    -fx-cursor: hand;
+}
+
+.quick-action-box:hover {
+    -fx-background-color: #2b8a7f;
+}
+
+.quick-action-box .label {
+    -fx-text-fill: white;
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+/* Vehicle Selection Panes (Rent a Vehicle) */
+.vehicle-pane {
+    -fx-background-color: #2F8C82;
+    -fx-background-radius: 10;
+    -fx-border-color: transparent;
+    -fx-border-width: 3;
+    -fx-border-radius: 10;
+    -fx-cursor: hand;
+}
+
+.vehicle-pane:hover {
+    -fx-background-color: #287a70;
+}
+
+/* Controller-managed selection state */
+.vehicle-pane-selected {
+    -fx-border-color: #F99C03; /* Bright orange border when selected */
+}
+
+/* Heads Up/Note Pane (e.g., Penalty Details) */
+.heads-up-pane {
+    -fx-background-color: #F3F3F3;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+/*
+ * ==============================================================================
+ * 6. TABLE STYLES (Transaction History)
+ * ==============================================================================
+ */
+
+.transactions-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.transactions-table .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.transactions-table .column-header, .transactions-table .column-header-border {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.transactions-table .column-header .label {
+    -fx-text-fill: #33a398; /* Teal Header Text */
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-padding: 10px 5px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.transactions-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.transactions-table .table-cell {
+    -fx-border-width: 0;
+    -fx-text-fill: black;
+    -fx-padding: 10px 5px;
+}
+
+/*
+ * ==============================================================================
+ * 7. DIALOG/ALERT STYLES
+ * ==============================================================================
+ */
+
+.dialog-pane > .header-panel {
+    -fx-background-color: #33a398; /* Teal Header Background (Matches your design) */
+}
+
+.dialog-pane .content {
+    -fx-text-fill: #333333; /* Dark gray content text */
+    -fx-font-family: "Arial";
+}
+
+.dialog-pane .button {
+    -fx-background-color: #FC7222; /* Orange Button Background */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: derive(#FC7222, 20%); /* Lighter orange on hover */
+}

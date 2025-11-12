@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_homeController">
+    <children>
+        <Label fx:id="welcomeLabel" layoutX="38.0" layoutY="35.0" style="-fx-font-size: 20px;" text="Welcome" />
+        <Label fx:id="clientNameLabel"  layoutX="38.0" layoutY="60.0" style="-fx-font-size: 36px; -fx-font-weight: bold;" text="User Name" />
+
+        <Label layoutX="38.0" layoutY="130.0" style="-fx-font-weight: bold; -fx-font-size: 20px;" text="CHOOSE A TRANSACTION" />
+
+        <HBox layoutX="38.0" layoutY="160.0" prefHeight="129.0" prefWidth="760.0" spacing="20.0">
+
+            <AnchorPane onMouseClicked="#handleRentShortcut" prefHeight="100.0" prefWidth="240.0" styleClass="quick-action-button">
+                <children>
+                    <ImageView fitHeight="130.0" fitWidth="240.0" pickOnBounds="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <image>
+                            <Image url="@assets/logo1_orig.png" />
+                        </image>
+                    </ImageView>
+
+                    <Label text="Rent Vehicle" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
+                </children>
+            </AnchorPane>
+
+            <AnchorPane onMouseClicked="#handlePenaltyShortcut" prefHeight="100.0" prefWidth="240.0" styleClass="quick-action-button">
+                <children>
+                    <ImageView fitHeight="130.0" fitWidth="240.0" pickOnBounds="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <image>
+                            <Image url="@assets/logo1_orig.png" />
+                        </image>
+                    </ImageView>
+                    <Label text="Resolve Penalty" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
+                </children>
+            </AnchorPane>
+
+            <AnchorPane onMouseClicked="#handleHistoryShortcut" prefHeight="100.0" prefWidth="240.0" styleClass="quick-action-button">
+                <children>
+                    <ImageView fitHeight="130.0" fitWidth="240.0" pickOnBounds="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <image>
+                            <Image url="@assets/logo1_orig.png" />
+                        </image>
+                    </ImageView>
+                    <Label text="View History" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
+                </children>
+            </AnchorPane>
+
+        </HBox>
+
+        <Label layoutX="38.0" layoutY="314.0" style="-fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #33a398;" text="MOST RECENT TRANSACTIONS" />
+
+        <TableView fx:id="transactionsTable" layoutX="38.0" layoutY="345.0" prefHeight="350.0" prefWidth="747.0" styleClass="transactions-table">
+            <columns>
+                <TableColumn fx:id="dateColumn" prefWidth="100.0" text="DATE" />
+                <TableColumn fx:id="idColumn" prefWidth="250.0" text="TRANSACTION ID" />
+                <TableColumn fx:id="categoryColumn" prefWidth="397.0" text="CATEGORY" />
+            </columns>
+        </TableView>
+
+    </children>
+</AnchorPane>

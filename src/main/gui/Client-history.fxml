@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_historyController">
+    <children>
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Transaction History" />
+
+        <TableView fx:id="transactionsTable" layoutX="38.0" layoutY="90.0" prefHeight="350.0" prefWidth="747.0" styleClass="transactions-table">
+            <columns>
+                <TableColumn fx:id="dateColumn" prefWidth="150.0" text="DATE" />
+                <TableColumn fx:id="idColumn" prefWidth="300.0" text="TRANSACTION ID" />
+                <TableColumn fx:id="categoryColumn" prefWidth="296.0" text="CATEGORY" />
+            </columns>
+        </TableView>
+
+        <Button fx:id="backToHomeButton" layoutX="38.0" layoutY="660.0" onAction="#handleBackToHome" prefHeight="40.0" prefWidth="150.0" styleClass="confirm-button" text="Back to Home" />
+    </children>
+</AnchorPane>
