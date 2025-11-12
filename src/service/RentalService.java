@@ -289,6 +289,7 @@ public class RentalService {
     /**
      * Cancel a rental (SOFT DELETE)
      * Marks rental as Cancelled, does not delete from database
+     * Also deactivates the corresponding payment record
      * 
      * @param rentalID Rental to cancel
      * @return true if successful, false otherwise
@@ -311,6 +312,19 @@ public class RentalService {
         boolean statusUpdated = vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
         if (!statusUpdated) {
             System.err.println("WARNING: Failed to update vehicle status");
+        }
+        
+        // Deactivate the associated payment record
+        PaymentTransaction payment = paymentService.getPaymentByRental(rentalID);
+        if (payment != null) {
+            boolean paymentDeactivated = paymentDAO.deactivatePayment(payment.getPaymentID());
+            if (paymentDeactivated) {
+                System.out.println("✓ Payment record deactivated: " + payment.getPaymentID());
+            } else {
+                System.err.println("WARNING: Failed to deactivate payment record");
+            }
+        } else {
+            System.out.println("Note: No payment record found for this rental");
         }
         
         // UPDATED: Use cancelRental (soft delete) instead of deleteRental
