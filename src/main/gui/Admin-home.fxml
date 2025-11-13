@@ -1,14 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="main.gui.Admin_homeController"
-            prefHeight="400.0" prefWidth="600.0">
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_homeController">
+    <children>
 
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 20px;" text="Welcome" />
+        <Label fx:id="adminNameLabel" layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #FC7222;" text="Admin Name" />
+
+        <Label layoutX="38.0" layoutY="120.0" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="ACCESS REPORTS" />
+
+        <HBox alignment="CENTER_LEFT" layoutX="38.0" layoutY="150.0" prefWidth="747.0" spacing="20.0">
+            <children>
+
+                <Pane prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
+                    <children>
+                        <Label layoutX="14.0" layoutY="14.0" styleClass="report-label" text="Involves:" />
+                        <Label layoutX="14.0" layoutY="70.0" styleClass="report-label" text="Rental Revenue" />
+                    </children>
+                </Pane>
+
+                <Pane prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
+                    <children>
+                        <Label layoutX="14.0" layoutY="14.0" styleClass="report-label" text="Involves:" />
+                        <Label layoutX="14.0" layoutY="70.0" styleClass="report-label" text="Defective Vehicles" />
+                    </children>
+                </Pane>
+
+                <Pane prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
+                    <children>
+                        <Label layoutX="14.0" layoutY="14.0" styleClass="report-label" text="Involves:" />
+                        <Label layoutX="14.0" layoutY="70.0" styleClass="report-label" text="Location Frequency" wrapText="true" />
+                    </children>
+                </Pane>
+
+                <Pane prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
+                    <children>
+                        <Label layoutX="14.0" layoutY="14.0" styleClass="report-label" text="Involves:" />
+                        <Label layoutX="14.0" layoutY="70.0" styleClass="report-label" text="Customer Rental" />
+                    </children>
+                </Pane>
+
+            </children>
+        </HBox>
+
+        <Label layoutX="38.0" layoutY="280.0" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="CHOOSE A RECORD"/>
+        <TableView fx:id="recordsTable" layoutX="38.0" layoutY="310.0" prefHeight="420.0" prefWidth="747.0" styleClass="transactions-table">
+            <columns>
+                <TableColumn fx:id="infoColumn" prefWidth="350.0" text="INFORMATION" />
+                <TableColumn fx:id="countColumn" prefWidth="190.0" text="NUMBER OF RECORDS" />
+                <TableColumn fx:id="categoryColumn" prefWidth="206.0" text="CATEGORY" />
+            </columns>
+        </TableView>
+
+    </children>
 </AnchorPane>

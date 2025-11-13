@@ -1,5 +1,8 @@
 package main.gui;
 
+import dao.StaffDAO;
+import model.Staff;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +19,8 @@ import java.io.IOException;
 
 public class Admin_loginController {
 
+    private StaffDAO staffDAO = new StaffDAO();
+
     @FXML private VBox adminLoginRoot;
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
@@ -28,20 +33,35 @@ public class Admin_loginController {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
+        if (username.isEmpty() || password.isEmpty()){
+            showError("Please enter both username and password.");
+            return;
+        }
 
-        if (username.equals("CCINFOM") && password.equals("S22-07")){
+        try {
+            Staff staff = staffDAO.getStaffByUsername(username);
 
-        } else {
-            System.out.println("Admin login failed.");
-            errorLabel.setText("Invalid username or password.");
-            errorLabel.setVisible(true);
+            if (staff != null && staff.getPassword().equals(password)){
+
+                System.out.println("Admin login successful for: " + staff.getUsername());
+                errorLabel.setVisible(false);
+
+                loadScene("Admin-dashboard.fxml", "UVR!");
+            } else {
+                System.out.println("Admin login failed.");
+                showError("Invalid username or password.");
+            }
+
+        } catch (Exception ex){
+            ex.printStackTrace();
+            showError("A database error occured. Please try again.");
         }
     }
 
     @FXML
     void handleBackButton(ActionEvent e){
         System.out.println("Going back to main menu...");
-        loadScene("Main-login.fxml", "UVR! - Select Role");
+        loadScene("Main-login.fxml", "UVR!");
     }
 
     private void loadScene(String fxmlFile, String title){
@@ -56,10 +76,15 @@ public class Admin_loginController {
             currentStage.setTitle(title);
             currentStage.show();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
             errorLabel.setText("Error: Could not load page.");
             errorLabel.setVisible(true);
         }
+    }
+
+    private void showError(String message){
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
     }
 }

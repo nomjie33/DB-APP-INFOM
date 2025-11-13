@@ -31,6 +31,31 @@
  */
 
 /* Navigation Buttons */
+.nav-button {
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 20px;
+    -fx-spacing: 3px;
+}
+
+.nav-button-sub {
+    -fx-alignment: center-left;
+    -fx-padding: 0 0 0 20px;
+    -fx-spacing: 3px;
+}
+
+.nav-button-sub:hover {
+    -fx-background-color: #E06010;
+    -fx-cursor: hand;
+}
+
+.nav-button-sub .label {
+    -fx-font-weight: normal;
+}
+
+.nav-button-sub-active .label {
+    -fx-font-weight: bold;
+}
+
 .nav-button .label {
     -fx-font-family: "SFT Schrifted Sans TRIAL";
     -fx-font-weight: normal;
@@ -152,22 +177,28 @@
  * ==============================================================================
  */
 
-/* Quick Action / Report Boxes (Admin Dashboard) */
-.quick-action-box {
-    -fx-background-color: #33a398;
-    -fx-background-radius: 12;
+.report-pane-base {
+    -fx-background-color: transparent;
+    -fx-background-size: contain;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
     -fx-cursor: hand;
 }
 
-.quick-action-box:hover {
-    -fx-background-color: #2b8a7f;
+.report-pane-base:hover{
+    -fx-opacity: 0.85;
 }
 
-.quick-action-box .label {
+.report-pane-folder{
+    -fx-background-image: url("assets/reportFolder.png");
+}
+
+.report-label{
     -fx-text-fill: white;
     -fx-font-family: "SFT Schrifted Sans TRIAL";
     -fx-font-weight: bold;
-    -fx-font-size: 16px;
+    -fx-font-size: 14px;
+    -fx-background-color: transparent;
 }
 
 /* Vehicle Selection Panes (Rent a Vehicle) */
