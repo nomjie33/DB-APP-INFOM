@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_settingsController">
+    <children>
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Client Profile and Settings" />
+
+        <VBox layoutX="38.0" layoutY="90.0" spacing="5.0">
+            <Label text="Full name" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #33a398;" />
+            <Label fx:id="fullNameLabel" text="Name" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #e8603c;" />
+        </VBox>
+
+        <VBox layoutX="38.0" layoutY="170.0" spacing="5.0">
+            <Label text="PENDING PENALTY" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e8603c; -fx-underline: true;" />
+            <Label fx:id="penaltyStatusLabel" text="None / Penalty ID - Date" style="-fx-font-size: 18px;" />
+        </VBox>
+
+        <Label layoutX="38.0" layoutY="280.0" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="TRANSACTION HISTORY" />
+
+        <TableView fx:id="transactionsTable" layoutX="38.0" layoutY="320.0" prefHeight="350.0" prefWidth="747.0" styleClass="transactions-table">
+            <columns>
+                <TableColumn fx:id="dateColumn" prefWidth="150.0" text="DATE" />
+                <TableColumn fx:id="idColumn" prefWidth="300.0" text="TRANSACTION ID" />
+                <TableColumn fx:id="categoryColumn" prefWidth="296.0" text="CATEGORY" />
+            </columns>
+        </TableView>
+
+    </children>
+</AnchorPane>

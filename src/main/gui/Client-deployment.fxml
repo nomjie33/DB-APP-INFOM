@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_deploymentController">
+    <children>
+        <Label layoutX="38.0" layoutY="174.0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Rental Transaction Complete!" />
+
+        <VBox layoutX="38.0" layoutY="227.0" spacing="20.0">
+            <children>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Rental ID" />
+                        <Label fx:id="rentalIdLabel" text="NHS81828182" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Deployment ID" />
+                        <Label fx:id="deploymentIdLabel" text="JASJ1929129192" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Vehicle Plate Number" />
+                        <Label fx:id="plateNumberLabel" text="HAHSHS8128182812" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Location ID" />
+                        <Label fx:id="locationIdLabel" text="Moriojo City" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Date" />
+                        <Label fx:id="dateLabel" text="October 32, 2025" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="Start time" />
+                        <Label fx:id="startTimeLabel" text="8:00 AM" />
+                    </children>
+                </VBox>
+                <VBox spacing="2.0">
+                    <children>
+                        <Label style="-fx-font-weight: bold;" text="End time" />
+                        <Label fx:id="endTimeLabel" text="8:00 PM" />
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+
+        <Button fx:id="backToHomeButton" layoutX="38.0" layoutY="660.0" onAction="#handleBackToHome" prefHeight="40.0" prefWidth="150.0" styleClass="confirm-button" text="Back to Home" />
+      <ImageView fitHeight="144.0" fitWidth="134.0" layoutX="14.0" layoutY="26.0" pickOnBounds="true" preserveRatio="true">
+        <image>
+            <Image url="@assets/logo2_orig-03.png" />
+        </image>
+      </ImageView>
+
+    </children>
+</AnchorPane>

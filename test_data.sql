@@ -422,13 +422,13 @@ UNION ALL
 SELECT 'Deployments', COUNT(*) FROM deployments;
 
 -- Check vehicle distribution by status
-SELECT status, COUNT(*) as count 
-FROM vehicles 
+SELECT status, COUNT(*) as count
+FROM vehicles
 GROUP BY status;
 
 -- Check vehicle distribution by type
-SELECT vehicleType, COUNT(*) as count 
-FROM vehicles 
+SELECT vehicleType, COUNT(*) as count
+FROM vehicles
 GROUP BY vehicleType;
 
 -- Check technician distribution by specialization
@@ -437,17 +437,17 @@ FROM technicians
 GROUP BY specialization_id;
 
 -- Check maintenance records by status (completed vs in progress)
-SELECT 
-    CASE 
-        WHEN dateRepaired IS NULL THEN 'In Progress'
+SELECT
+    CASE
+        WHEN endDateTime IS NULL THEN 'In Progress'
         ELSE 'Completed'
     END as MaintenanceStatus,
     COUNT(*) as count
 FROM maintenance
-GROUP BY (dateRepaired IS NULL);
+GROUP BY MaintenanceStatus;
 
 -- Check payment totals by rental
-SELECT 
+SELECT
     r.rentalID,
     r.customerID,
     r.plateID,
@@ -466,7 +466,7 @@ ORDER BY total_quantity_used DESC
 LIMIT 10;
 
 -- Check technician workload
-SELECT 
+SELECT
     t.technician_id,
     CONCAT(t.first_name, ' ', t.last_name) as technician_name,
     t.specialization_id,
@@ -477,14 +477,14 @@ GROUP BY t.technician_id, t.first_name, t.last_name, t.specialization_id
 ORDER BY jobs_completed DESC;
 
 -- Check active vs completed rentals
-SELECT 
-    CASE 
-        WHEN endTime IS NULL THEN 'Active'
+SELECT
+    CASE
+        WHEN endDateTime IS NULL THEN 'Active'
         ELSE 'Completed'
     END as RentalStatus,
     COUNT(*) as count
 FROM rentals
-GROUP BY (endTime IS NULL);
+GROUP BY RentalStatus;
 
 -- Check vehicles at each location (current deployment)
 SELECT l.name, COUNT(d.plateID) as VehicleCount
