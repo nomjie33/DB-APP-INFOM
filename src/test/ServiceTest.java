@@ -113,13 +113,13 @@ public class ServiceTest {
             testRentalID = rentalService.createRental("CUST-001", "ES-009", "LOC-001");
             
             if (testRentalID != null) {
-                System.out.println("✓ Rental created successfully: " + testRentalID);
+                System.out.println(" Rental created successfully: " + testRentalID);
                 recordTest(true);
                 
                 // Verify rental exists in database
                 RentalTransaction rental = rentalDAO.getRentalById(testRentalID);
                 if (rental != null) {
-                    System.out.println("✓ Rental verified in database");
+                    System.out.println(" Rental verified in database");
                     System.out.println("  Customer: " + rental.getCustomerID());
                     System.out.println("  Vehicle: " + rental.getPlateID());
                     System.out.println("  Location: " + rental.getLocationID());
@@ -133,8 +133,8 @@ public class ServiceTest {
                 // Verify placeholder payment was created
                 PaymentTransaction payment = paymentService.getPaymentByRental(testRentalID);
                 if (payment != null) {
-                    System.out.println("✓ Placeholder payment created: " + payment.getPaymentID());
-                    System.out.println("  Amount: ₱" + payment.getAmount() + " (should be 0.00)");
+                    System.out.println(" Placeholder payment created: " + payment.getPaymentID());
+                    System.out.println("  Amount: Php" + payment.getAmount() + " (should be 0.00)");
                     recordTest(true);
                 } else {
                     System.out.println("✗ ERROR: Placeholder payment not found!");
@@ -155,7 +155,7 @@ public class ServiceTest {
             System.out.println("Available: " + available + " (should be false - in use)");
             
             if (!available) {
-                System.out.println("✓ Vehicle correctly marked as unavailable");
+                System.out.println(" Vehicle correctly marked as unavailable");
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Vehicle should not be available!");
@@ -170,7 +170,7 @@ public class ServiceTest {
             
             List<RentalTransaction> history = rentalService.getRentalHistory("CUST-001");
             if (history != null && !history.isEmpty()) {
-                System.out.println("✓ Found " + history.size() + " rental(s) for customer");
+                System.out.println(" Found " + history.size() + " rental(s) for customer");
                 System.out.println("  Most recent: " + history.get(0).getRentalID());
                 recordTest(true);
             } else {
@@ -185,12 +185,12 @@ public class ServiceTest {
             
             List<RentalTransaction> activeRentals = rentalService.getActiveRentals();
             if (activeRentals != null) {
-                System.out.println("✓ Found " + activeRentals.size() + " active rental(s)");
+                System.out.println(" Found " + activeRentals.size() + " active rental(s)");
                 boolean foundOurs = false;
                 for (RentalTransaction r : activeRentals) {
                     if (r.getRentalID().equals(testRentalID)) {
                         foundOurs = true;
-                        System.out.println("✓ Our test rental found in active list");
+                        System.out.println(" Our test rental found in active list");
                         break;
                     }
                 }
@@ -217,14 +217,14 @@ public class ServiceTest {
                 double cost = rentalService.completeRental(testRentalID);
                 
                 if (cost > 0) {
-                    System.out.println("✓ Rental completed successfully");
-                    System.out.println("  Total cost: ₱" + String.format("%.2f", cost));
+                    System.out.println(" Rental completed successfully");
+                    System.out.println("  Total cost: Php" + String.format("%.2f", cost));
                     recordTest(true);
                     
                     // Verify rental is no longer active
                     RentalTransaction completedRental = rentalDAO.getRentalById(testRentalID);
                     if (completedRental != null && !completedRental.isActive()) {
-                        System.out.println("✓ Rental marked as completed");
+                        System.out.println(" Rental marked as completed");
                         System.out.println("  End time: " + completedRental.getEndDateTime());
                         recordTest(true);
                     } else {
@@ -235,7 +235,7 @@ public class ServiceTest {
                     // Verify payment was finalized
                     PaymentTransaction finalPayment = paymentService.getPaymentByRental(testRentalID);
                     if (finalPayment != null && finalPayment.getAmount().compareTo(BigDecimal.ZERO) > 0) {
-                        System.out.println("✓ Payment finalized with amount: ₱" + finalPayment.getAmount());
+                        System.out.println(" Payment finalized with amount: Php" + finalPayment.getAmount());
                         recordTest(true);
                     } else {
                         System.out.println("✗ ERROR: Payment not finalized or amount is zero!");
@@ -245,7 +245,7 @@ public class ServiceTest {
                     // Verify vehicle is available again
                     Vehicle vehicle = vehicleDAO.getVehicleById("ES-009");
                     if (vehicle != null && vehicle.isAvailable()) {
-                        System.out.println("✓ Vehicle returned to available status");
+                        System.out.println(" Vehicle returned to available status");
                         recordTest(true);
                     } else {
                         System.out.println("✗ ERROR: Vehicle not marked as available!");
@@ -265,7 +265,7 @@ public class ServiceTest {
             
             String invalidRental = rentalService.createRental("INVALID-999", "ES-009", "LOC-001");
             if (invalidRental == null) {
-                System.out.println("✓ Correctly rejected invalid customer");
+                System.out.println(" Correctly rejected invalid customer");
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Should not allow invalid customer!");
@@ -280,7 +280,7 @@ public class ServiceTest {
             
             invalidRental = rentalService.createRental("CUST-001", "INVALID-999", "LOC-001");
             if (invalidRental == null) {
-                System.out.println("✓ Correctly rejected invalid vehicle");
+                System.out.println(" Correctly rejected invalid vehicle");
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Should not allow invalid vehicle!");
@@ -296,16 +296,16 @@ public class ServiceTest {
                 PaymentTransaction payment = paymentService.getPaymentByRental(testRentalID);
                 if (payment != null) {
                     paymentDAO.deactivatePayment(payment.getPaymentID());
-                    System.out.println("✓ Test payment deactivated");
+                    System.out.println(" Test payment deactivated");
                 }
                 
                 // Mark as Cancelled
                 rentalDAO.cancelRental(testRentalID);
-                System.out.println("✓ Test rental cancelled (soft deleted)");
+                System.out.println(" Test rental cancelled (soft deleted)");
                 
                 // Reset vehicle status
                 vehicleDAO.updateVehicleStatus("ES-009", "Available");
-                System.out.println("✓ Vehicle status reset");
+                System.out.println(" Vehicle status reset");
             }
             
         } catch (Exception e) {
@@ -313,7 +313,7 @@ public class ServiceTest {
             e.printStackTrace();
         }
         
-        System.out.println("\n✓ RentalService Test Complete\n");
+        System.out.println("\n RentalService Test Complete\n");
     }
     
     /**
@@ -333,7 +333,7 @@ public class ServiceTest {
             
             BigDecimal calculatedFee = paymentService.calculateRentalFee("RNT-005");
             if (calculatedFee != null && calculatedFee.compareTo(BigDecimal.ZERO) > 0) {
-                System.out.println("✓ Fee calculated successfully: ₱" + calculatedFee);
+                System.out.println(" Fee calculated successfully: Php" + calculatedFee);
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Fee calculation failed or returned zero");
@@ -348,8 +348,8 @@ public class ServiceTest {
             
             PaymentTransaction payment = paymentService.getPaymentByRental("RNT-005");
             if (payment != null) {
-                System.out.println("✓ Payment found: " + payment.getPaymentID());
-                System.out.println("  Amount: ₱" + payment.getAmount());
+                System.out.println(" Payment found: " + payment.getPaymentID());
+                System.out.println("  Amount: Php" + payment.getAmount());
                 System.out.println("  Date: " + payment.getPaymentDate());
                 recordTest(true);
             } else {
@@ -367,8 +367,8 @@ public class ServiceTest {
             BigDecimal originalAmount = null;
             if (originalPayment != null) {
                 originalAmount = originalPayment.getAmount();
-                System.out.println("✓ Original payment found: " + originalPayment.getPaymentID());
-                System.out.println("  Original amount: ₱" + originalAmount);
+                System.out.println(" Original payment found: " + originalPayment.getPaymentID());
+                System.out.println("  Original amount: Php" + originalAmount);
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Original payment not found!");
@@ -386,19 +386,19 @@ public class ServiceTest {
             
             boolean finalized = paymentService.finalizePaymentForRental("RNT-006", finalAmount, finalDate);
             if (finalized) {
-                System.out.println("✓ Payment finalized successfully");
+                System.out.println(" Payment finalized successfully");
                 recordTest(true);
                 
                 // Verify updated amount - check the payment that was actually updated (PAY-002 for RNT-006)
                 PaymentTransaction updatedPayment = paymentService.getPaymentByRental("RNT-006");
                 if (updatedPayment != null && updatedPayment.getAmount().compareTo(finalAmount) == 0) {
-                    System.out.println("✓ Payment amount updated: ₱" + updatedPayment.getAmount());
+                    System.out.println(" Payment amount updated: Php" + updatedPayment.getAmount());
                     System.out.println("  Payment ID: " + updatedPayment.getPaymentID());
                     recordTest(true);
                 } else {
                     System.out.println("✗ ERROR: Payment amount not updated correctly!");
                     if (updatedPayment != null) {
-                        System.out.println("  Expected: ₱" + finalAmount + ", Got: ₱" + updatedPayment.getAmount());
+                        System.out.println("  Expected: Php" + finalAmount + ", Got: Php" + updatedPayment.getAmount());
                     }
                     recordTest(false);
                 }
@@ -415,7 +415,7 @@ public class ServiceTest {
             
             BigDecimal invalidFee = paymentService.calculateRentalFee("INVALID-999");
             if (invalidFee.compareTo(BigDecimal.ZERO) == 0) {
-                System.out.println("✓ Correctly returned zero for invalid rental");
+                System.out.println(" Correctly returned zero for invalid rental");
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Should return zero for invalid rental!");
@@ -430,7 +430,7 @@ public class ServiceTest {
                 // Restore PAY-002 to original amount
                 boolean restored = paymentService.finalizePaymentForRental("RNT-006", originalAmount, finalDate);
                 if (restored) {
-                    System.out.println("✓ Payment PAY-002 restored to original amount: ₱" + originalAmount);
+                    System.out.println(" Payment PAY-002 restored to original amount: Php" + originalAmount);
                 } else {
                     System.out.println("⚠ Warning: Could not restore original payment amount");
                 }
@@ -441,7 +441,7 @@ public class ServiceTest {
             e.printStackTrace();
         }
         
-        System.out.println("\n✓ PaymentService Test Complete\n");
+        System.out.println("\n PaymentService Test Complete\n");
     }
     
     /**
@@ -474,13 +474,13 @@ public class ServiceTest {
             );
             
             if (scheduled) {
-                System.out.println("✓ Maintenance scheduled successfully: " + testMaintenanceID);
+                System.out.println(" Maintenance scheduled successfully: " + testMaintenanceID);
                 recordTest(true);
                 
                 // Verify maintenance record exists
                 MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceById(testMaintenanceID);
                 if (maintenance != null) {
-                    System.out.println("✓ Maintenance verified in database");
+                    System.out.println(" Maintenance verified in database");
                     System.out.println("  Vehicle: " + maintenance.getPlateID());
                     System.out.println("  Technician: " + maintenance.getTechnicianID());
                     System.out.println("  Notes: " + maintenance.getNotes());
@@ -493,7 +493,7 @@ public class ServiceTest {
                 // Verify vehicle status updated
                 Vehicle vehicle = vehicleDAO.getVehicleById(testVehicle);
                 if (vehicle != null && vehicle.isInMaintenance()) {
-                    System.out.println("✓ Vehicle status updated to Maintenance");
+                    System.out.println(" Vehicle status updated to Maintenance");
                     recordTest(true);
                 } else {
                     System.out.println("✗ ERROR: Vehicle status not updated!");
@@ -512,12 +512,12 @@ public class ServiceTest {
             
             List<MaintenanceTransaction> history = maintenanceService.getMaintenanceHistory(testVehicle);
             if (history != null && !history.isEmpty()) {
-                System.out.println("✓ Found " + history.size() + " maintenance record(s)");
+                System.out.println(" Found " + history.size() + " maintenance record(s)");
                 boolean foundOurs = false;
                 for (MaintenanceTransaction m : history) {
                     if (m.getMaintenanceID().equals(testMaintenanceID)) {
                         foundOurs = true;
-                        System.out.println("✓ Our test maintenance found in history");
+                        System.out.println(" Our test maintenance found in history");
                         break;
                     }
                 }
@@ -540,7 +540,7 @@ public class ServiceTest {
             
             List<MaintenanceTransaction> workload = maintenanceService.getTechnicianWorkload("TECH-001");
             if (workload != null) {
-                System.out.println("✓ Found " + workload.size() + " job(s) assigned to technician");
+                System.out.println(" Found " + workload.size() + " job(s) assigned to technician");
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Failed to get technician workload!");
@@ -567,13 +567,13 @@ public class ServiceTest {
             );
             
             if (completed) {
-                System.out.println("✓ Maintenance completed successfully");
+                System.out.println(" Maintenance completed successfully");
                 recordTest(true);
                 
                 // Verify maintenance record updated
                 MaintenanceTransaction completedMaint = maintenanceDAO.getMaintenanceById(testMaintenanceID);
                 if (completedMaint != null && completedMaint.getEndDateTime() != null) {
-                    System.out.println("✓ Maintenance end time recorded");
+                    System.out.println(" Maintenance end time recorded");
                     System.out.println("  Hours worked: " + completedMaint.getHoursWorked());
                     recordTest(true);
                 } else {
@@ -584,7 +584,7 @@ public class ServiceTest {
                 // Verify vehicle status restored
                 Vehicle vehicle = vehicleDAO.getVehicleById(testVehicle);
                 if (vehicle != null && vehicle.isAvailable()) {
-                    System.out.println("✓ Vehicle status restored to Available");
+                    System.out.println(" Vehicle status restored to Available");
                     recordTest(true);
                 } else {
                     System.out.println("✗ ERROR: Vehicle status not restored!");
@@ -594,7 +594,7 @@ public class ServiceTest {
                 // Verify parts were logged
                 List<model.MaintenanceCheque> partRecords = maintenanceService.getPartsUsedInMaintenance(testMaintenanceID);
                 if (partRecords != null && partRecords.size() == 2) {
-                    System.out.println("✓ Parts usage logged: " + partRecords.size() + " part(s)");
+                    System.out.println(" Parts usage logged: " + partRecords.size() + " part(s)");
                     recordTest(true);
                 } else {
                     System.out.println("✗ ERROR: Parts not logged correctly!");
@@ -620,7 +620,7 @@ public class ServiceTest {
             );
             
             if (!invalidSchedule) {
-                System.out.println("✓ Correctly rejected invalid vehicle");
+                System.out.println(" Correctly rejected invalid vehicle");
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Should not allow invalid vehicle!");
@@ -632,18 +632,18 @@ public class ServiceTest {
             // === CLEANUP ===
             System.out.println("─── 3.6 CLEANUP: Removing test maintenance ───");
             maintenanceDAO.deactivateMaintenance(testMaintenanceID);
-            System.out.println("✓ Test maintenance deactivated");
+            System.out.println(" Test maintenance deactivated");
             
             // Reset vehicle status
             vehicleDAO.updateVehicleStatus(testVehicle, "Available");
-            System.out.println("✓ Vehicle status reset");
+            System.out.println(" Vehicle status reset");
             
         } catch (Exception e) {
             System.out.println("✗ EXCEPTION during MaintenanceService test:");
             e.printStackTrace();
         }
         
-        System.out.println("\n✓ MaintenanceService Test Complete\n");
+        System.out.println("\n MaintenanceService Test Complete\n");
     }
     
     /**
@@ -671,13 +671,13 @@ public class ServiceTest {
             String deploymentID = deploymentService.deployVehicle(testVehicle, testLocation);
             
             if (deploymentID != null) {
-                System.out.println("✓ Vehicle deployed successfully: " + deploymentID);
+                System.out.println(" Vehicle deployed successfully: " + deploymentID);
                 recordTest(true);
                 
                 // Verify deployment record exists
                 DeploymentTransaction deployment = deploymentDAO.getDeploymentById(deploymentID);
                 if (deployment != null) {
-                    System.out.println("✓ Deployment verified in database");
+                    System.out.println(" Deployment verified in database");
                     System.out.println("  Vehicle: " + deployment.getPlateID());
                     System.out.println("  Target Location: " + deployment.getLocationID());
                     recordTest(true);
@@ -698,7 +698,7 @@ public class ServiceTest {
             
             List<DeploymentTransaction> history = deploymentService.getVehicleDeploymentHistory(testVehicle);
             if (history != null && !history.isEmpty()) {
-                System.out.println("✓ Found " + history.size() + " deployment(s)");
+                System.out.println(" Found " + history.size() + " deployment(s)");
                 recordTest(true);
             } else {
                 System.out.println("✗ No deployment history found");
@@ -713,7 +713,7 @@ public class ServiceTest {
             
             DeploymentTransaction currentDeploy = deploymentDAO.getCurrentDeploymentByVehicle(testVehicle);
             if (currentDeploy != null) {
-                System.out.println("✓ Current deployment found: " + currentDeploy.getDeploymentID());
+                System.out.println(" Current deployment found: " + currentDeploy.getDeploymentID());
                 System.out.println("  Target: " + currentDeploy.getLocationID());
                 recordTest(true);
             } else {
@@ -731,13 +731,13 @@ public class ServiceTest {
                 boolean completed = deploymentService.completeDeployment(deploymentID);
                 
                 if (completed) {
-                    System.out.println("✓ Deployment completed successfully");
+                    System.out.println(" Deployment completed successfully");
                     recordTest(true);
                     
                     // Verify deployment marked as complete
                     DeploymentTransaction completedDeploy = deploymentDAO.getDeploymentById(deploymentID);
                     if (completedDeploy != null && completedDeploy.getEndDate() != null) {
-                        System.out.println("✓ Deployment marked complete with end date: " + completedDeploy.getEndDate());
+                        System.out.println(" Deployment marked complete with end date: " + completedDeploy.getEndDate());
                         recordTest(true);
                     } else {
                         System.out.println("✗ ERROR: Deployment not marked as completed!");
@@ -757,7 +757,7 @@ public class ServiceTest {
             
             String invalidDeploy = deploymentService.deployVehicle("INVALID-999", testLocation);
             if (invalidDeploy == null) {
-                System.out.println("✓ Correctly rejected invalid vehicle");
+                System.out.println(" Correctly rejected invalid vehicle");
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Should not allow invalid vehicle!");
@@ -769,7 +769,7 @@ public class ServiceTest {
             // === CLEANUP ===
             System.out.println("─── 4.6 CLEANUP: Test complete ───");
             if (deploymentID != null) {
-                System.out.println("✓ Deployment test finished (deployment ID: " + deploymentID + ")");
+                System.out.println(" Deployment test finished (deployment ID: " + deploymentID + ")");
             }
             
         } catch (Exception e) {
@@ -777,7 +777,7 @@ public class ServiceTest {
             e.printStackTrace();
         }
         
-        System.out.println("\n✓ DeploymentService Test Complete\n");
+        System.out.println("\n DeploymentService Test Complete\n");
     }
     
     /**
@@ -800,7 +800,7 @@ public class ServiceTest {
             
             BigDecimal laborCost = penaltyService.calculateLaborCost("MAINT-001");
             if (laborCost != null && laborCost.compareTo(BigDecimal.ZERO) > 0) {
-                System.out.println("✓ Labor cost calculated: ₱" + laborCost);
+                System.out.println(" Labor cost calculated: Php" + laborCost);
                 recordTest(true);
             } else {
                 System.out.println("⚠ Labor cost is zero (may be expected if no hours recorded)");
@@ -815,7 +815,7 @@ public class ServiceTest {
             
             BigDecimal partsCost = penaltyService.calculatePartsCost("MAINT-001");
             if (partsCost != null && partsCost.compareTo(BigDecimal.ZERO) >= 0) {
-                System.out.println("✓ Parts cost calculated: ₱" + partsCost);
+                System.out.println(" Parts cost calculated: Php" + partsCost);
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Parts cost calculation failed");
@@ -830,13 +830,13 @@ public class ServiceTest {
             
             BigDecimal totalCost = penaltyService.calculateMaintenanceCost("MAINT-001");
             if (totalCost != null && totalCost.compareTo(BigDecimal.ZERO) >= 0) {
-                System.out.println("✓ Total cost calculated: ₱" + totalCost);
+                System.out.println(" Total cost calculated: Php" + totalCost);
                 recordTest(true);
                 
                 // Verify it equals labor + parts
                 BigDecimal expectedTotal = laborCost.add(partsCost);
                 if (totalCost.compareTo(expectedTotal) == 0) {
-                    System.out.println("✓ Total = Labor + Parts (correct)");
+                    System.out.println(" Total = Labor + Parts (correct)");
                     recordTest(true);
                 } else {
                     System.out.println("⚠ Total doesn't match Labor + Parts");
@@ -862,14 +862,14 @@ public class ServiceTest {
             );
             
             if (created) {
-                System.out.println("✓ Penalty created successfully: " + testPenaltyID);
+                System.out.println(" Penalty created successfully: " + testPenaltyID);
                 recordTest(true);
                 
                 // Verify penalty exists
                 PenaltyTransaction penalty = penaltyDAO.getPenaltyById(testPenaltyID);
                 if (penalty != null) {
-                    System.out.println("✓ Penalty verified in database");
-                    System.out.println("  Amount: ₱" + penalty.getTotalPenalty());
+                    System.out.println(" Penalty verified in database");
+                    System.out.println("  Amount: Php" + penalty.getTotalPenalty());
                     System.out.println("  Rental: " + penalty.getRentalID());
                     recordTest(true);
                 } else {
@@ -889,9 +889,9 @@ public class ServiceTest {
             
             List<PenaltyTransaction> penalties = penaltyService.getPenaltiesByRental("RNT-005");
             if (penalties != null && !penalties.isEmpty()) {
-                System.out.println("✓ Found " + penalties.size() + " penalty(ies)");
+                System.out.println(" Found " + penalties.size() + " penalty(ies)");
                 for (PenaltyTransaction p : penalties) {
-                    System.out.println("  " + p.getPenaltyID() + ": ₱" + p.getTotalPenalty());
+                    System.out.println("  " + p.getPenaltyID() + ": Php" + p.getTotalPenalty());
                 }
                 recordTest(true);
             } else {
@@ -907,7 +907,7 @@ public class ServiceTest {
             
             BigDecimal invalidCost = penaltyService.calculateMaintenanceCost("INVALID-999");
             if (invalidCost.compareTo(BigDecimal.ZERO) == 0) {
-                System.out.println("✓ Correctly returned zero for invalid maintenance");
+                System.out.println(" Correctly returned zero for invalid maintenance");
                 recordTest(true);
             } else {
                 System.out.println("✗ ERROR: Should return zero for invalid maintenance!");
@@ -919,13 +919,13 @@ public class ServiceTest {
             // === CLEANUP ===
             System.out.println("─── 5.7 CLEANUP: Removing test penalty ───");
             penaltyDAO.deactivatePenalty(testPenaltyID);
-            System.out.println("✓ Test penalty deactivated");
+            System.out.println(" Test penalty deactivated");
             
         } catch (Exception e) {
             System.out.println("✗ EXCEPTION during PenaltyService test:");
             e.printStackTrace();
         }
         
-        System.out.println("\n✓ PenaltyService Test Complete\n");
+        System.out.println("\n PenaltyService Test Complete\n");
     }
 }
