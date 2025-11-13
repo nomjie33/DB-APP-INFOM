@@ -268,6 +268,8 @@ CREATE TABLE maintenance_cheque (
 -- =====================================================
 -- Stores customer penalty records
 -- Tracks penalties associated with rentals and maintenance
+-- status: Active/Inactive (soft delete) - indicates if penalty record is active
+-- penaltyStatus: PAID/UNPAID - indicates payment status
 CREATE TABLE penalty (
     penaltyID VARCHAR(11) PRIMARY KEY,
     rentalID VARCHAR(11) NOT NULL,
@@ -275,6 +277,7 @@ CREATE TABLE penalty (
     penaltyStatus VARCHAR(15) NOT NULL DEFAULT 'UNPAID',
     maintenanceID VARCHAR(11),
     dateIssued DATE NOT NULL,
+    status VARCHAR(15) NOT NULL DEFAULT 'Active',
 
     
     CONSTRAINT fk_penalty_rental 
@@ -287,10 +290,17 @@ CREATE TABLE penalty (
         ON DELETE SET NULL
         ON UPDATE CASCADE,
     
+    CONSTRAINT chk_penalty_payment_status
+        CHECK (penaltyStatus IN ('PAID', 'UNPAID')),
+    
+    CONSTRAINT chk_penalty_status
+        CHECK (status IN ('Active', 'Inactive')),
+    
     INDEX idx_penalty_rental (rentalID),
-    INDEX idx_penalty_status (penaltyStatus),
+    INDEX idx_penalty_payment_status (penaltyStatus),
     INDEX idx_penalty_maintenance (maintenanceID),
-    INDEX idx_penalty_date (dateIssued)
+    INDEX idx_penalty_date (dateIssued),
+    INDEX idx_penalty_status (status)
 );
 
 -- =====================================================

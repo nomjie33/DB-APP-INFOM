@@ -4,11 +4,13 @@ import dao.MaintenanceDAO;
 import dao.MaintenanceChequeDAO;
 import dao.PartDAO;
 import dao.PaymentDAO;
+import dao.PenaltyDAO;
 import dao.TechnicianDAO;
 import model.MaintenanceTransaction;
 import model.MaintenanceCheque;
 import model.Part;
 import model.PaymentTransaction;
+import model.PenaltyTransaction;
 import model.Technician;
 
 import java.math.BigDecimal;
@@ -53,6 +55,7 @@ public class DAOCRUDTest {
         testMaintenanceDAO();
         testMaintenanceChequeDAO();
         testPaymentDAO();
+        testPenaltyDAO();
         
         System.out.println("\n═══════════════════════════════════════════════════");
         System.out.println("   ALL TESTS COMPLETED");
@@ -578,7 +581,7 @@ public class DAOCRUDTest {
             if (retrieved != null) {
                 System.out.println(":) SELECT by ID successful:");
                 System.out.println("  Payment ID: " + retrieved.getPaymentID());
-                System.out.println("  Amount: ₱" + retrieved.getAmount());
+                System.out.println("  Amount: Php" + retrieved.getAmount());
                 System.out.println("  Rental ID: " + retrieved.getRentalID());
                 System.out.println("  Payment Date: " + retrieved.getPaymentDate());
                 System.out.println("  Status: " + retrieved.getStatus());
@@ -593,7 +596,7 @@ public class DAOCRUDTest {
             System.out.println("  First 5 payments:");
             for (int i = 0; i < Math.min(5, allPayments.size()); i++) {
                 PaymentTransaction p = allPayments.get(i);
-                System.out.println("  - " + p.getPaymentID() + ": ₱" + p.getAmount() + 
+                System.out.println("  - " + p.getPaymentID() + ": Php" + p.getAmount() + 
                                  " for " + p.getRentalID() + " (" + p.getStatus() + ")");
             }
             
@@ -603,7 +606,7 @@ public class DAOCRUDTest {
             System.out.println(":) SELECT by Rental successful: Found " + rentalPayments.size() + 
                              " payment(s) for rental " + testRentalId);
             for (PaymentTransaction p : rentalPayments) {
-                System.out.println("  - " + p.getPaymentID() + ": ₱" + p.getAmount() + 
+                System.out.println("  - " + p.getPaymentID() + ": Php" + p.getAmount() + 
                                  " on " + p.getPaymentDate());
             }
             
@@ -619,7 +622,7 @@ public class DAOCRUDTest {
             // === SPECIAL: Revenue Calculation ===
             System.out.println("\n─── 5.6 SPECIAL: Total Revenue Calculation ───");
             BigDecimal totalRevenue = pDao.getTotalRevenueByDateRange(startDate, endDate);
-            System.out.println(":) Total Revenue: ₱" + totalRevenue + 
+            System.out.println(":) Total Revenue: Php" + totalRevenue + 
                              " (from " + startDate + " to " + endDate + ")");
             
             // === UPDATE ===
@@ -636,7 +639,7 @@ public class DAOCRUDTest {
                 // Verify update
                 PaymentTransaction updated = pDao.getPaymentById(testPaymentId);
                 if (updated != null) {
-                    System.out.println("  New Amount: ₱" + updated.getAmount());
+                    System.out.println("  New Amount: Php" + updated.getAmount());
                     System.out.println("  New Payment Date: " + updated.getPaymentDate());
                 }
             }
@@ -682,6 +685,175 @@ public class DAOCRUDTest {
             
         } catch (Exception e) {
             System.out.println(":( ERROR in PaymentDAO test: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Test 6: Complete CRUD testing for PenaltyDAO
+     */
+    private static void testPenaltyDAO() {
+        System.out.println("═══════════════════════════════════════════════════");
+        System.out.println("TEST 6: PenaltyDAO - CRUD Operations");
+        System.out.println("═══════════════════════════════════════════════════\n");
+        
+        PenaltyDAO penDao = new PenaltyDAO();
+        
+        String testPenaltyId = "CRUD-PEN01";
+        String testRentalId = "RNT-005";  // Using existing rental from test data
+        String testMaintenanceId = "MAINT-001";  // Using existing maintenance from test data
+        
+        try {
+            // === CREATE (Insert) ===
+            System.out.println("─── 6.1 CREATE: Inserting Penalty ───");
+            PenaltyTransaction penalty = new PenaltyTransaction(
+                testPenaltyId,
+                testRentalId,
+                new BigDecimal("2500.00"),
+                "UNPAID",
+                testMaintenanceId,
+                new java.sql.Date(System.currentTimeMillis()),
+                "Active"
+            );
+            
+            boolean insertSuccess = penDao.insertPenalty(penalty);
+            System.out.println(insertSuccess ? 
+                ":) INSERT successful: " + testPenaltyId : 
+                ":( INSERT failed");
+            
+            // === READ (Select by ID) ===
+            System.out.println("\n─── 6.2 READ: Retrieving Penalty by ID ───");
+            PenaltyTransaction retrieved = penDao.getPenaltyById(testPenaltyId);
+            
+            if (retrieved != null) {
+                System.out.println(":) SELECT by ID successful:");
+                System.out.println("  Penalty ID: " + retrieved.getPenaltyID());
+                System.out.println("  Rental ID: " + retrieved.getRentalID());
+                System.out.println("  Total Penalty: Php" + retrieved.getTotalPenalty());
+                System.out.println("  Payment Status: " + retrieved.getPenaltyStatus());
+                System.out.println("  Maintenance ID: " + retrieved.getMaintenanceID());
+                System.out.println("  Date Issued: " + retrieved.getDateIssued());
+                System.out.println("  Record Status: " + retrieved.getStatus());
+            } else {
+                System.out.println(":( SELECT by ID failed - Record not found");
+            }
+            
+            // === READ (Select All) ===
+            System.out.println("\n─── 6.3 READ: Retrieving All Active Penalties ───");
+            List<PenaltyTransaction> allPenalties = penDao.getAllPenalties();
+            System.out.println(":) SELECT ALL successful: Found " + allPenalties.size() + " active penalties");
+            System.out.println("  First 5 penalties:");
+            for (int i = 0; i < Math.min(5, allPenalties.size()); i++) {
+                PenaltyTransaction p = allPenalties.get(i);
+                System.out.println("  - " + p.getPenaltyID() + ": Php" + p.getTotalPenalty() + 
+                                 " (" + p.getPenaltyStatus() + ") - Rental: " + p.getRentalID());
+            }
+            
+            // === READ (Select by Rental) ===
+            System.out.println("\n─── 6.4 READ: Retrieving Penalties by Rental ───");
+            List<PenaltyTransaction> rentalPenalties = penDao.getPenaltiesByRental(testRentalId);
+            System.out.println(":) SELECT by Rental successful: Found " + rentalPenalties.size() + 
+                             " penalty(ies) for rental " + testRentalId);
+            for (PenaltyTransaction p : rentalPenalties) {
+                System.out.println("  - " + p.getPenaltyID() + ": Php" + p.getTotalPenalty() + 
+                                 " (" + p.getPenaltyStatus() + ") issued on " + p.getDateIssued());
+            }
+            
+            // === READ (Select by Payment Status) ===
+            System.out.println("\n─── 6.5 READ: Retrieving Penalties by Payment Status ───");
+            List<PenaltyTransaction> unpaidPenalties = penDao.getPenaltiesByPaymentStatus("UNPAID");
+            System.out.println(":) SELECT by Payment Status successful: Found " + unpaidPenalties.size() + 
+                             " UNPAID penalties");
+            
+            List<PenaltyTransaction> paidPenalties = penDao.getPenaltiesByPaymentStatus("PAID");
+            System.out.println(":) Found " + paidPenalties.size() + " PAID penalties");
+            
+            // === READ (Select by Maintenance) ===
+            System.out.println("\n─── 6.6 READ: Retrieving Penalties by Maintenance ───");
+            List<PenaltyTransaction> maintenancePenalties = penDao.getPenaltiesByMaintenance(testMaintenanceId);
+            System.out.println(":) SELECT by Maintenance successful: Found " + maintenancePenalties.size() + 
+                             " penalty(ies) linked to maintenance " + testMaintenanceId);
+            
+            // === SPECIAL: Total Penalties Calculation ===
+            System.out.println("\n─── 6.7 SPECIAL: Total Penalties by Rental ───");
+            BigDecimal totalPenalties = penDao.getTotalPenaltiesByRental(testRentalId);
+            System.out.println(":) Total Active Penalties for Rental " + testRentalId + ": Php" + totalPenalties);
+            
+            // === READ (Select by Date Range) ===
+            System.out.println("\n─── 6.8 READ: Retrieving Penalties by Date Range ───");
+            java.sql.Date startDate = java.sql.Date.valueOf("2024-10-19");
+            java.sql.Date endDate = java.sql.Date.valueOf("2024-10-24");
+            
+            List<PenaltyTransaction> dateRangePenalties = penDao.getPenaltiesByDateRange(startDate, endDate);
+            System.out.println(":) SELECT by Date Range successful: Found " + dateRangePenalties.size() + 
+                             " penalties between " + startDate + " and " + endDate);
+            
+            // === UPDATE ===
+            System.out.println("\n─── 6.9 UPDATE: Modifying Penalty (Payment Status) ───");
+            if (retrieved != null) {
+                retrieved.setPenaltyStatus("PAID");
+                retrieved.setTotalPenalty(new BigDecimal("2750.00"));  // Adjusted amount
+                
+                boolean updateSuccess = penDao.updatePenalty(retrieved);
+                System.out.println(updateSuccess ? 
+                    ":) UPDATE successful" : 
+                    ":( UPDATE failed");
+                
+                // Verify update
+                PenaltyTransaction updated = penDao.getPenaltyById(testPenaltyId);
+                if (updated != null) {
+                    System.out.println("  New Payment Status: " + updated.getPenaltyStatus());
+                    System.out.println("  New Amount: Php" + updated.getTotalPenalty());
+                }
+            }
+            
+            // === SOFT DELETE (Deactivate) ===
+            System.out.println("\n─── 6.10 SOFT DELETE: Deactivating Penalty ───");
+            boolean deactivateSuccess = penDao.deactivatePenalty(testPenaltyId);
+            System.out.println(deactivateSuccess ? 
+                ":) DEACTIVATE successful (status set to 'Inactive')" : 
+                ":( DEACTIVATE failed");
+            
+            // Verify deactivation
+            PenaltyTransaction deactivated = penDao.getPenaltyById(testPenaltyId);
+            System.out.println(deactivated == null ? 
+                ":) Verified: Record is now inactive (not returned by active-only query)" : 
+                ":( Warning: Record still active");
+            
+            // Verify can still retrieve if needed for historical purposes
+            PenaltyTransaction historical = penDao.getPenaltyByIdIncludingInactive(testPenaltyId);
+            System.out.println(historical != null && "Inactive".equals(historical.getStatus()) ? 
+                ":) Verified: Record exists with status='Inactive'" : 
+                ":( Warning: Historical record not found or status incorrect");
+            
+            // === REACTIVATE ===
+            System.out.println("\n─── 6.11 REACTIVATE: Reactivating Penalty ───");
+            boolean reactivateSuccess = penDao.reactivatePenalty(testPenaltyId);
+            System.out.println(reactivateSuccess ? 
+                ":) REACTIVATE successful (status set back to 'Active')" : 
+                ":( REACTIVATE failed");
+            
+            // Verify reactivation
+            PenaltyTransaction reactivated = penDao.getPenaltyById(testPenaltyId);
+            System.out.println(reactivated != null && reactivated.isActive() ? 
+                ":) Verified: Record is active again" : 
+                ":( Warning: Reactivation failed");
+            
+            // Check helper methods
+            if (reactivated != null) {
+                System.out.println("  Helper method isActive(): " + reactivated.isActive());
+                System.out.println("  Helper method isInactive(): " + reactivated.isInactive());
+            }
+            
+            // Final cleanup - deactivate again
+            System.out.println("\n─── 6.12 CLEANUP: Final deactivation ───");
+            penDao.deactivatePenalty(testPenaltyId);
+            System.out.println(":) Cleanup complete");
+            
+            System.out.println("\n> PenaltyDAO Tests Complete\n");
+            
+        } catch (Exception e) {
+            System.out.println(":( ERROR in PenaltyDAO test: " + e.getMessage());
             e.printStackTrace();
         }
     }

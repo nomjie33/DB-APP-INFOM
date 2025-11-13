@@ -280,6 +280,47 @@ public class PenaltyService {
     }
     
     /**
+     * Cancel/void a penalty (SOFT DELETE).
+     * Sets the penalty status to 'Inactive' without removing from database.
+     * This preserves penalty history for reporting and auditing.
+     * 
+     * @param penaltyID Penalty ID to cancel
+     * @return true if successful, false otherwise
+     */
+    public boolean cancelPenalty(String penaltyID) {
+        System.out.println("\n=== CANCELLING PENALTY ===");
+        System.out.println("Penalty ID: " + penaltyID);
+        
+        try {
+            // Verify penalty exists
+            PenaltyTransaction penalty = penaltyDAO.getPenaltyById(penaltyID);
+            if (penalty == null) {
+                System.out.println(":( Penalty not found or already inactive");
+                return false;
+            }
+            
+            // Deactivate the penalty
+            boolean success = penaltyDAO.deactivatePenalty(penaltyID);
+            
+            if (success) {
+                System.out.println(":) Penalty cancelled successfully");
+                System.out.println("   Penalty ID: " + penaltyID);
+                System.out.println("   Amount: Php" + penalty.getTotalPenalty());
+                System.out.println("   Note: Penalty data preserved for reporting");
+            } else {
+                System.out.println(":( Failed to cancel penalty");
+            }
+            
+            return success;
+            
+        } catch (Exception e) {
+            System.out.println(":( Error cancelling penalty: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
      * Get detailed cost breakdown for a maintenance job.
      */
     public String getMaintenanceCostBreakdown(String maintenanceID) {

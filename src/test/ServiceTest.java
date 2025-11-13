@@ -918,8 +918,8 @@ public class ServiceTest {
             
             // === CLEANUP ===
             System.out.println("─── 5.7 CLEANUP: Removing test penalty ───");
-            penaltyDAO.deletePenalty(testPenaltyID);
-            System.out.println("✓ Test penalty deleted");
+            penaltyDAO.deactivatePenalty(testPenaltyID);
+            System.out.println("✓ Test penalty deactivated");
             
         } catch (Exception e) {
             System.out.println("✗ EXCEPTION during PenaltyService test:");

@@ -9,9 +9,10 @@ package model;
  * - penaltyID      : String (primary key, VARCHAR(11))
  * - rentalID       : String (foreign key to Rental, VARCHAR(25))
  * - totalPenalty   : java.math.BigDecimal (penalty amount, DECIMAL(10,2))
- * - penaltyStatus  : String (status of penalty, VARCHAR(15))
+ * - penaltyStatus  : String (payment status: PAID/UNPAID/WAIVED, VARCHAR(15))
  * - maintenanceID  : String (foreign key to Maintenance, VARCHAR(11))
  * - dateIssued     : java.sql.Date (when penalty was issued)
+ * - status         : String (record status: Active/Inactive for soft delete, VARCHAR(15))
  * 
  * RELATIONSHIP:
  * - Many-to-one with RentalTransaction
@@ -24,15 +25,17 @@ public class PenaltyTransaction {
     private String penaltyID;
     private String rentalID;
     private BigDecimal totalPenalty;
-    private String penaltyStatus;
+    private String penaltyStatus;  // Payment status: PAID, UNPAID, WAIVED
     private String maintenanceID;
     private Date dateIssued;
+    private String status;  // Record status: Active, Inactive (soft delete)
 
     // Default constructor
     public PenaltyTransaction() {
+        this.status = "Active";  // Default to Active
     }
 
-    // Parameterized constructor
+    // Parameterized constructor (backward compatible - defaults to Active)
     public PenaltyTransaction(String penaltyID, String rentalID, BigDecimal totalPenalty,
                              String penaltyStatus, String maintenanceID, Date dateIssued) {
         this.penaltyID = penaltyID;
@@ -41,6 +44,19 @@ public class PenaltyTransaction {
         this.penaltyStatus = penaltyStatus;
         this.maintenanceID = maintenanceID;
         this.dateIssued = dateIssued;
+        this.status = "Active";  // Default to Active
+    }
+
+    // Full parameterized constructor with status
+    public PenaltyTransaction(String penaltyID, String rentalID, BigDecimal totalPenalty,
+                             String penaltyStatus, String maintenanceID, Date dateIssued, String status) {
+        this.penaltyID = penaltyID;
+        this.rentalID = rentalID;
+        this.totalPenalty = totalPenalty;
+        this.penaltyStatus = penaltyStatus;
+        this.maintenanceID = maintenanceID;
+        this.dateIssued = dateIssued;
+        this.status = status;
     }
 
     // Getters and setters
@@ -92,6 +108,23 @@ public class PenaltyTransaction {
         this.dateIssued = dateIssued;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    // Helper methods for status checking
+    public boolean isActive() {
+        return "Active".equalsIgnoreCase(status);
+    }
+
+    public boolean isInactive() {
+        return "Inactive".equalsIgnoreCase(status);
+    }
+
     @Override
     public String toString() {
         return "PenaltyTransaction{" +
@@ -101,6 +134,7 @@ public class PenaltyTransaction {
                 ", penaltyStatus='" + penaltyStatus + '\'' +
                 ", maintenanceID='" + maintenanceID + '\'' +
                 ", dateIssued=" + dateIssued +
+                ", status='" + status + '\'' +
                 '}';
     }
 

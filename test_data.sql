@@ -340,18 +340,19 @@ SELECT * FROM maintenance_cheque;
 -- Penalty records for damage/repair costs charged to customers
 -- Linked to maintenance records via maintenanceID
 
-INSERT INTO penalty (penaltyID, rentalID, totalPenalty, penaltyStatus, maintenanceID, dateIssued) VALUES
+INSERT INTO penalty (penaltyID, rentalID, totalPenalty, penaltyStatus, maintenanceID, dateIssued, status) VALUES
 -- Penalties for completed maintenance (customer charged for damages)
-('PEN-001', 'RNT-005', 3725.00, 'UNPAID', 'MAINT-001', '2024-10-21'),  -- Battery replacement: 3.5h × ₱350 + ₱2500 = ₱3,725
-('PEN-002', 'RNT-007', 745.00, 'PAID', 'MAINT-002', '2024-10-22'),     -- Brake maintenance: 1.0h × ₱330 + (2×₱150 + ₱95) = ₱725
-('PEN-003', 'RNT-006', 3535.00, 'UNPAID', 'MAINT-008', '2024-10-19'),  -- Battery + display: 4.0h × ₱380 + (₱2500 + ₱1200) = ₱5,220
-('PEN-004', 'RNT-009', 565.00, 'PAID', 'MAINT-009', '2024-10-21'),     -- Chain + brakes: 1.25h × ₱320 + (₱200 + 2×₱150) = ₱900
-('PEN-005', 'RNT-012', 1275.00, 'UNPAID', 'MAINT-011', '2024-10-23'),  -- Display screen: 2.0h × ₱350 + ₱1200 = ₱1,900
-('PEN-006', 'RNT-013', 562.50, 'PAID', 'MAINT-004', '2024-10-23'),     -- Headlight + throttle: 1.5h × ₱350 + (₱350 + ₱280) = ₱1,155
-('PEN-007', 'RNT-014', 1470.00, 'UNPAID', 'MAINT-016', '2024-10-20'),  -- Battery + controller: 2.5h × ₱380 + (₱2500 + ₱1800) = ₱5,250
-('PEN-008', 'RNT-015', 600.00, 'PAID', 'MAINT-005', '2024-10-24'),     -- Tire replacement: 0.75h × ₱320 + ₱450 = ₱690
-('PEN-009', 'RNT-011', 1130.00, 'UNPAID', 'MAINT-013', '2024-10-24'),  -- Pedal + seat: 1.5h × ₱320 + (₱180 + ₱350) = ₱1,010
-('PEN-010', 'RNT-010', 925.00, 'PAID', 'MAINT-017', '2024-10-23');     -- Complete brake system: 2.0h × ₱330 + (4×₱150 + 2×₱95) = ₱1,450
+-- status field: 'Active' = penalty is active, 'Inactive' = soft deleted (cancelled/voided)
+('PEN-001', 'RNT-005', 3725.00, 'UNPAID', 'MAINT-001', '2024-10-21', 'Active'),  -- Battery replacement: 3.5h × ₱350 + ₱2500 = ₱3,725
+('PEN-002', 'RNT-007', 745.00, 'PAID', 'MAINT-002', '2024-10-22', 'Active'),     -- Brake maintenance: 1.0h × ₱330 + (2×₱150 + ₱95) = ₱725
+('PEN-003', 'RNT-006', 3535.00, 'UNPAID', 'MAINT-008', '2024-10-19', 'Active'),  -- Battery + display: 4.0h × ₱380 + (₱2500 + ₱1200) = ₱5,220
+('PEN-004', 'RNT-009', 565.00, 'PAID', 'MAINT-009', '2024-10-21', 'Active'),     -- Chain + brakes: 1.25h × ₱320 + (₱200 + 2×₱150) = ₱900
+('PEN-005', 'RNT-012', 1275.00, 'UNPAID', 'MAINT-011', '2024-10-23', 'Active'),  -- Display screen: 2.0h × ₱350 + ₱1200 = ₱1,900
+('PEN-006', 'RNT-013', 562.50, 'PAID', 'MAINT-004', '2024-10-23', 'Active'),     -- Headlight + throttle: 1.5h × ₱350 + (₱350 + ₱280) = ₱1,155
+('PEN-007', 'RNT-014', 1470.00, 'UNPAID', 'MAINT-016', '2024-10-20', 'Active'),  -- Battery + controller: 2.5h × ₱380 + (₱2500 + ₱1800) = ₱5,250
+('PEN-008', 'RNT-015', 600.00, 'PAID', 'MAINT-005', '2024-10-24', 'Active'),     -- Tire replacement: 0.75h × ₱320 + ₱450 = ₱690
+('PEN-009', 'RNT-011', 1130.00, 'UNPAID', 'MAINT-013', '2024-10-24', 'Active'),  -- Pedal + seat: 1.5h × ₱320 + (₱180 + ₱350) = ₱1,010
+('PEN-010', 'RNT-010', 925.00, 'PAID', 'MAINT-017', '2024-10-23', 'Active');     -- Complete brake system: 2.0h × ₱330 + (4×₱150 + 2×₱95) = ₱1,450
 
 SELECT * FROM penalty;
 
