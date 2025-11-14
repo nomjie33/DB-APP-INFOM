@@ -152,24 +152,39 @@ SELECT * FROM parts;
 -- Active and completed rental transactions
 -- startDateTime/endDateTime use DATETIME format (removed redundant rentalDate column)
 
-INSERT INTO rentals (rentalID, customerID, plateID, locationID, startDateTime, endDateTime) VALUES
+INSERT INTO rentals (rentalID, customerID, plateID, locationID, startDateTime, endDateTime, status) VALUES
 -- Active rentals (ongoing, no end time yet)
-('RNT-001', 'CUST-003', 'ES-003', 'LOC-001', '2024-10-28 09:00:00', NULL),
-('RNT-002', 'CUST-009', 'ES-008', 'LOC-001', '2024-10-28 10:30:00', NULL),
-('RNT-003', 'CUST-005', 'EB-003', 'LOC-005', '2024-10-28 08:00:00', NULL),
-('RNT-004', 'CUST-007', 'ET-003', 'LOC-001', '2024-10-28 11:00:00', NULL),
+('RNT-001', 'CUST-003', 'ES-003', 'LOC-001', '2024-10-28 09:00:00', NULL, 'Active'),
+('RNT-002', 'CUST-009', 'ES-008', 'LOC-001', '2024-10-28 10:30:00', NULL, 'Active'),
+('RNT-003', 'CUST-005', 'EB-003', 'LOC-005', '2024-10-28 08:00:00', NULL, 'Active'),
+('RNT-004', 'CUST-007', 'ET-003', 'LOC-001', '2024-10-28 11:00:00', NULL, 'Active'),
 -- Completed rentals with precise start and end times
-('RNT-005', 'CUST-001', 'ES-001', 'LOC-001', '2024-10-27 09:00:00', '2024-10-27 11:45:00'),
-('RNT-006', 'CUST-002', 'EB-001', 'LOC-002', '2024-10-27 14:00:00', '2024-10-27 17:30:00'),
-('RNT-007', 'CUST-004', 'ES-002', 'LOC-004', '2024-10-26 10:00:00', '2024-10-26 12:50:00'),
-('RNT-008', 'CUST-006', 'ET-001', 'LOC-006', '2024-10-26 15:00:00', '2024-10-26 18:00:00'),
-('RNT-009', 'CUST-008', 'EB-002', 'LOC-008', '2024-10-25 09:00:00', '2024-10-25 11:30:00'),
-('RNT-010', 'CUST-010', 'ES-004', 'LOC-002', '2024-10-25 13:00:00', '2024-10-25 16:15:00'),
-('RNT-011', 'CUST-001', 'ES-006', 'LOC-001', '2024-10-24 10:00:00', '2024-10-24 12:00:00'),
-('RNT-012', 'CUST-003', 'EB-004', 'LOC-003', '2024-10-24 14:00:00', '2024-10-24 16:30:00'),
-('RNT-013', 'CUST-002', 'ES-007', 'LOC-002', '2024-10-23 09:00:00', '2024-10-23 11:00:00'),
-('RNT-014', 'CUST-004', 'ET-002', 'LOC-004', '2024-10-23 15:00:00', '2024-10-23 18:00:00'),
-('RNT-015', 'CUST-006', 'ES-009', 'LOC-006', '2024-10-22 10:00:00', '2024-10-22 13:00:00');
+('RNT-005', 'CUST-001', 'ES-001', 'LOC-001', '2024-10-27 09:00:00', '2024-10-27 11:45:00', 'Completed'),
+('RNT-006', 'CUST-002', 'EB-001', 'LOC-002', '2024-10-27 14:00:00', '2024-10-27 17:30:00', 'Completed'),
+('RNT-007', 'CUST-004', 'ES-002', 'LOC-004', '2024-10-26 10:00:00', '2024-10-26 12:50:00', 'Completed'),
+('RNT-008', 'CUST-006', 'ET-001', 'LOC-006', '2024-10-26 15:00:00', '2024-10-26 18:00:00', 'Completed'),
+('RNT-009', 'CUST-008', 'EB-002', 'LOC-008', '2024-10-25 09:00:00', '2024-10-25 11:30:00', 'Completed'),
+('RNT-010', 'CUST-010', 'ES-004', 'LOC-002', '2024-10-25 13:00:00', '2024-10-25 16:15:00', 'Completed'),
+('RNT-011', 'CUST-001', 'ES-006', 'LOC-001', '2024-10-24 10:00:00', '2024-10-24 12:00:00', 'Completed'),
+('RNT-012', 'CUST-003', 'EB-004', 'LOC-003', '2024-10-24 14:00:00', '2024-10-24 16:30:00', 'Completed'),
+('RNT-013', 'CUST-002', 'ES-007', 'LOC-002', '2024-10-23 09:00:00', '2024-10-23 11:00:00', 'Completed'),
+('RNT-014', 'CUST-004', 'ET-002', 'LOC-004', '2024-10-23 15:00:00', '2024-10-23 18:00:00', 'Completed'),
+('RNT-015', 'CUST-006', 'ES-009', 'LOC-006', '2024-10-22 10:00:00', '2024-10-22 13:00:00', 'Completed'),
+-- Additional rentals for ES-005 (now in Maintenance) - heavy usage before defect
+('RNT-016', 'CUST-001', 'ES-005', 'LOC-001', '2024-10-15 08:00:00', '2024-10-15 12:00:00', 'Completed'),
+('RNT-017', 'CUST-002', 'ES-005', 'LOC-001', '2024-10-16 09:00:00', '2024-10-16 13:30:00', 'Completed'),
+('RNT-018', 'CUST-003', 'ES-005', 'LOC-001', '2024-10-17 10:00:00', '2024-10-17 14:00:00', 'Completed'),
+('RNT-019', 'CUST-004', 'ES-005', 'LOC-001', '2024-10-18 11:00:00', '2024-10-18 15:30:00', 'Completed'),
+('RNT-020', 'CUST-005', 'ES-005', 'LOC-001', '2024-10-19 09:00:00', '2024-10-19 12:00:00', 'Completed'),
+('RNT-021', 'CUST-006', 'ES-005', 'LOC-001', '2024-10-20 10:00:00', '2024-10-20 13:30:00', 'Completed'),
+('RNT-022', 'CUST-007', 'ES-005', 'LOC-001', '2024-10-21 08:30:00', '2024-10-21 11:00:00', 'Completed'),
+('RNT-023', 'CUST-008', 'ES-005', 'LOC-001', '2024-10-22 14:00:00', '2024-10-22 17:00:00', 'Completed'),
+-- Additional rentals for EB-006 (now in Maintenance) - moderate usage
+('RNT-024', 'CUST-009', 'EB-006', 'LOC-007', '2024-10-10 09:00:00', '2024-10-10 13:00:00', 'Completed'),
+('RNT-025', 'CUST-010', 'EB-006', 'LOC-007', '2024-10-12 10:00:00', '2024-10-12 14:30:00', 'Completed'),
+('RNT-026', 'CUST-001', 'EB-006', 'LOC-007', '2024-10-14 08:00:00', '2024-10-14 12:00:00', 'Completed'),
+('RNT-027', 'CUST-002', 'EB-006', 'LOC-007', '2024-10-16 11:00:00', '2024-10-16 15:00:00', 'Completed'),
+('RNT-028', 'CUST-003', 'EB-006', 'LOC-007', '2024-10-18 09:00:00', '2024-10-18 13:30:00', 'Completed');
 
 SELECT * FROM rentals;
 
@@ -194,7 +209,22 @@ INSERT INTO payments (paymentID, amount, rentalID, paymentDate, status) VALUES
 ('PAY-008', 8.13, 'RNT-012', '2024-10-24', 'Active'),   -- EB-004: 2.5h × ₱78/day
 ('PAY-009', 3.75, 'RNT-013', '2024-10-23', 'Active'),   -- ES-007: 2h × ₱45/day
 ('PAY-010', 11.88, 'RNT-014', '2024-10-23', 'Active'),  -- ET-002: 3h × ₱95/day
-('PAY-011', 7.25, 'RNT-015', '2024-10-22', 'Active');   -- ES-009: 3h × ₱58/day
+('PAY-011', 7.25, 'RNT-015', '2024-10-22', 'Active'),   -- ES-009: 3h × ₱58/day
+-- Additional payments for ES-005 rentals (before maintenance)
+('PAY-016', 8.00, 'RNT-016', '2024-10-15', 'Active'),   -- ES-005: 4h × ₱48/day
+('PAY-017', 9.00, 'RNT-017', '2024-10-16', 'Active'),   -- ES-005: 4.5h × ₱48/day
+('PAY-018', 8.00, 'RNT-018', '2024-10-17', 'Active'),   -- ES-005: 4h × ₱48/day
+('PAY-019', 9.00, 'RNT-019', '2024-10-18', 'Active'),   -- ES-005: 4.5h × ₱48/day
+('PAY-020', 6.00, 'RNT-020', '2024-10-19', 'Active'),   -- ES-005: 3h × ₱48/day
+('PAY-021', 7.00, 'RNT-021', '2024-10-20', 'Active'),   -- ES-005: 3.5h × ₱48/day
+('PAY-022', 5.00, 'RNT-022', '2024-10-21', 'Active'),   -- ES-005: 2.5h × ₱48/day
+('PAY-023', 6.00, 'RNT-023', '2024-10-22', 'Active'),   -- ES-005: 3h × ₱48/day
+-- Additional payments for EB-006 rentals (before maintenance)
+('PAY-024', 13.67, 'RNT-024', '2024-10-10', 'Active'),  -- EB-006: 4h × ₱82/day
+('PAY-025', 15.42, 'RNT-025', '2024-10-12', 'Active'),  -- EB-006: 4.5h × ₱82/day
+('PAY-026', 13.67, 'RNT-026', '2024-10-14', 'Active'),  -- EB-006: 4h × ₱82/day
+('PAY-027', 13.67, 'RNT-027', '2024-10-16', 'Active'),  -- EB-006: 4h × ₱82/day
+('PAY-028', 15.42, 'RNT-028', '2024-10-18', 'Active');  -- EB-006: 4.5h × ₱82/day
 
 -- =====================================================
 -- Placeholder payments for ongoing rentals (one record per rental)
@@ -244,6 +274,13 @@ INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, notes, techn
 ('MAINT-016', '2024-10-19 09:00:00', '2024-10-20 11:30:00', 'Battery and controller check', 'TECH-003', 'ET-002', 'Active'),
 ('MAINT-017', '2024-10-23 13:00:00', '2024-10-23 15:00:00', 'Complete brake system service', 'TECH-005', 'ET-004', 'Active'),
 ('MAINT-018', '2024-10-24 08:00:00', '2024-10-25 10:30:00', 'Motor controller replacement', 'TECH-007', 'ET-005', 'Active'),
+
+-- Additional maintenance for ES-005 (multiple incidents in October 2024)
+('MAINT-021', '2024-10-12 08:00:00', '2024-10-12 10:30:00', 'Brake cable replacement', 'TECH-002', 'ES-005', 'Active'),
+('MAINT-022', '2024-10-16 14:00:00', '2024-10-17 09:00:00', 'Display screen glitching', 'TECH-001', 'ES-005', 'Active'),
+-- Additional maintenance for EB-006 (multiple incidents in October 2024)
+('MAINT-023', '2024-10-08 09:00:00', '2024-10-09 11:00:00', 'Chain replacement due to wear', 'TECH-002', 'EB-006', 'Active'),
+('MAINT-024', '2024-10-15 08:00:00', '2024-10-15 10:00:00', 'Rear tire puncture', 'TECH-005', 'EB-006', 'Active'),
 
 -- Ongoing maintenance (not yet completed - endDateTime is NULL)
 ('MAINT-019', '2024-10-27 09:00:00', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005', 'Active'),
@@ -328,7 +365,19 @@ INSERT INTO maintenance_cheque (maintenanceID, partID, quantityUsed, status) VAL
 ('MAINT-019', 'PART-003', 2.00, 'Active'),
 
 -- MAINT-020: Seat replacement (awaiting delivery - no parts used yet)
-('MAINT-020', 'PART-013', 1.00, 'Active');
+('MAINT-020', 'PART-013', 1.00, 'Active'),
+
+-- MAINT-021: Brake cable (ES-005)
+('MAINT-021', 'PART-011', 1.00, 'Active'),
+
+-- MAINT-022: Display screen (ES-005)
+('MAINT-022', 'PART-012', 1.00, 'Active'),
+
+-- MAINT-023: Chain replacement (EB-006)
+('MAINT-023', 'PART-010', 1.00, 'Active'),
+
+-- MAINT-024: Rear tire (EB-006)
+('MAINT-024', 'PART-006', 1.00, 'Active');
 
 SELECT * FROM maintenance_cheque;
 
