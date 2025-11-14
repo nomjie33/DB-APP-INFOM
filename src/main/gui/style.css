@@ -268,6 +268,8 @@
     -fx-padding: 10px 5px;
 }
 
+
+
 /*
  * ==============================================================================
  * 7. DIALOG/ALERT STYLES
@@ -292,3 +294,35 @@
 .dialog-pane .button:hover {
     -fx-background-color: derive(#FC7222, 20%); /* Lighter orange on hover */
 }
+
+/*
+ * ==============================================================================
+ * 8. BUTTONS
+ * ==============================================================================
+ */
+
+ .add-button{
+    -fx-background-color: #33a398;
+    -fx-text-fill: white;
+    -fx-font-family: "SFT Schrifted Sans TRIAL"
+    -fx-font-weight: bold;
+    -fx-font-size: 20px;
+    -fx-background-radius: 50;
+ }
+
+ .add-button: hover {
+    -fx-background-color: #2b8a7f;
+    -fx-cursor: hand;
+ }
+
+ .edit-button {
+    -fx-background-color: #33a398;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-background-radius: 5;
+ }
+
+ .edit-button: hover{
+    -fx-background-color: #2b8a7f;
+    -fx-cursor: hand;
+ }

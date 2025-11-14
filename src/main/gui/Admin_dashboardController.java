@@ -12,7 +12,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import model.Customer;
+import model.*;
 
 import java.io.IOException;
 import java.net.URL;
@@ -207,6 +207,15 @@ public class Admin_dashboardController implements Initializable {
                 ((Admin_homeController) controller).setMainController(this);
             } else if (controller instanceof  Admin_customerRecordsController){
                 ((Admin_customerRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_vehicleRecordsController){
+                ((Admin_vehicleRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_locationRecordsController){
+                ((Admin_locationRecordsController) controller).setMainController(this);
+                ((Admin_locationRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_technicianRecordsController) {
+                ((Admin_technicianRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_partRecordsController){
+                ((Admin_partRecordsController) controller).setMainController(this);
             }
 
             loadPageFromSub(page);
@@ -229,7 +238,7 @@ public class Admin_dashboardController implements Initializable {
 
     public void loadCustomerForm(Customer customerToEdit){
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-customerFOrm.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-customerForm.fxml"));
             Parent page = loader.load();
 
             Admin_customerFormController controller = loader.getController();
@@ -238,11 +247,88 @@ public class Admin_dashboardController implements Initializable {
             if (customerToEdit != null){
                 controller.setCustomerData(customerToEdit);
             }
-
             loadPageFromSub(page);
 
         } catch (IOException e){
             e.printStackTrace();
         }
     }
+
+    public void loadVehicleForm(Vehicle vehicleToEdit){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-vehicleForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_vehicleFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (vehicleToEdit != null){
+                controller.setVehicleData(vehicleToEdit);
+            }
+            loadPageFromSub(page);
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void loadLocationForm(Location locationToEdit){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-locationForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_locationFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (locationToEdit != null){
+                controller.setLocationData(locationToEdit);
+            }
+            loadPageFromSub(page);
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void loadTechnicianForm(Technician techToEdit){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-technicianForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_technicianFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (techToEdit != null){
+                controller.setTechnicianData(techToEdit);
+            }
+
+            loadPageFromSub(page);
+
+        } catch (IOException e){
+            System.err.println("Failed to load technician form.");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadPartForm(Part partToEdit){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-partForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_partFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (partToEdit != null){
+                controller.setPartData(partToEdit);
+            }
+
+            loadPageFromSub(page);
+
+        } catch (IOException e){
+            System.err.println("Failed to load part form.");
+            e.printStackTrace();
+        }
+    }
+
+
 }
