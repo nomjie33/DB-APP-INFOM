@@ -114,3 +114,5 @@ gradle-app.setting
 reports/output/
 exports/
 backup/
+src/module-info.java
+src/module-info.java
