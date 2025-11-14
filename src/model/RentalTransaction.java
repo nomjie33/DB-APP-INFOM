@@ -10,7 +10,8 @@ public class RentalTransaction {
     private String customerID;
     private String plateID;
     private String locationID;
-    private Timestamp startDateTime;
+    private Timestamp pickUpDateTime;  // Customer's chosen pickup schedule
+    private Timestamp startDateTime;   // Actual rental start (set by admin)
     private Timestamp endDateTime;
     private String status;  // ADDED: Active, Completed, or Cancelled
     
@@ -21,11 +22,12 @@ public class RentalTransaction {
     
     // Parameterized constructor
     public RentalTransaction(String rentalID, String customerID, String plateID, 
-                           String locationID, Timestamp startDateTime, Timestamp endDateTime) {
+                           String locationID, Timestamp pickUpDateTime, Timestamp startDateTime, Timestamp endDateTime) {
         this.rentalID = rentalID;
         this.customerID = customerID;
         this.plateID = plateID;
         this.locationID = locationID;
+        this.pickUpDateTime = pickUpDateTime;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.status = "Active";  // Default to Active
@@ -33,11 +35,12 @@ public class RentalTransaction {
     
     // Full constructor with status
     public RentalTransaction(String rentalID, String customerID, String plateID, 
-                           String locationID, Timestamp startDateTime, Timestamp endDateTime, String status) {
+                           String locationID, Timestamp pickUpDateTime, Timestamp startDateTime, Timestamp endDateTime, String status) {
         this.rentalID = rentalID;
         this.customerID = customerID;
         this.plateID = plateID;
         this.locationID = locationID;
+        this.pickUpDateTime = pickUpDateTime;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.status = status;
@@ -74,6 +77,14 @@ public class RentalTransaction {
     
     public void setLocationID(String locationID) {
         this.locationID = locationID;
+    }
+    
+    public Timestamp getPickUpDateTime() {
+        return pickUpDateTime;
+    }
+    
+    public void setPickUpDateTime(Timestamp pickUpDateTime) {
+        this.pickUpDateTime = pickUpDateTime;
     }
     
     public Timestamp getStartDateTime() {
@@ -118,6 +129,16 @@ public class RentalTransaction {
         return endDateTime == null && "Active".equalsIgnoreCase(status);
     }
     
+    /**
+     * Check if the vehicle has been picked up (rental has started).
+     * A rental is considered not picked up if startDateTime has not been set by admin.
+     * 
+     * @return true if startDateTime is set (vehicle picked up), false otherwise
+     */
+    public boolean isPickedUp() {
+        return startDateTime != null;
+    }
+    
     public long getDurationInHours() {
         if (endDateTime != null && startDateTime != null) {
             long diffInMillis = endDateTime.getTime() - startDateTime.getTime();
@@ -133,6 +154,7 @@ public class RentalTransaction {
                 ", customerID='" + customerID + '\'' +
                 ", plateID='" + plateID + '\'' +
                 ", locationID='" + locationID + '\'' +
+                ", pickUpDateTime=" + pickUpDateTime +
                 ", startDateTime=" + startDateTime +
                 ", endDateTime=" + endDateTime +
                 ", status='" + status + '\'' +

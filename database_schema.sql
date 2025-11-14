@@ -139,7 +139,8 @@ CREATE TABLE rentals (
     customerID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,
     locationID VARCHAR(11) NOT NULL,
-    startDateTime TIMESTAMP NOT NULL,
+    pickUpDateTime TIMESTAMP NOT NULL COMMENT 'Customer chosen pickup schedule',
+    startDateTime TIMESTAMP NULL COMMENT 'Actual rental start time set by admin',
     endDateTime TIMESTAMP NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
     

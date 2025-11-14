@@ -7,7 +7,10 @@ import java.util.List;
 
 /**
  * Business Logic Service for RENTAL operations.
- * UPDATED: Removed cost calculation (PaymentService handles this)
+ * UPDATED: Two-phase rental process:
+ *   1. bookRental() - Customer selects pickUpDateTime, vehicle stays Available
+ *   2. startRental() - Admin sets startDateTime when customer picks up, vehicle becomes In Use
+ * Cost calculation handled by PaymentService
  */
 public class RentalService {
     
@@ -29,14 +32,17 @@ public class RentalService {
     }
     
     /**
-     * Create a new rental
+     * Book a rental (Phase 1: Customer Booking)
+     * Creates a rental record with pickUpDateTime, but startDateTime remains NULL.
+     * Vehicle status stays "Available" until admin confirms pickup.
      * 
-     * @param customerID Customer renting the vehicle
-     * @param plateID Vehicle being rented
+     * @param customerID Customer booking the vehicle
+     * @param plateID Vehicle being booked
      * @param locationID Rental location
+     * @param pickUpDateTime Customer's selected pickup date and time
      * @return Rental ID if successful, null otherwise
      */
-    public String createRental(String customerID, String plateID, String locationID)
+    public String bookRental(String customerID, String plateID, String locationID, Timestamp pickUpDateTime)
     {
         // VALIDATE CUSTOMER
         System.out.println("Validating Customer 🔎...");
@@ -89,7 +95,7 @@ public class RentalService {
             }
             return null;
         }
-        System.out.println("✓ Vehicle is available for rent");
+        System.out.println("✓ Vehicle is available for booking");
 
         // VALIDATE LOCATION
         System.out.println("Validating location...");
@@ -112,50 +118,31 @@ public class RentalService {
         String rentalID = generateRentalID();
         System.out.println("Generated Rental ID: " + rentalID);
 
-        // CREATE RENTAL RECORD
-        Timestamp startDateTime = new Timestamp(System.currentTimeMillis());
-        
+        // CREATE RENTAL RECORD (startDateTime is NULL - not picked up yet)
         RentalTransaction rental = new RentalTransaction(
             rentalID,
             customerID,
             plateID,
             locationID,
-            startDateTime,
-            null  // endDateTime is null (rental is active)
+            pickUpDateTime,  // Customer's chosen pickup time
+            null,            // startDateTime is NULL (vehicle not picked up)
+            null             // endDateTime is null (rental not completed)
         );
         
         boolean rentalCreated = rentalDAO.insertRental(rental);
         
         if (!rentalCreated) {
-            System.err.println("Err: Failed to create rental record!");
+            System.err.println("Err: Failed to create rental booking!");
             return null;
         }
         
-        System.out.println("✓ Rental record created!");
-
-        // UPDATE VEHICLE STATUS
-        System.out.println("Updating vehicle status...");
-        
-        boolean statusUpdated = vehicleDAO.updateVehicleStatus(plateID, "In Use");
-        
-        if (!statusUpdated) {
-            System.err.println("Err: Failed to update vehicle status!");
-            System.err.println("WARNING: Rental was created but vehicle status not updated");
-            System.err.println("Attempting rollback...");
-            
-            // ROLLBACK: Cancel the rental since we failed to update vehicle
-            rentalDAO.cancelRental(rentalID);  // UPDATED: Use cancelRental instead of deleteRental
-            System.err.println("Rental rolled back");
-            
-            return null;
-        }
-        
-        System.out.println("Vehicle status updated to 'In Use'");
+        System.out.println("✓ Rental booking created!");
+        System.out.println("   Note: Vehicle status remains 'Available' until pickup");
         
         // CREATE PLACEHOLDER PAYMENT
         System.out.println("Creating placeholder payment...");
         String paymentID = generatePaymentID();
-        java.sql.Date paymentDate = new java.sql.Date(startDateTime.getTime());
+        java.sql.Date paymentDate = new java.sql.Date(System.currentTimeMillis());
         
         PaymentTransaction placeholderPayment = new PaymentTransaction(
             paymentID,
@@ -168,26 +155,131 @@ public class RentalService {
         
         if (!paymentCreated) {
             System.err.println("WARNING: Failed to create placeholder payment!");
-            System.err.println("Rental created but payment record is missing");
-            // Note: Could rollback rental here, but continuing for now
+            System.err.println("Booking created but payment record is missing");
         } else {
             System.out.println("Placeholder payment created: " + paymentID);
         }
         
         // ===== SUCCESS! =====
         System.out.println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        System.out.println("RENTAL CREATED!");
+        System.out.println("RENTAL BOOKED!");
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         System.out.println("   Rental ID: " + rentalID);
         System.out.println("   Payment ID: " + paymentID);
         System.out.println("   Customer: " + customer.getFullName());
         System.out.println("   Vehicle: " + vehicle.getVehicleModel() + " (" + vehicle.getPlateID() + ")");
         System.out.println("   Location: " + location.getName());
-        System.out.println("   Start Time: " + startDateTime);
+        System.out.println("   Pickup Time: " + pickUpDateTime);
         System.out.println("   Rate: ₱" + vehicle.getRentalPrice() + "/hour");
+        System.out.println("   Status: Awaiting pickup (can be cancelled)");
         System.out.println("────────────────────────────────\n");
         
         return rentalID;
+    }
+    
+    /**
+     * Start a rental (Phase 2: Admin Action on Physical Pickup)
+     * Sets startDateTime when customer physically picks up the vehicle.
+     * Updates vehicle status to "In Use".
+     * 
+     * @param rentalID Rental to start
+     * @return true if successful, false otherwise
+     */
+    public boolean startRental(String rentalID) {
+        System.out.println("\n=== Starting Rental (Physical Pickup) ===");
+        
+        // FETCH RENTAL RECORD
+        RentalTransaction rental = rentalDAO.getRentalById(rentalID);
+        
+        if (rental == null) {
+            System.err.println("Err: Rental " + rentalID + " not found!");
+            return false;
+        }
+        
+        System.out.println("✓ Rental found!");
+        System.out.println("   Customer: " + rental.getCustomerID());
+        System.out.println("   Vehicle: " + rental.getPlateID());
+        System.out.println("   Scheduled Pickup: " + rental.getPickUpDateTime());
+        
+        // VALIDATE RENTAL STATUS
+        if (rental.isPickedUp()) {
+            System.err.println("Err: Rental already started!");
+            System.err.println("   Start Time: " + rental.getStartDateTime());
+            return false;
+        }
+        
+        if (rental.isCancelled()) {
+            System.err.println("Err: Rental was cancelled!");
+            return false;
+        }
+        
+        if (rental.isCompleted()) {
+            System.err.println("Err: Rental is already completed!");
+            return false;
+        }
+        
+        System.out.println("✓ Rental is awaiting pickup");
+        
+        // VALIDATE VEHICLE AVAILABILITY
+        Vehicle vehicle = vehicleDAO.getVehicleById(rental.getPlateID());
+        
+        if (vehicle == null) {
+            System.err.println("Err: Vehicle not found!");
+            return false;
+        }
+        
+        if (!vehicle.isAvailable()) {
+            System.err.println("Err: Vehicle is not available!");
+            System.err.println("   Current Status: " + vehicle.getStatus());
+            return false;
+        }
+        
+        // SET START TIME
+        Timestamp startDateTime = new Timestamp(System.currentTimeMillis());
+        rental.setStartDateTime(startDateTime);
+        
+        // UPDATE RENTAL RECORD
+        boolean rentalUpdated = rentalDAO.updateRental(rental);
+        
+        if (!rentalUpdated) {
+            System.err.println("Err: Failed to update rental record!");
+            return false;
+        }
+        
+        System.out.println("✓ Rental start time set: " + startDateTime);
+        
+        // UPDATE VEHICLE STATUS TO "IN USE"
+        System.out.println("Updating vehicle status to 'In Use'...");
+        
+        boolean statusUpdated = vehicleDAO.updateVehicleStatus(rental.getPlateID(), "In Use");
+        
+        if (!statusUpdated) {
+            System.err.println("Err: Failed to update vehicle status!");
+            System.err.println("WARNING: Rental started but vehicle status not updated");
+            System.err.println("Attempting rollback...");
+            
+            // ROLLBACK: Reset startDateTime to NULL
+            rental.setStartDateTime(null);
+            rentalDAO.updateRental(rental);
+            System.err.println("Rental start rolled back");
+            
+            return false;
+        }
+        
+        System.out.println("✓ Vehicle status updated to 'In Use'");
+        
+        // ===== SUCCESS! =====
+        System.out.println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        System.out.println("RENTAL STARTED!");
+        System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        System.out.println("   Rental ID: " + rentalID);
+        System.out.println("   Vehicle: " + vehicle.getVehicleModel() + " (" + rental.getPlateID() + ")");
+        System.out.println("   Scheduled: " + rental.getPickUpDateTime());
+        System.out.println("   Actual Start: " + startDateTime);
+        System.out.println("   Status: In progress (cannot be cancelled)");
+        System.out.println("────────────────────────────────\n");
+        
+        return true;
     }
 
     /**
@@ -288,8 +380,9 @@ public class RentalService {
 
     /**
      * Cancel a rental (SOFT DELETE)
-     * Marks rental as Cancelled, does not delete from database
-     * Also deactivates the corresponding payment record
+     * Only allowed if vehicle has NOT been picked up (startDateTime is NULL).
+     * Marks rental as Cancelled, does not delete from database.
+     * Also deactivates the corresponding payment record.
      * 
      * @param rentalID Rental to cancel
      * @return true if successful, false otherwise
@@ -303,15 +396,37 @@ public class RentalService {
             return false;
         }
         
-        if (!rental.isActive()) {
-            System.err.println("Err: Cannot cancel completed/cancelled rental");
+        // CHECK IF ALREADY CANCELLED OR COMPLETED
+        if (rental.isCancelled()) {
+            System.err.println("Err: Rental is already cancelled");
             return false;
         }
         
-        // Update vehicle status back to "Available"
-        boolean statusUpdated = vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
-        if (!statusUpdated) {
-            System.err.println("WARNING: Failed to update vehicle status");
+        if (rental.isCompleted()) {
+            System.err.println("Err: Cannot cancel completed rental");
+            return false;
+        }
+        
+        // CHECK IF VEHICLE HAS BEEN PICKED UP
+        if (rental.isPickedUp()) {
+            System.err.println("Err: Cannot cancel rental - vehicle has been picked up!");
+            System.err.println("   Pickup Time: " + rental.getStartDateTime());
+            System.err.println("   Cancellation is only allowed before physical pickup");
+            return false;
+        }
+        
+        System.out.println("✓ Rental is awaiting pickup - cancellation allowed");
+        System.out.println("   Scheduled Pickup: " + rental.getPickUpDateTime());
+        
+        // NOTE: Vehicle status should still be "Available" since pickup hasn't happened
+        // But we'll check and update just in case
+        Vehicle vehicle = vehicleDAO.getVehicleById(rental.getPlateID());
+        if (vehicle != null && !vehicle.isAvailable()) {
+            System.out.println("   Resetting vehicle status to 'Available'...");
+            boolean statusUpdated = vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
+            if (!statusUpdated) {
+                System.err.println("WARNING: Failed to update vehicle status");
+            }
         }
         
         // Deactivate the associated payment record
@@ -327,7 +442,7 @@ public class RentalService {
             System.out.println("Note: No payment record found for this rental");
         }
         
-        // UPDATED: Use cancelRental (soft delete) instead of deleteRental
+        // Mark rental as Cancelled (soft delete)
         boolean cancelled = rentalDAO.cancelRental(rentalID);
         
         if (cancelled) {

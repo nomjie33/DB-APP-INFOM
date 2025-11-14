@@ -106,14 +106,15 @@ public class ServiceTest {
         String testRentalID = null;
         
         try {
-            // === TEST 1.1: Create Rental ===
-            System.out.println("─── 1.1 CREATE RENTAL: Testing rental creation ───");
+            // === TEST 1.1: Book Rental (Phase 1) ===
+            System.out.println("─── 1.1 BOOK RENTAL: Testing rental booking (pickUpDateTime) ───");
             System.out.println("Customer: CUST-001, Vehicle: ES-009, Location: LOC-001");
             
-            testRentalID = rentalService.createRental("CUST-001", "ES-009", "LOC-001");
+            Timestamp pickUpTime = new Timestamp(System.currentTimeMillis() + 3600000); // 1 hour from now
+            testRentalID = rentalService.bookRental("CUST-001", "ES-009", "LOC-001", pickUpTime);
             
             if (testRentalID != null) {
-                System.out.println(" Rental created successfully: " + testRentalID);
+                System.out.println(" Rental booked successfully: " + testRentalID);
                 recordTest(true);
                 
                 // Verify rental exists in database
@@ -123,10 +124,29 @@ public class ServiceTest {
                     System.out.println("  Customer: " + rental.getCustomerID());
                     System.out.println("  Vehicle: " + rental.getPlateID());
                     System.out.println("  Location: " + rental.getLocationID());
-                    System.out.println("  Active: " + rental.isActive());
-                    recordTest(true);
+                    System.out.println("  PickUp Time: " + rental.getPickUpDateTime());
+                    System.out.println("  Start Time: " + rental.getStartDateTime() + " (should be NULL)");
+                    System.out.println("  Picked Up: " + rental.isPickedUp() + " (should be false)");
+                    
+                    if (!rental.isPickedUp()) {
+                        System.out.println(" Rental correctly awaiting pickup");
+                        recordTest(true);
+                    } else {
+                        System.out.println("✗ ERROR: Rental should not be marked as picked up!");
+                        recordTest(false);
+                    }
                 } else {
                     System.out.println("✗ ERROR: Rental not found in database!");
+                    recordTest(false);
+                }
+                
+                // Verify vehicle is still available (not picked up yet)
+                Vehicle vehicle = vehicleDAO.getVehicleById("ES-009");
+                if (vehicle != null && vehicle.isAvailable()) {
+                    System.out.println(" Vehicle status still 'Available' (correct - not picked up)");
+                    recordTest(true);
+                } else {
+                    System.out.println("✗ ERROR: Vehicle should still be available!");
                     recordTest(false);
                 }
                 
@@ -141,15 +161,54 @@ public class ServiceTest {
                     recordTest(false);
                 }
             } else {
-                System.out.println("✗ ERROR: Failed to create rental");
+                System.out.println("✗ ERROR: Failed to book rental");
                 recordTest(false);
             }
             
             System.out.println();
             
-            // === TEST 1.2: Check Vehicle Availability ===
-            System.out.println("─── 1.2 CHECK AVAILABILITY: Testing vehicle status ───");
-            System.out.println("Checking if ES-009 is available after rental...");
+            // === TEST 1.2: Start Rental (Phase 2) ===
+            if (testRentalID != null) {
+                System.out.println("─── 1.2 START RENTAL: Testing physical pickup (startDateTime) ───");
+                System.out.println("Admin confirms customer picked up vehicle...");
+                
+                boolean started = rentalService.startRental(testRentalID);
+                
+                if (started) {
+                    System.out.println(" Rental started successfully");
+                    recordTest(true);
+                    
+                    // Verify startDateTime is now set
+                    RentalTransaction rental = rentalDAO.getRentalById(testRentalID);
+                    if (rental != null && rental.isPickedUp()) {
+                        System.out.println(" StartDateTime set: " + rental.getStartDateTime());
+                        System.out.println(" Picked Up: " + rental.isPickedUp() + " (should be true)");
+                        recordTest(true);
+                    } else {
+                        System.out.println("✗ ERROR: StartDateTime not set!");
+                        recordTest(false);
+                    }
+                    
+                    // Verify vehicle status changed to 'In Use'
+                    Vehicle vehicle = vehicleDAO.getVehicleById("ES-009");
+                    if (vehicle != null && !vehicle.isAvailable() && "In Use".equals(vehicle.getStatus())) {
+                        System.out.println(" Vehicle status changed to 'In Use'");
+                        recordTest(true);
+                    } else {
+                        System.out.println("✗ ERROR: Vehicle status not updated to 'In Use'!");
+                        recordTest(false);
+                    }
+                } else {
+                    System.out.println("✗ ERROR: Failed to start rental");
+                    recordTest(false);
+                }
+            }
+            
+            System.out.println();
+            
+            // === TEST 1.3: Check Vehicle Availability ===
+            System.out.println("─── 1.3 CHECK AVAILABILITY: Testing vehicle status ───");
+            System.out.println("Checking if ES-009 is available after pickup...");
             
             boolean available = rentalService.checkVehicleAvailability("ES-009");
             System.out.println("Available: " + available + " (should be false - in use)");
@@ -164,8 +223,8 @@ public class ServiceTest {
             
             System.out.println();
             
-            // === TEST 1.3: Get Rental History ===
-            System.out.println("─── 1.3 RENTAL HISTORY: Testing customer rental history ───");
+            // === TEST 1.4: Get Rental History ===
+            System.out.println("─── 1.4 RENTAL HISTORY: Testing customer rental history ───");
             System.out.println("Getting rental history for CUST-001...");
             
             List<RentalTransaction> history = rentalService.getRentalHistory("CUST-001");
@@ -180,8 +239,8 @@ public class ServiceTest {
             
             System.out.println();
             
-            // === TEST 1.4: Get Active Rentals ===
-            System.out.println("─── 1.4 ACTIVE RENTALS: Testing active rental retrieval ───");
+            // === TEST 1.5: Get Active Rentals ===
+            System.out.println("─── 1.5 ACTIVE RENTALS: Testing active rental retrieval ───");
             
             List<RentalTransaction> activeRentals = rentalService.getActiveRentals();
             if (activeRentals != null) {
@@ -206,9 +265,9 @@ public class ServiceTest {
             
             System.out.println();
             
-            // === TEST 1.5: Complete Rental ===
+            // === TEST 1.6: Complete Rental ===
             if (testRentalID != null) {
-                System.out.println("─── 1.5 COMPLETE RENTAL: Testing rental completion ───");
+                System.out.println("─── 1.6 COMPLETE RENTAL: Testing rental completion ───");
                 System.out.println("Completing rental: " + testRentalID);
                 
                 // Wait a moment to ensure time difference for cost calculation
@@ -259,11 +318,11 @@ public class ServiceTest {
             
             System.out.println();
             
-            // === TEST 1.6: Error Handling - Invalid Customer ===
-            System.out.println("─── 1.6 ERROR HANDLING: Testing invalid customer ───");
-            System.out.println("Attempting rental with non-existent customer...");
+            // === TEST 1.7: Error Handling - Invalid Customer ===
+            System.out.println("─── 1.7 ERROR HANDLING: Testing invalid customer ───");
+            System.out.println("Attempting booking with non-existent customer...");
             
-            String invalidRental = rentalService.createRental("INVALID-999", "ES-009", "LOC-001");
+            String invalidRental = rentalService.bookRental("INVALID-999", "ES-009", "LOC-001", new Timestamp(System.currentTimeMillis()));
             if (invalidRental == null) {
                 System.out.println(" Correctly rejected invalid customer");
                 recordTest(true);
@@ -274,11 +333,11 @@ public class ServiceTest {
             
             System.out.println();
             
-            // === TEST 1.7: Error Handling - Invalid Vehicle ===
-            System.out.println("─── 1.7 ERROR HANDLING: Testing invalid vehicle ───");
-            System.out.println("Attempting rental with non-existent vehicle...");
+            // === TEST 1.8: Error Handling - Invalid Vehicle ===
+            System.out.println("─── 1.8 ERROR HANDLING: Testing invalid vehicle ───");
+            System.out.println("Attempting booking with non-existent vehicle...");
             
-            invalidRental = rentalService.createRental("CUST-001", "INVALID-999", "LOC-001");
+            invalidRental = rentalService.bookRental("CUST-001", "INVALID-999", "LOC-001", new Timestamp(System.currentTimeMillis()));
             if (invalidRental == null) {
                 System.out.println(" Correctly rejected invalid vehicle");
                 recordTest(true);
@@ -289,8 +348,26 @@ public class ServiceTest {
             
             System.out.println();
             
+            // === TEST 1.9: Test Cancellation After Pickup (Should Fail) ===
+            if (testRentalID != null) {
+                System.out.println("─── 1.9 CANCELLATION: Testing cancellation after pickup ───");
+                System.out.println("Attempting to cancel rental after vehicle picked up...");
+                
+                boolean cancelled = rentalService.cancelRental(testRentalID);
+                
+                if (!cancelled) {
+                    System.out.println(" Correctly rejected cancellation (vehicle picked up)");
+                    recordTest(true);
+                } else {
+                    System.out.println("✗ ERROR: Should not allow cancellation after pickup!");
+                    recordTest(false);
+                }
+            }
+            
+            System.out.println();
+            
             // === CLEANUP ===
-            System.out.println("─── 1.8 CLEANUP: Removing test data ───");
+            System.out.println("─── 1.10 CLEANUP: Removing test data ───");
             if (testRentalID != null) {
                 // Deactivate payment first
                 PaymentTransaction payment = paymentService.getPaymentByRental(testRentalID);

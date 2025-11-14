@@ -15,7 +15,7 @@ public class RentalDAO {
     
     public boolean insertRental(RentalTransaction rental) {
         String sql = "INSERT INTO rentals (rentalID, customerID, plateID, locationID, " +
-                     "startDateTime, endDateTime, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                     "pickUpDateTime, startDateTime, endDateTime, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -24,9 +24,10 @@ public class RentalDAO {
             stmt.setString(2, rental.getCustomerID());
             stmt.setString(3, rental.getPlateID());
             stmt.setString(4, rental.getLocationID());
-            stmt.setTimestamp(5, rental.getStartDateTime());
-            stmt.setTimestamp(6, rental.getEndDateTime());
-            stmt.setString(7, "Active");
+            stmt.setTimestamp(5, rental.getPickUpDateTime());
+            stmt.setTimestamp(6, rental.getStartDateTime());
+            stmt.setTimestamp(7, rental.getEndDateTime());
+            stmt.setString(8, "Active");
             
             int rowsAffected = stmt.executeUpdate();
             
@@ -269,7 +270,7 @@ public class RentalDAO {
     
     public boolean updateRental(RentalTransaction rental) {
         String sql = "UPDATE rentals SET customerID = ?, plateID = ?, locationID = ?, " +
-                     "startDateTime = ?, endDateTime = ?, status = ? WHERE rentalID = ?";
+                     "pickUpDateTime = ?, startDateTime = ?, endDateTime = ?, status = ? WHERE rentalID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -277,10 +278,11 @@ public class RentalDAO {
             stmt.setString(1, rental.getCustomerID());
             stmt.setString(2, rental.getPlateID());
             stmt.setString(3, rental.getLocationID());
-            stmt.setTimestamp(4, rental.getStartDateTime());
-            stmt.setTimestamp(5, rental.getEndDateTime());
-            stmt.setString(6, rental.getStatus());
-            stmt.setString(7, rental.getRentalID());
+            stmt.setTimestamp(4, rental.getPickUpDateTime());
+            stmt.setTimestamp(5, rental.getStartDateTime());
+            stmt.setTimestamp(6, rental.getEndDateTime());
+            stmt.setString(7, rental.getStatus());
+            stmt.setString(8, rental.getRentalID());
             
             int rowsAffected = stmt.executeUpdate();
             
@@ -364,6 +366,7 @@ public class RentalDAO {
         rental.setCustomerID(rs.getString("customerID"));
         rental.setPlateID(rs.getString("plateID"));
         rental.setLocationID(rs.getString("locationID"));
+        rental.setPickUpDateTime(rs.getTimestamp("pickUpDateTime"));
         rental.setStartDateTime(rs.getTimestamp("startDateTime"));
         rental.setEndDateTime(rs.getTimestamp("endDateTime"));
         rental.setStatus(rs.getString("status"));
