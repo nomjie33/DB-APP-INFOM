@@ -1,18 +1,18 @@
 
 /**
  * LOCATION RENTAL FREQUENCY REPORT
- * 
+ *
  * PURPOSE:
  * Analyze rental patterns by location to identify high-traffic pickup points
  * and optimize vehicle deployment strategy. Shows rental volume and average
  * duration per location.
- * 
+ *
  * DATA SOURCES:
  * - Rental Records (rentalID, locationID, startDateTime, endDateTime)
  * - Deployment Transaction Records (vehicleID, locationID, deploymentDate)
  * - Vehicle Records (plateID, vehicleType)
  * - Location Records (locationID, locationName, address)
- * 
+ *
  * REPORT OUTPUT:
  * - Location ID
  * - Location Name
@@ -22,20 +22,20 @@
  * - Total Revenue Generated (sum of payments for rentals from this location)
  * - Most Rented Vehicle Type (E-Scooter or E-Bike)
  * - Vehicle Deployment Count (number of vehicles deployed to this location)
- * 
+ *
  * USER INPUTS:
  * 1. Report Period Type (Day/Month/Year)
  * 2. Year (required)
  * 3. Month (required if period is Day or Month)
  * 4. Day (required if period is Day)
- * 
+ *
  * EXPECTED METHODS:
  * - generateDailyReport(int year, int month, int day)
  * - generateMonthlyReport(int year, int month)
  * - generateYearlyReport(int year)
  * - printReport(List<LocationFrequencyData> data) - Format and display results
  * - getRentalDuration(Timestamp start, Timestamp end) - Calculate duration in hours
- * 
+ *
  * SQL LOGIC:
  * - JOIN rentals with locations on locationID
  * - Filter by date range (rental startDateTime within specified period)
@@ -46,13 +46,13 @@
  *   * COUNT(DISTINCT plateID) - number of unique vehicles
  * - JOIN with deployments to get deployment counts
  * - Sort by number of rentals (descending) to show busiest locations first
- * 
+ *
  * BUSINESS INSIGHTS:
  * - High rental frequency = popular location, may need more vehicles
  * - Long average duration = customers prefer this location for long trips
  * - Low rental frequency = consider removing vehicles or marketing efforts
  * - Helps optimize vehicle distribution across locations
- * 
+ *
  * EXAMPLE OUTPUT:
  * ================================================================
  * LOCATION RENTAL FREQUENCY REPORT - October 2024
@@ -118,6 +118,18 @@ public class LocationRentalFrequencyReport {
             sb.append(ch);
         }
         return sb.toString();
+    }
+
+    /**
+     * Create output directory and return full path for PDF
+     */
+    private static String prepareOutputPath(String filename) {
+        String outputDir = "reports_output";
+        File dir = new File(outputDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return outputDir + File.separator + filename;
     }
 
     /**
@@ -213,7 +225,7 @@ public class LocationRentalFrequencyReport {
                         "     AND MONTH(d.startDate) = ?) AS deployment_count " +
                         "FROM locations l " +
                         "LEFT JOIN rentals r ON l.locationID = r.locationID " +
-                        "    AND r.status = 'Active' " +
+                        "    AND r.status = 'Completed' " +
                         "    AND YEAR(r.startDateTime) = ? " +
                         "    AND MONTH(r.startDateTime) = ? " +
                         "LEFT JOIN payments p ON r.rentalID = p.rentalID " +
@@ -286,7 +298,7 @@ public class LocationRentalFrequencyReport {
                         "     AND YEAR(d.startDate) = ?) AS deployment_count " +
                         "FROM locations l " +
                         "LEFT JOIN rentals r ON l.locationID = r.locationID " +
-                        "    AND r.status = 'Active' " +
+                        "    AND r.status = 'Completed' " +
                         "    AND YEAR(r.startDateTime) = ? " +
                         "LEFT JOIN payments p ON r.rentalID = p.rentalID " +
                         "    AND p.status = 'Active' " +
@@ -417,140 +429,101 @@ public class LocationRentalFrequencyReport {
     }
 
     /**
-     * Export report to PDF
+     * Export report to branded PDF
      */
     public void exportToPDF(List<LocationFrequencyData> data, String filename, int year, int month) {
-        Document document = new Document(PageSize.A4.rotate()); // Landscape
+        Document document = new Document(PageSize.A4.rotate());
 
         try {
-            PdfWriter.getInstance(document, new FileOutputStream(filename));
+            String fullPath = prepareOutputPath(filename);
+            PdfWriter.getInstance(document, new FileOutputStream(fullPath));
             document.open();
 
-            // Add title
-            Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
+            // Title
             String[] months = {"", "January", "February", "March", "April", "May", "June",
                     "July", "August", "September", "October", "November", "December"};
-
-            String title = "LOCATION RENTAL FREQUENCY REPORT";
+            String title = "Location Rental Frequency Report";
             if (month > 0) {
                 title += " - " + months[month] + " " + year;
             } else {
                 title += " - Year " + year;
             }
 
-            Paragraph titlePara = new Paragraph(title, titleFont);
-            titlePara.setAlignment(Element.ALIGN_CENTER);
-            titlePara.setSpacingAfter(20);
-            document.add(titlePara);
+            PDFBrandingHelper.addHeaderSection(document, title, null);
 
             if (data.isEmpty()) {
-                Paragraph noData = new Paragraph("No location rental data found for the specified period.");
+                Paragraph noData = new Paragraph("No location rental data found for the specified period.",
+                        new Font(Font.FontFamily.HELVETICA, 9));
                 noData.setAlignment(Element.ALIGN_CENTER);
+                noData.setSpacingBefore(30);
                 document.add(noData);
                 document.close();
+                System.out.println("✓ PDF saved to: " + fullPath);
                 return;
             }
 
-            // Create table
-            PdfPTable table = new PdfPTable(7); // 7 columns
+            // Table - Updated to match your actual data fields
+            PdfPTable table = new PdfPTable(6);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{1.5f, 3f, 1f, 1.5f, 1.8f, 1.5f, 1f});
+            table.setWidths(new float[]{2f, 2f, 1.5f, 2f, 1.5f, 2f});
 
-            // Header font
-            Font headerFont = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD);
-
-            // Add headers
-            String[] headers = {"Location ID", "Location Name", "Rentals", "Avg Days",
-                    "Revenue (PHP)", "Top Type", "Deployed"};
-
+            // Headers - Updated to match your data
+            String[] headers = {"Location ID", "Location Name", "Rentals",
+                    "Total Revenue (PHP)", "Avg Duration (days)", "Most Rented Type"};
             for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cell.setPadding(5);
-                table.addCell(cell);
+                table.addCell(PDFBrandingHelper.createHeaderCell(header));
             }
 
-            // Add data rows
-            Font dataFont = new Font(Font.FontFamily.HELVETICA, 8);
-
+            // Data
             int totalRentals = 0;
             double totalRevenue = 0;
-            double totalDuration = 0;
-            int totalDeployed = 0;
 
-            for (LocationFrequencyData location : data) {
-                table.addCell(new Phrase(location.getLocationID(), dataFont));
-                table.addCell(new Phrase(location.getLocationName(), dataFont));
-                table.addCell(new Phrase(String.valueOf(location.getNumberOfRentals()), dataFont));
-                table.addCell(new Phrase(String.format("%.1f", location.getAverageRentalDuration()), dataFont));
-                table.addCell(new Phrase(String.format("%,.2f", location.getTotalRevenue()), dataFont));
+            for (int i = 0; i < data.size(); i++) {
+                LocationFrequencyData loc = data.get(i);
 
-                String topType = location.getMostRentedVehicleType() != null
-                        ? location.getMostRentedVehicleType() : "N/A";
-                table.addCell(new Phrase(topType, dataFont));
+                table.addCell(PDFBrandingHelper.createDataCell(loc.getLocationID(), i));
+                table.addCell(PDFBrandingHelper.createDataCell(loc.getLocationName(), i));
+                table.addCell(PDFBrandingHelper.createDataCell(String.valueOf(loc.getNumberOfRentals()), i, Element.ALIGN_CENTER));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("₱%,.2f", loc.getTotalRevenue()), i, Element.ALIGN_RIGHT));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("%.1f", loc.getAverageRentalDuration()), i, Element.ALIGN_CENTER));
+                table.addCell(PDFBrandingHelper.createDataCell(loc.getMostRentedVehicleType() != null ? loc.getMostRentedVehicleType() : "N/A", i));
 
-                table.addCell(new Phrase(String.valueOf(location.getVehicleDeploymentCount()), dataFont));
-
-                totalRentals += location.getNumberOfRentals();
-                totalRevenue += location.getTotalRevenue();
-                totalDuration += location.getAverageRentalDuration() * location.getNumberOfRentals();
-                totalDeployed += location.getVehicleDeploymentCount();
+                totalRentals += loc.getNumberOfRentals();
+                totalRevenue += loc.getTotalRevenue();
             }
-
-            // Add total row
-            Font totalFont = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD);
-            PdfPCell totalLabel = new PdfPCell(new Phrase("TOTAL (" + data.size() + " Locations)", totalFont));
-            totalLabel.setColspan(2);
-            totalLabel.setBackgroundColor(BaseColor.LIGHT_GRAY);
-            table.addCell(totalLabel);
-
-            table.addCell(new Phrase(String.valueOf(totalRentals), totalFont));
-
-            double avgDuration = totalRentals > 0 ? totalDuration / totalRentals : 0;
-            table.addCell(new Phrase(String.format("%.1f", avgDuration), totalFont));
-
-            table.addCell(new Phrase(String.format("%,.2f", totalRevenue), totalFont));
-            table.addCell(new Phrase("", totalFont));
-            table.addCell(new Phrase(String.valueOf(totalDeployed), totalFont));
 
             document.add(table);
 
-            // Add business insights
-            if (!data.isEmpty()) {
-                Paragraph insights = new Paragraph("\n\nBUSINESS INSIGHTS:",
-                        new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD));
-                document.add(insights);
+            // Summary
+            Paragraph summaryTitle = new Paragraph("\nSummary Statistics",
+                    new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, PDFBrandingHelper.BRAND_GREEN));
+            summaryTitle.setSpacingBefore(20);
+            summaryTitle.setSpacingAfter(10);
+            document.add(summaryTitle);
 
-                Font insightFont = new Font(Font.FontFamily.HELVETICA, 10);
+            PdfPTable summaryTable = new PdfPTable(2);
+            summaryTable.setWidthPercentage(60);
+            summaryTable.setWidths(new float[]{2f, 1f});
 
-                LocationFrequencyData topLocation = data.get(0);
-                Paragraph insight1 = new Paragraph(
-                        String.format("• Busiest Location: %s with %d rentals",
-                                topLocation.getLocationName(), topLocation.getNumberOfRentals()), insightFont);
-                document.add(insight1);
+            double avgRevenue = totalRentals > 0 ? totalRevenue / totalRentals : 0;
+            LocationFrequencyData topLocation = data.stream()
+                    .max((a, b) -> Integer.compare(a.getNumberOfRentals(), b.getNumberOfRentals()))
+                    .orElse(null);
+            String topLocationName = topLocation != null ? topLocation.getLocationName() : "N/A";
 
-                LocationFrequencyData bestRevenue = data.stream()
-                        .max(Comparator.comparingDouble(l -> l.getTotalRevenue() / l.getNumberOfRentals()))
-                        .orElse(null);
-                if (bestRevenue != null) {
-                    Paragraph insight2 = new Paragraph(
-                            String.format("• Highest Revenue per Rental: %s (PHP %.2f per rental)",
-                                    bestRevenue.getLocationName(),
-                                    bestRevenue.getTotalRevenue() / bestRevenue.getNumberOfRentals()), insightFont);
-                    document.add(insight2);
-                }
-            }
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Locations:", String.valueOf(data.size()));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Rentals:", String.valueOf(totalRentals));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Revenue:", String.format("₱%,.2f", totalRevenue));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Avg Revenue per Rental:", String.format("₱%,.2f", avgRevenue));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Most Popular Location:", topLocationName);
 
-            // Add footer
-            Paragraph footer = new Paragraph("\nGenerated on: " +
-                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                    new Font(Font.FontFamily.HELVETICA, 8, Font.ITALIC));
-            footer.setAlignment(Element.ALIGN_RIGHT);
-            footer.setSpacingBefore(20);
-            document.add(footer);
+            document.add(summaryTable);
 
-            System.out.println("PDF report generated successfully: " + filename);
+            // Footer
+            PDFBrandingHelper.addFooter(document,
+                    new SimpleDateFormat("MMMM dd, yyyy 'at' hh:mm a").format(new java.util.Date()));
+
+            System.out.println("✓ PDF saved to: " + fullPath);
 
         } catch (DocumentException | IOException e) {
             System.err.println("Error generating PDF report: " + e.getMessage());

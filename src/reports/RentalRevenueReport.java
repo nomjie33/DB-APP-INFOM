@@ -71,6 +71,8 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
@@ -99,6 +101,18 @@ public class RentalRevenueReport {
             sb.append(ch);
         }
         return sb.toString();
+    }
+
+    /**
+     * Create output directory and return full path for PDF
+     */
+    private static String prepareOutputPath(String filename) {
+        String outputDir = "reports_output";
+        File dir = new File(outputDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return outputDir + File.separator + filename;
     }
 
     /**
@@ -167,7 +181,7 @@ public class RentalRevenueReport {
                         "JOIN vehicles v ON r.plateID = v.plateID " +
                         "LEFT JOIN payments p ON r.rentalID = p.rentalID " +
                         "    AND p.status = 'Active' " +
-                        "WHERE r.status = 'Active' " +
+                        "WHERE r.status = 'Completed' " +
                         "    AND YEAR(r.startDateTime) = ? " +
                         "    AND MONTH(r.startDateTime) = ? " +
                         "    AND DAY(r.startDateTime) = ? " +
@@ -222,7 +236,8 @@ public class RentalRevenueReport {
         String sql =
                 "SELECT " +
                         "    v.vehicleType, " +
-                        "    CONCAT(YEAR(r.startDateTime), '-', LPAD(MONTH(r.startDateTime), 2, '0')) AS period, " +
+                        "    YEAR(r.startDateTime) AS rental_year, " +
+                        "    MONTH(r.startDateTime) AS rental_month, " +
                         "    COALESCE(SUM(p.amount), 0) AS total_revenue, " +
                         "    COALESCE(AVG(p.amount), 0) AS avg_revenue, " +
                         "    COUNT(DISTINCT r.rentalID) AS number_of_rentals " +
@@ -230,12 +245,12 @@ public class RentalRevenueReport {
                         "JOIN vehicles v ON r.plateID = v.plateID " +
                         "LEFT JOIN payments p ON r.rentalID = p.rentalID " +
                         "    AND p.status = 'Active' " +
-                        "WHERE r.status = 'Active' " +
+                        "WHERE r.status = 'Completed' " +
                         "    AND YEAR(r.startDateTime) = ? " +
                         "    AND MONTH(r.startDateTime) BETWEEN ? AND ? " +
                         vehicleFilter +
                         " GROUP BY v.vehicleType, YEAR(r.startDateTime), MONTH(r.startDateTime) " +
-                        "ORDER BY period, v.vehicleType";
+                        "ORDER BY YEAR(r.startDateTime), MONTH(r.startDateTime), v.vehicleType";
 
         try (Connection conn = util.DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -254,7 +269,13 @@ public class RentalRevenueReport {
             while (rs.next()) {
                 RevenueData data = new RevenueData();
                 data.setVehicleType(rs.getString("vehicleType"));
-                data.setTimePeriod(rs.getString("period"));
+
+                // Build period string from year and month
+                int rentalYear = rs.getInt("rental_year");
+                int rentalMonth = rs.getInt("rental_month");
+                String period = String.format("%d-%02d", rentalYear, rentalMonth);
+                data.setTimePeriod(period);
+
                 data.setTotalRevenue(rs.getDouble("total_revenue"));
                 data.setAverageRevenue(rs.getDouble("avg_revenue"));
                 data.setNumberOfRentals(rs.getInt("number_of_rentals"));
@@ -292,7 +313,7 @@ public class RentalRevenueReport {
                         "JOIN vehicles v ON r.plateID = v.plateID " +
                         "LEFT JOIN payments p ON r.rentalID = p.rentalID " +
                         "    AND p.status = 'Active' " +
-                        "WHERE r.status = 'Active' " +
+                        "WHERE r.status = 'Completed' " +
                         "    AND YEAR(r.startDateTime) BETWEEN ? AND ? " +
                         vehicleFilter +
                         " GROUP BY v.vehicleType, YEAR(r.startDateTime) " +
@@ -382,134 +403,104 @@ public class RentalRevenueReport {
     }
 
     /**
-     * Export report to PDF
+     * Export report to branded PDF with orange/green theme and logo
      */
     public void exportToPDF(List<RevenueData> data, String filename, String reportType, String vehicleType) {
         Document document = new Document(PageSize.A4);
 
         try {
-            PdfWriter.getInstance(document, new FileOutputStream(filename));
+            String fullPath = prepareOutputPath(filename);
+            PdfWriter.getInstance(document, new FileOutputStream(fullPath));
             document.open();
 
-            // Add title
-            Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
-            String title = "RENTAL REVENUE REPORT - " + reportType.toUpperCase();
+            // Use branding helper
+            String title = "Rental Revenue Report";
+            if (reportType != null && !reportType.isEmpty()) {
+                title += " - " + reportType;
+            }
             if (vehicleType != null && !vehicleType.equalsIgnoreCase("All")) {
                 title += " (" + vehicleType + ")";
             }
-
-            Paragraph titlePara = new Paragraph(title, titleFont);
-            titlePara.setAlignment(Element.ALIGN_CENTER);
-            titlePara.setSpacingAfter(20);
-            document.add(titlePara);
+            PDFBrandingHelper.addHeaderSection(document, title, null);
 
             if (data.isEmpty()) {
-                Paragraph noData = new Paragraph("No revenue data found for the specified period.");
+                Paragraph noData = new Paragraph("No revenue data found for the specified period.",
+                        PDFBrandingHelper.getBodyFont());
                 noData.setAlignment(Element.ALIGN_CENTER);
+                noData.setSpacingBefore(30);
                 document.add(noData);
                 document.close();
+                System.out.println("✓ PDF saved to: " + fullPath);
                 return;
             }
 
-            // Create table
-            PdfPTable table = new PdfPTable(5); // 5 columns
+            // Create table with branded styling
+            PdfPTable table = new PdfPTable(5);
             table.setWidthPercentage(100);
             table.setWidths(new float[]{1.5f, 1.5f, 2f, 2f, 1.5f});
 
-            // Header font
-            Font headerFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD);
-
-            // Add headers
-            String[] headers = {"Vehicle Type", "Period", "Total Revenue (PHP)",
-                    "Avg Revenue (PHP)", "# Rentals"};
-
+            // Add headers with green background
+            String[] headers = {"Vehicle Type", "Period", "Total Revenue (PHP)", "Avg Revenue (PHP)", "# Rentals"};
             for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cell.setPadding(5);
-                table.addCell(cell);
+                table.addCell(PDFBrandingHelper.createHeaderCell(header));
             }
 
-            // Add data rows
-            Font dataFont = new Font(Font.FontFamily.HELVETICA, 9);
-
+            // Add data rows with alternating colors
             double grandTotalRevenue = 0;
             int grandTotalRentals = 0;
 
-            for (RevenueData rev : data) {
-                table.addCell(new Phrase(rev.getVehicleType(), dataFont));
-                table.addCell(new Phrase(rev.getTimePeriod(), dataFont));
-                table.addCell(new Phrase(String.format("%,.2f", rev.getTotalRevenue()), dataFont));
-                table.addCell(new Phrase(String.format("%,.2f", rev.getAverageRevenue()), dataFont));
-                table.addCell(new Phrase(String.valueOf(rev.getNumberOfRentals()), dataFont));
+            for (int i = 0; i < data.size(); i++) {
+                RevenueData rev = data.get(i);
+
+                table.addCell(PDFBrandingHelper.createDataCell(rev.getVehicleType(), i));
+                table.addCell(PDFBrandingHelper.createDataCell(rev.getTimePeriod(), i, Element.ALIGN_CENTER));
+                table.addCell(PDFBrandingHelper.createDataCell(
+                        String.format("₱%,.2f", rev.getTotalRevenue()), i, Element.ALIGN_RIGHT));
+                table.addCell(PDFBrandingHelper.createDataCell(
+                        String.format("₱%,.2f", rev.getAverageRevenue()), i, Element.ALIGN_RIGHT));
+                table.addCell(PDFBrandingHelper.createDataCell(
+                        String.valueOf(rev.getNumberOfRentals()), i, Element.ALIGN_CENTER));
 
                 grandTotalRevenue += rev.getTotalRevenue();
                 grandTotalRentals += rev.getNumberOfRentals();
             }
 
-            // Add total row
-            Font totalFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD);
-
-            PdfPCell totalLabel = new PdfPCell(new Phrase("TOTAL", totalFont));
-            totalLabel.setColspan(2);
-            totalLabel.setBackgroundColor(BaseColor.LIGHT_GRAY);
-            table.addCell(totalLabel);
-
-            table.addCell(new Phrase(String.format("%,.2f", grandTotalRevenue), totalFont));
-
-            double grandAvgRevenue = grandTotalRentals > 0 ? grandTotalRevenue / grandTotalRentals : 0;
-            table.addCell(new Phrase(String.format("%,.2f", grandAvgRevenue), totalFont));
-
-            table.addCell(new Phrase(String.valueOf(grandTotalRentals), totalFont));
-
             document.add(table);
 
-            // Add summary insights
-            if (!data.isEmpty()) {
-                Paragraph insights = new Paragraph("\n\nSUMMARY:",
-                        new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD));
-                document.add(insights);
+            // Add summary section
+            Paragraph summaryTitle = new Paragraph("\nSummary Statistics", PDFBrandingHelper.getSubheaderFont());
+            summaryTitle.setSpacingBefore(20);
+            summaryTitle.setSpacingAfter(10);
+            document.add(summaryTitle);
 
-                Font insightFont = new Font(Font.FontFamily.HELVETICA, 10);
+            PdfPTable summaryTable = new PdfPTable(2);
+            summaryTable.setWidthPercentage(60);
+            summaryTable.setWidths(new float[]{2f, 1f});
 
-                // Find highest revenue vehicle type
-                Map<String, Double> revenueByType = new HashMap<>();
-                Map<String, Integer> rentalsByType = new HashMap<>();
+            double grandAvgRevenue = grandTotalRentals > 0 ? grandTotalRevenue / grandTotalRentals : 0;
 
-                for (RevenueData rev : data) {
-                    revenueByType.merge(rev.getVehicleType(), rev.getTotalRevenue(), Double::sum);
-                    rentalsByType.merge(rev.getVehicleType(), rev.getNumberOfRentals(), Integer::sum);
-                }
-
-                String topVehicle = revenueByType.entrySet().stream()
-                        .max(Map.Entry.comparingByValue())
-                        .map(Map.Entry::getKey)
-                        .orElse("N/A");
-
-                Paragraph insight1 = new Paragraph(
-                        String.format("• Highest Revenue Vehicle Type: %s (PHP %,.2f)",
-                                topVehicle, revenueByType.getOrDefault(topVehicle, 0.0)), insightFont);
-                document.add(insight1);
-
-                Paragraph insight2 = new Paragraph(
-                        String.format("• Total Rentals: %d", grandTotalRentals), insightFont);
-                document.add(insight2);
-
-                Paragraph insight3 = new Paragraph(
-                        String.format("• Average Revenue per Rental: PHP %,.2f", grandAvgRevenue), insightFont);
-                document.add(insight3);
+            // Find highest revenue vehicle type
+            Map<String, Double> revenueByType = new HashMap<>();
+            for (RevenueData rev : data) {
+                revenueByType.merge(rev.getVehicleType(), rev.getTotalRevenue(), Double::sum);
             }
+            String topVehicle = revenueByType.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse("N/A");
+
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Revenue:", String.format("₱%,.2f", grandTotalRevenue));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Rentals:", String.valueOf(grandTotalRentals));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Average per Rental:", String.format("₱%,.2f", grandAvgRevenue));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Top Vehicle Type:", topVehicle);
+
+            document.add(summaryTable);
 
             // Add footer
-            Paragraph footer = new Paragraph("\nGenerated on: " +
-                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                    new Font(Font.FontFamily.HELVETICA, 8, Font.ITALIC));
-            footer.setAlignment(Element.ALIGN_RIGHT);
-            footer.setSpacingBefore(20);
-            document.add(footer);
+            PDFBrandingHelper.addFooter(document,
+                    new SimpleDateFormat("MMMM dd, yyyy 'at' hh:mm a").format(new Date()));
 
-            System.out.println("PDF report generated successfully: " + filename);
+            System.out.println("✓ PDF saved to: " + fullPath);
 
         } catch (DocumentException | IOException e) {
             System.err.println("Error generating PDF report: " + e.getMessage());
