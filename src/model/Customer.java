@@ -145,4 +145,14 @@ public class Customer {
     public int hashCode() {
         return customerID != null ? customerID.hashCode() : 0;
     }
+
+    public String getFullAddressString(){
+        if (address != null){
+            return address.getFullAddress();
+        }
+        if (addressID != null){
+            return "Address ID: " + addressID;
+        }
+        return "N/A";
+    }
 }

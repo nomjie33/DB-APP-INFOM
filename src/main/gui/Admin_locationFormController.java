@@ -1,5 +1,12 @@
 package main.gui;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import java.io.IOException;
+
 import dao.LocationDAO;
 import model.Location;
 import javafx.fxml.FXML;
@@ -7,7 +14,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
-class Admin_locationFormController {
+public class Admin_locationFormController {
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField idField;
@@ -55,10 +62,21 @@ class Admin_locationFormController {
         }
 
         if (success){
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Location record saved.");
+            if (isEditMode) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Location record saved.");
+            } else {
+                // Show custom dialog for new records
+                String title = "New Location Added!";
+                String content = "A new location has been successfully added.\n\n" +
+                        "Location ID:\n" + loc.getLocationID() + "\n\n" +
+                        "Location Name:\n" + loc.getName() + "\n\n" +
+                        "Status:\nActive";
+
+                showConfirmationDialog(title, content);
+            }
             mainController.loadPage("Admin-locationRecords.fxml");
         } else {
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to save location.");
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to save location. The ID might already exist.");
         }
     }
 
@@ -74,4 +92,32 @@ class Admin_locationFormController {
         alert.showAndWait();
     }
 
+    private void showConfirmationDialog(String title, String content) {
+        try {
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-addRecordConfirmation.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Confirmation");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            if (mainController != null) {
+                dialogStage.initOwner(mainController.getPrimaryStage());
+            }
+
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            Admin_addRecordConfirmationController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setData(title, content);
+
+            dialogStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not load confirmation dialog.");
+        }
+    }
 }

@@ -330,5 +330,8 @@ public class Admin_dashboardController implements Initializable {
         }
     }
 
+    public Stage getPrimaryStage(){
+        return (Stage) adminDashboardRoot.getScene().getWindow();
+    }
 
 }

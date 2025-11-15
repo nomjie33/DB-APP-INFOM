@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
 
 <AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_customerFormController">
     <children>
-        <Label fx:id="formTitleLabel" layoutX="38.0" layoutY="35.0" style="-fx-font-size: 20px;" text="Section" />
         <Label fx:id="formHeaderLabel" layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="New Customer" />
 
         <AnchorPane layoutX="38.0" layoutY="120.0" prefHeight="500.0" prefWidth="600.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
             <children>
 
                 <Label layoutX="30.0" layoutY="30.0" styleClass="sidebar-title" text="Customer ID" />
-                <TextField fx:id="idField" layoutX="30.0" layoutY="55.0" prefWidth="250.0" promptText="C-XXXX" styleClass="form-text-field" />
+                <TextField fx:id="idField" layoutX="30.0" layoutY="55.0" prefWidth="250.0" promptText="CUST-XXXX" styleClass="form-text-field" />
 
                 <Label layoutX="30.0" layoutY="110.0" styleClass="sidebar-title" text="First Name" />
                 <TextField fx:id="firstNameField" layoutX="30.0" layoutY="135.0" prefWidth="250.0" styleClass="form-text-field" />
@@ -24,13 +23,19 @@
                 <TextField fx:id="lastNameField" layoutX="300.0" layoutY="135.0" prefWidth="250.0" styleClass="form-text-field" />
 
                 <Label layoutX="30.0" layoutY="190.0" styleClass="sidebar-title" text="Contact Number" />
-                <TextField fx:id="contactField" layoutX="30.0" layoutY="215.0" prefWidth="250.0" styleClass="form-text-field" />
+                <TextField fx:id="contactField" layoutX="30.0" layoutY="215.0" prefWidth="250.0" promptText="12-digit mobile number" styleClass="form-text-field" />
 
                 <Label layoutX="300.0" layoutY="190.0" styleClass="sidebar-title" text="Email Address" />
-                <TextField fx:id="emailField" layoutX="300.0" layoutY="215.0" prefWidth="250.0" styleClass="form-text-field" />
+                <TextField fx:id="emailField" layoutX="300.0" layoutY="215.0" prefWidth="250.0" promptText="e.g. juan.delacruz@gmail.com" styleClass="form-text-field" />
 
-                <Label layoutX="30.0" layoutY="270.0" styleClass="sidebar-title" text="Address" />
-                <TextField fx:id="addressField" layoutX="30.0" layoutY="295.0" prefHeight="60.0" prefWidth="520.0" styleClass="form-text-field" />
+                <Label layoutX="30.0" layoutY="270.0" styleClass="sidebar-title" text="City" />
+                <ComboBox fx:id="cityComboBox" layoutX="30.0" layoutY="295.0" prefWidth="250.0" promptText="Select City" styleClass="form-text-field" />
+
+                <Label layoutX="300.0" layoutY="270.0" styleClass="sidebar-title" text="Barangay" />
+                <ComboBox fx:id="barangayComboBox" layoutX="300.0" layoutY="295.0" prefWidth="250.0" promptText="Select City First" styleClass="form-text-field" />
+
+                <Label layoutX="30.0" layoutY="350.0" styleClass="sidebar-title" text="Street / House No." />
+                <TextField fx:id="streetField" layoutX="30.0" layoutY="375.0" prefWidth="520.0" styleClass="form-text-field" />
 
                 <Button layoutX="430.0" layoutY="430.0" mnemonicParsing="false" onAction="#handleCancel" prefHeight="40.0" prefWidth="120.0" styleClass="cancel-button" text="Cancel" />
                 <Button layoutX="290.0" layoutY="430.0" mnemonicParsing="false" onAction="#handleSave" prefHeight="40.0" prefWidth="120.0" styleClass="confirm-button" text="Save Record" />

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="400.0" prefWidth="500.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_addRecordConfirmationController">
+    <children>
+        <VBox alignment="TOP_CENTER" layoutX="10.0" layoutY="10.0" prefHeight="380.0" prefWidth="480.0" styleClass="dialog-background" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+            <children>
+                <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@assets/logo1_orig.png" />
+                    </image>
+                    <VBox.margin>
+                        <Insets top="20.0" />
+                    </VBox.margin>
+                </ImageView>
+
+                <Label fx:id="titleLabel" styleClass="dialog-title" text="Success!">
+                    <VBox.margin>
+                        <Insets top="10.0" />
+                    </VBox.margin>
+                </Label>
+
+                <Label fx:id="contentLabel" alignment="CENTER" styleClass="dialog-content" text="Content goes here" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS" />
+
+                <Button mnemonicParsing="false" onAction="#handleClose" prefHeight="40.0" prefWidth="150.0" styleClass="confirm-button" text="Got It!" />
+            </children>
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+        </VBox>
+    </children>
+</AnchorPane>

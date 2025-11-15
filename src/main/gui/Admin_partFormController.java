@@ -1,5 +1,12 @@
 package main.gui;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import java.io.IOException;
+
 import dao.PartDAO;
 import model.Part;
 import javafx.fxml.FXML;
@@ -19,7 +26,7 @@ public class Admin_partFormController {
     private Admin_dashboardController mainController;
     private PartDAO dao = new PartDAO();
     private boolean isEditMode = false;
-    private Part currentPart; // To hold the part being edited
+    private Part currentPart;
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
@@ -54,15 +61,31 @@ public class Admin_partFormController {
 
             boolean success;
             if (isEditMode) {
+                Part oldPart = dao.getPartById(part.getPartId());
+                if (oldPart != null){
+                    part.setStatus(oldPart.getStatus());
+                } else {
+                    part.setStatus(part.getQuantity() > 0 ? "Active" : "Out of Stock");
+                }
                 success = dao.updatePart(part);
             } else {
-
                 part.setStatus(part.getQuantity() > 0 ? "Active" : "Out of Stock");
                 success = dao.insertPart(part);
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Part record saved.");
+                if (isEditMode){
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Part record saved.");
+                } else {
+                    String title = "New Part Added!";
+                    String content = "A new part has been successfully added.\n\n" +
+                            "Part ID:\n" + part.getPartId() + "\n\n" +
+                            "Part Name:\n" + part.getPartName() + "\n\n" +
+                            "Stock Quantity:\n" + part.getQuantity() + "\n\n" +
+                            "Price:\n₱" + String.format("%.2f", part.getPrice());
+
+                    showConfirmationDialog(title, content);
+                }
                 mainController.loadPage("Admin-partRecords.fxml");
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to save part.");
@@ -91,5 +114,34 @@ public class Admin_partFormController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private void showConfirmationDialog(String title, String content) {
+        try {
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-addRecordConfirmation.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Confirmation");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            if (mainController != null) {
+                dialogStage.initOwner(mainController.getPrimaryStage());
+            }
+
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            Admin_addRecordConfirmationController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setData(title, content);
+
+            dialogStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not load confirmation dialog.");
+        }
     }
 }

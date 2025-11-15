@@ -12,7 +12,7 @@
         <Label layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Vehicle Inventory" />
         <Label fx:id="vehicleCountLabel" layoutX="38.0" layoutY="100.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="(0) VEHICLES:" />
 
-        <Button fx:id="addButton" layoutX="745.0" layoutY="90.0" onAction="#handleAddVehicle" prefHeight="40.0" prefWidth="40.0" styleClass="add-button" text="+" />
+        <Button fx:id="addButton" layoutX="690.0" layoutY="100.0" onAction="#handleAddVehicle" prefHeight="31.0" prefWidth="72.0" styleClass="add-button" text="+" />
 
         <TableView fx:id="vehicleTable" layoutX="38.0" layoutY="140.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
             <columns>

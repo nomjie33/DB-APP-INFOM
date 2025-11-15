@@ -1,15 +1,21 @@
 package main.gui;
 
-import dao.CustomerDAO;import model.Customer;import javafx.collections.FXCollections;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.Popup;
+import javafx.scene.control.Label;
+import javafx.geometry.Bounds;
+
+import dao.CustomerDAO;
+import javafx.scene.control.*;
+import model.Customer;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 
@@ -17,7 +23,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class Admin_customerRecordsController implements Initializable{
+public class Admin_customerRecordsController implements Initializable {
 
     @FXML private Label customerCountLabel;
     @FXML private TableView<Customer> customerTable;
@@ -32,40 +38,119 @@ public class Admin_customerRecordsController implements Initializable{
     private CustomerDAO customerDAO = new CustomerDAO();
     private Admin_dashboardController mainController;
 
+    private static Popup textDisplayPopup = new Popup();
+    private static Label popupLabel = new Label();
+    private static TableCell<?, ?> currentlyOpenCell = null;
+
+    static {
+        popupLabel.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-border-color: #33a398;" +
+                        "-fx-border-width: 2;" +
+                        "-fx-padding: 8px;" +
+                        "-fx-background-radius: 5;" +
+                        "-fx-border-radius: 5;" +
+                        "-fx-text-fill: black;" +
+                        "-fx-font-size: 13px;"
+        );
+        textDisplayPopup.getContent().add(popupLabel);
+        textDisplayPopup.setAutoHide(true);
+    }
+
     @Override
-    public void initialize(URL url, ResourceBundle rb){
+    public void initialize(URL url, ResourceBundle rb) {
 
         customerIDColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
         lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         contactColumn.setCellValueFactory(new PropertyValueFactory<>("contactNumber"));
-        addressColumn.setCellValueFactory(new PropertyValueFactory<>("address"));
+
+        addressColumn.setCellValueFactory(new PropertyValueFactory<>("fullAddressString"));
+        addressColumn.setCellFactory(column -> {
+            return new TableCell<Customer, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+
+                    if (item == null || empty) {
+                        setText(null);
+                        setOnMouseClicked(null);
+                    } else {
+
+                        setText(item);
+                        setOnMouseClicked(event -> {
+
+                            if (textDisplayPopup.isShowing() && currentlyOpenCell == this) {
+                                textDisplayPopup.hide();
+                                currentlyOpenCell = null;
+                            } else {
+                                popupLabel.setText(item);
+                                Bounds bounds = this.localToScreen(this.getBoundsInLocal());
+                                textDisplayPopup.show(this.getScene().getWindow(), bounds.getMinX(), bounds.getMinY());
+                                currentlyOpenCell = this;
+                            }
+                        });
+                    }
+                }
+            };
+        });
+
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("emailAddress"));
+        emailColumn.setCellFactory(column -> {
+            return new TableCell<Customer, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+
+                    if (item == null || empty) {
+                        setText(null);
+                        setOnMouseClicked(null);
+                    } else {
+
+                        setText(item);
+                        setOnMouseClicked(event -> {
+
+                            if (textDisplayPopup.isShowing() && currentlyOpenCell == this) {
+                                textDisplayPopup.hide();
+                                currentlyOpenCell = null;
+                            } else {
+                                popupLabel.setText(item);
+                                Bounds bounds = this.localToScreen(this.getBoundsInLocal());
+                                textDisplayPopup.show(this.getScene().getWindow(), bounds.getMinX(), bounds.getMinY());
+                                currentlyOpenCell = this;
+                            }
+                        });
+                    }
+                }
+            };
+        });
 
         loadCustomerData();
-
         setupEditButtonColumn();
     }
 
-    public void setMainController(Admin_dashboardController mainController){
+    public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
     }
 
     private void loadCustomerData() {
 
-        List<Customer> customerList = customerDAO.getAllCustomers();
+        // --- FIX 2: Use the DAO method that loads the full address ---
+        List<Customer> customerList = customerDAO.getAllCustomersWithAddress();
+
         ObservableList<Customer> customers = FXCollections.observableArrayList(customerList);
 
         customerTable.setItems(customers);
         customerCountLabel.setText("(" + customers.size() + ") CUSTOMERS: ");
     }
 
-    @FXML private void handleAddCustomer(){
+    @FXML
+    private void handleAddCustomer() {
         System.out.println("Add button clicked. Loading new customer form...");
         mainController.loadCustomerForm(null);
     }
 
-    private void handleEditCustomer(Customer customer){
+    private void handleEditCustomer(Customer customer) {
         System.out.println("Edit button clicked. Loading updated customer form...");
         mainController.loadCustomerForm(customer);
     }
@@ -99,5 +184,4 @@ public class Admin_customerRecordsController implements Initializable{
         };
         editColumn.setCellFactory(cellFactory);
     }
-
 }
