@@ -137,8 +137,114 @@ public class MaintenanceService {
     }
     
     /**
+     * Calculate labor cost for a maintenance job.
+     * Formula: hoursWorked × technician rate
+     * 
+     * @param maintenanceID Maintenance record ID
+     * @return Labor cost as BigDecimal, or ZERO if calculation fails
+     */
+    public BigDecimal calculateLaborCost(String maintenanceID) {
+        try {
+            // Get maintenance record (including inactive for historical calculations)
+            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceByIdIncludingInactive(maintenanceID);
+            if (maintenance == null) {
+                System.out.println("Maintenance record not found: " + maintenanceID);
+                return BigDecimal.ZERO;
+            }
+            
+            BigDecimal hoursWorked = maintenance.getHoursWorked();
+            if (hoursWorked == null || hoursWorked.compareTo(BigDecimal.ZERO) <= 0) {
+                System.out.println("Hours worked not recorded for maintenance " + maintenanceID);
+                return BigDecimal.ZERO;
+            }
+            
+            // Get technician rate (including inactive for historical records)
+            Technician technician = technicianDAO.getTechnicianByIdIncludingInactive(maintenance.getTechnicianID());
+            if (technician == null) {
+                System.out.println("Technician not found for maintenance " + maintenanceID);
+                return BigDecimal.ZERO;
+            }
+            
+            BigDecimal rate = technician.getRate();
+            BigDecimal laborCost = hoursWorked.multiply(rate).setScale(2, java.math.RoundingMode.HALF_UP);
+            
+            return laborCost;
+            
+        } catch (Exception e) {
+            System.out.println("Error calculating labor cost: " + e.getMessage());
+            e.printStackTrace();
+            return BigDecimal.ZERO;
+        }
+    }
+    
+    /**
+     * Calculate parts cost for a maintenance job.
+     * Formula: Σ(part price × quantity used)
+     * 
+     * @param maintenanceID Maintenance record ID
+     * @return Parts cost as BigDecimal, or ZERO if calculation fails
+     */
+    public BigDecimal calculatePartsCost(String maintenanceID) {
+        try {
+            // Get all parts used in this maintenance (including inactive for historical accuracy)
+            List<model.MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenanceIncludingInactive(maintenanceID);
+            
+            if (cheques == null || cheques.isEmpty()) {
+                return BigDecimal.ZERO;
+            }
+            
+            BigDecimal totalPartsCost = BigDecimal.ZERO;
+            
+            for (model.MaintenanceCheque cheque : cheques) {
+                String partID = cheque.getPartID();
+                BigDecimal quantityUsed = cheque.getQuantityUsed();
+                
+                // Get part details including price (including inactive parts for historical accuracy)
+                Part part = partDAO.getPartByIdIncludingInactive(partID);
+                if (part == null) {
+                    System.out.println("Part not found: " + partID);
+                    continue;
+                }
+                
+                BigDecimal partPrice = part.getPrice();
+                if (partPrice == null || partPrice.compareTo(BigDecimal.ZERO) <= 0) {
+                    System.out.println("Price not set for part: " + part.getPartName());
+                    continue;
+                }
+                
+                BigDecimal partCost = partPrice.multiply(quantityUsed).setScale(2, java.math.RoundingMode.HALF_UP);
+                totalPartsCost = totalPartsCost.add(partCost);
+            }
+            
+            return totalPartsCost;
+            
+        } catch (Exception e) {
+            System.out.println("Error calculating parts cost: " + e.getMessage());
+            e.printStackTrace();
+            return BigDecimal.ZERO;
+        }
+    }
+    
+    /**
+     * Calculate total maintenance cost (labor + parts).
+     * This is the single source of truth for maintenance costs.
+     * Used for both business-shouldered and customer-shouldered (penalty) costs.
+     * 
+     * @param maintenanceID Maintenance record ID
+     * @return Total maintenance cost as BigDecimal
+     */
+    public BigDecimal calculateMaintenanceCost(String maintenanceID) {
+        BigDecimal laborCost = calculateLaborCost(maintenanceID);
+        BigDecimal partsCost = calculatePartsCost(maintenanceID);
+        BigDecimal totalCost = laborCost.add(partsCost).setScale(2, java.math.RoundingMode.HALF_UP);
+        
+        return totalCost;
+    }
+    
+    /**
      * Complete a maintenance job by recording repair end time and parts used.
      * Updates MaintenanceTransaction with endDateTime and creates MaintenanceCheque records for parts.
+     * Automatically calculates and stores total maintenance cost.
      * 
      * @param maintenanceID Maintenance record to complete
      * @param endDateTime Timestamp when repair was completed
@@ -195,15 +301,21 @@ public class MaintenanceService {
             
             // Update maintenance record with endDateTime
             maintenance.setEndDateTime(endDateTime);
+            
+            // Calculate hours worked
+            BigDecimal hoursWorked = maintenance.getHoursWorked();
+            System.out.println("Hours worked calculated: " + hoursWorked + " hours");
+            
+            // Calculate total maintenance cost (labor + parts)
+            BigDecimal totalCost = calculateMaintenanceCost(maintenanceID);
+            maintenance.setTotalCost(totalCost);
+            System.out.println("Total maintenance cost calculated: Php" + totalCost);
+            
             boolean updateSuccess = maintenanceDAO.updateMaintenance(maintenance);
             if (!updateSuccess) {
                 System.out.println("Error: Failed to update maintenance record.");
                 return false;
             }
-            
-            // Calculate hours worked
-            BigDecimal hoursWorked = maintenance.getHoursWorked();
-            System.out.println("Hours worked calculated: " + hoursWorked + " hours");
             
             // Update vehicle status back to "Available"
             boolean statusUpdate = vehicleDAO.updateVehicleStatus(

@@ -11,16 +11,26 @@ public class Admin_addRecordConfirmationController {
 
     private Stage dialogStage;
 
+    /**
+     * Call this to set the stage for this dialog
+     */
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
 
+    /**
+     * Call this from your form controllers to set the text
+     */
     public void setData(String title, String content) {
         titleLabel.setText(title);
         contentLabel.setText(content);
     }
 
-    @FXML private void handleClose() {
+    /**
+     * Handles the "Got It!" button click
+     */
+    @FXML
+    private void handleClose() {
         if (dialogStage != null) {
             dialogStage.close();
         }

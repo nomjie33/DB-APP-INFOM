@@ -1,24 +1,16 @@
-package reports;
-
-import dao.*;
-import model.*;
-import java.math.BigDecimal;
-import java.sql.*;
-import java.util.*;
-
 /**
  * CUSTOMER RENTAL REPORT
- * 
+ *
  * PURPOSE:
  * Analyze customer rental behavior and spending patterns. Identify top customers,
  * rental frequency, and total revenue per customer for loyalty programs and
  * targeted marketing.
- * 
+ *
  * DATA SOURCES:
  * - Rental Records (rentalID, customerID, startDateTime, endDateTime)
  * - Customer Records (customerID, firstName, lastName, email, phoneNumber)
  * - Payment Transaction Records (rentalID, amount, paymentDate, paymentMethod)
- * 
+ *
  * REPORT OUTPUT:
  * - Customer ID
  * - Customer Name (firstName + lastName)
@@ -30,7 +22,7 @@ import java.util.*;
  * - Average Rental Duration (average hours per rental)
  * - Most Recent Rental Date
  * - Preferred Payment Method (most frequently used)
- * 
+ *
  * USER INPUTS:
  * 1. Report Period Type (Day/Month/Year)
  * 2. Year (required)
@@ -38,14 +30,14 @@ import java.util.*;
  * 4. Day (required if period is Day)
  * 5. Sort By ("Rentals", "Revenue", "Duration") - Optional, defaults to Revenue
  * 6. Top N Customers - Optional, show only top N customers
- * 
+ *
  * EXPECTED METHODS:
  * - generateDailyReport(int year, int month, int day, String sortBy, int topN)
  * - generateMonthlyReport(int year, int month, String sortBy, int topN)
  * - generateYearlyReport(int year, String sortBy, int topN)
  * - printReport(List<CustomerRentalData> data) - Format and display results
  * - calculateCustomerLifetimeValue(String customerID) - Total revenue from customer
- * 
+ *
  * SQL LOGIC:
  * - JOIN rentals with customers on customerID
  * - JOIN rentals with payments on rentalID
@@ -60,14 +52,14 @@ import java.util.*;
  *   * MAX(startDateTime) - most recent rental
  * - Sort by specified column (revenue, rentals, or duration)
  * - LIMIT to topN if specified
- * 
+ *
  * BUSINESS INSIGHTS:
  * - High revenue customers = VIP treatment, loyalty rewards
  * - Frequent renters = subscription model opportunity
  * - Long duration renters = may prefer ownership, offer purchase options
  * - Inactive customers = re-engagement marketing campaigns
  * - Payment method preferences = optimize payment options
- * 
+ *
  * EXAMPLE OUTPUT:
  * ================================================================
  * CUSTOMER RENTAL REPORT - October 2024 (Top 5 by Revenue)
@@ -82,32 +74,515 @@ import java.util.*;
  * ---------------------------------------------------------------------------------------------------------
  * Total (Top 5 Customers)        | 90      | P 11,250.00| P 125.00 | 225.0     | 2.5     |
  * ================================================================
- * 
+ *
  * RECOMMENDATIONS:
  * - Consider loyalty program for customers with 10+ monthly rentals
  * - Offer subscription packages for frequent renters
  * - Send re-engagement emails to customers inactive for 30+ days
  */
+package reports;
+
+import dao.*;
+import model.*;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.io.*;
+import java.text.SimpleDateFormat;
+
+// iText 5 imports - avoid wildcard to prevent List conflict
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
+/**
+ * CUSTOMER RENTAL REPORT
+ * Analyze customer rental behavior and spending patterns.
+ */
 public class CustomerRentalReport {
-    
+
     private RentalDAO rentalDAO;
     private CustomerDAO customerDAO;
     private PaymentDAO paymentDAO;
-    
-    /**
-     * Constructor - Initialize required DAOs
-     */
+
     public CustomerRentalReport() {
         this.rentalDAO = new RentalDAO();
         this.customerDAO = new CustomerDAO();
         this.paymentDAO = new PaymentDAO();
     }
-    
-    // TODO: Implement report generation methods
-    // TODO: Create CustomerRentalData inner class to hold report results
-    // TODO: Add sort options (by rentals, revenue, or duration)
-    // TODO: Implement Top N filtering
-    // TODO: Calculate rental duration using TIMESTAMPDIFF
-    // TODO: Determine preferred payment method (MODE of paymentMethod)
-    // TODO: Add customer segmentation (VIP, Regular, Occasional, Inactive)
+
+    /**
+     * Helper method to repeat a character (Java 8 compatible)
+     */
+    private static String repeatChar(String ch, int count) {
+        StringBuilder sb = new StringBuilder(count);
+        for (int i = 0; i < count; i++) {
+            sb.append(ch);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Create output directory and return full path for PDF
+     */
+    private static String prepareOutputPath(String filename) {
+        String outputDir = "reports_output";
+        File dir = new File(outputDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return outputDir + File.separator + filename;
+    }
+
+    /**
+     * Inner class to hold customer rental report data
+     */
+    public static class CustomerRentalData {
+        private String customerID;
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String phoneNumber;
+        private int numberOfRentals;
+        private double totalRentalCost;
+        private double averageRentalCost;
+        private double totalRentalDuration;
+        private double averageRentalDuration;
+        private Timestamp mostRecentRentalDate;
+        private String preferredPaymentMethod;
+
+        // Constructors
+        public CustomerRentalData() {}
+
+        public CustomerRentalData(String customerID, String firstName, String lastName,
+                                  String email, String phoneNumber, int numberOfRentals,
+                                  double totalRentalCost, double averageRentalCost,
+                                  double totalRentalDuration, double averageRentalDuration,
+                                  Timestamp mostRecentRentalDate, String preferredPaymentMethod) {
+            this.customerID = customerID;
+            this.firstName = firstName;
+            this.lastName = lastName;
+            this.email = email;
+            this.phoneNumber = phoneNumber;
+            this.numberOfRentals = numberOfRentals;
+            this.totalRentalCost = totalRentalCost;
+            this.averageRentalCost = averageRentalCost;
+            this.totalRentalDuration = totalRentalDuration;
+            this.averageRentalDuration = averageRentalDuration;
+            this.mostRecentRentalDate = mostRecentRentalDate;
+            this.preferredPaymentMethod = preferredPaymentMethod;
+        }
+
+        // Getters and Setters
+        public String getCustomerID() { return customerID; }
+        public void setCustomerID(String customerID) { this.customerID = customerID; }
+
+        public String getFirstName() { return firstName; }
+        public void setFirstName(String firstName) { this.firstName = firstName; }
+
+        public String getLastName() { return lastName; }
+        public void setLastName(String lastName) { this.lastName = lastName; }
+
+        public String getFullName() { return firstName + " " + lastName; }
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+
+        public String getPhoneNumber() { return phoneNumber; }
+        public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+        public int getNumberOfRentals() { return numberOfRentals; }
+        public void setNumberOfRentals(int numberOfRentals) { this.numberOfRentals = numberOfRentals; }
+
+        public double getTotalRentalCost() { return totalRentalCost; }
+        public void setTotalRentalCost(double totalRentalCost) { this.totalRentalCost = totalRentalCost; }
+
+        public double getAverageRentalCost() { return averageRentalCost; }
+        public void setAverageRentalCost(double averageRentalCost) { this.averageRentalCost = averageRentalCost; }
+
+        public double getTotalRentalDuration() { return totalRentalDuration; }
+        public void setTotalRentalDuration(double totalRentalDuration) { this.totalRentalDuration = totalRentalDuration; }
+
+        public double getAverageRentalDuration() { return averageRentalDuration; }
+        public void setAverageRentalDuration(double averageRentalDuration) { this.averageRentalDuration = averageRentalDuration; }
+
+        public Timestamp getMostRecentRentalDate() { return mostRecentRentalDate; }
+        public void setMostRecentRentalDate(Timestamp mostRecentRentalDate) { this.mostRecentRentalDate = mostRecentRentalDate; }
+
+        public String getPreferredPaymentMethod() { return preferredPaymentMethod; }
+        public void setPreferredPaymentMethod(String preferredPaymentMethod) { this.preferredPaymentMethod = preferredPaymentMethod; }
+    }
+
+    /**
+     * Generate monthly customer rental report
+     * @param year Year for report
+     * @param month Month for report (1-12)
+     * @param sortBy Sort criteria: "Rentals", "Revenue", or "Duration"
+     * @return List of CustomerRentalData
+     */
+    public List<CustomerRentalData> generateMonthlyReport(int year, int month, String sortBy) {
+        List<CustomerRentalData> reportData = new ArrayList<>();
+
+        String orderByClause;
+        switch (sortBy != null ? sortBy.toLowerCase() : "revenue") {
+            case "rentals":
+                orderByClause = "number_of_rentals DESC";
+                break;
+            case "duration":
+                orderByClause = "total_duration DESC";
+                break;
+            default:
+                orderByClause = "total_cost DESC";
+        }
+
+        String sql =
+                "SELECT " +
+                        "    c.customerID, " +
+                        "    c.firstName, " +
+                        "    c.lastName, " +
+                        "    c.emailAddress, " +
+                        "    c.contactNumber, " +
+                        "    COUNT(DISTINCT r.rentalID) AS number_of_rentals, " +
+                        "    COALESCE(SUM(p.amount), 0) AS total_cost, " +
+                        "    COALESCE(AVG(p.amount), 0) AS avg_cost, " +
+                        "    COALESCE(SUM(TIMESTAMPDIFF(HOUR, r.startDateTime, r.endDateTime)), 0) AS total_duration, " +
+                        "    COALESCE(AVG(TIMESTAMPDIFF(HOUR, r.startDateTime, r.endDateTime)), 0) AS avg_duration, " +
+                        "    MAX(r.startDateTime) AS most_recent_rental " +
+                        "FROM customers c " +
+                        "LEFT JOIN rentals r ON c.customerID = r.customerID " +
+                        "    AND r.status = 'Completed' " +
+                        "    AND YEAR(r.startDateTime) = ? " +
+                        "    AND MONTH(r.startDateTime) = ? " +
+                        "LEFT JOIN payments p ON r.rentalID = p.rentalID " +
+                        "    AND p.status = 'Active' " +
+                        "WHERE c.status = 'Active' " +
+                        "GROUP BY c.customerID, c.firstName, c.lastName, c.emailAddress, c.contactNumber " +
+                        "HAVING number_of_rentals > 0 " +
+                        "ORDER BY " + orderByClause;
+
+        try (Connection conn = util.DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, year);
+            stmt.setInt(2, month);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                CustomerRentalData data = new CustomerRentalData();
+                data.setCustomerID(rs.getString("customerID"));
+                data.setFirstName(rs.getString("firstName"));
+                data.setLastName(rs.getString("lastName"));
+                data.setEmail(rs.getString("emailAddress"));
+                data.setPhoneNumber(rs.getString("contactNumber"));
+                data.setNumberOfRentals(rs.getInt("number_of_rentals"));
+                data.setTotalRentalCost(rs.getDouble("total_cost"));
+                data.setAverageRentalCost(rs.getDouble("avg_cost"));
+                data.setTotalRentalDuration(rs.getDouble("total_duration"));
+                data.setAverageRentalDuration(rs.getDouble("avg_duration"));
+                data.setMostRecentRentalDate(rs.getTimestamp("most_recent_rental"));
+                data.setPreferredPaymentMethod(null); // Payment method not in schema
+
+                reportData.add(data);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error generating monthly customer rental report: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return reportData;
+    }
+
+    /**
+     * Generate yearly customer rental report
+     */
+    public List<CustomerRentalData> generateYearlyReport(int year, String sortBy) {
+        List<CustomerRentalData> reportData = new ArrayList<>();
+
+        String orderByClause;
+        switch (sortBy != null ? sortBy.toLowerCase() : "revenue") {
+            case "rentals":
+                orderByClause = "number_of_rentals DESC";
+                break;
+            case "duration":
+                orderByClause = "total_duration DESC";
+                break;
+            default:
+                orderByClause = "total_cost DESC";
+        }
+
+        String sql =
+                "SELECT " +
+                        "    c.customerID, " +
+                        "    c.firstName, " +
+                        "    c.lastName, " +
+                        "    c.emailAddress, " +
+                        "    c.contactNumber, " +
+                        "    COUNT(DISTINCT r.rentalID) AS number_of_rentals, " +
+                        "    COALESCE(SUM(p.amount), 0) AS total_cost, " +
+                        "    COALESCE(AVG(p.amount), 0) AS avg_cost, " +
+                        "    COALESCE(SUM(TIMESTAMPDIFF(HOUR, r.startDateTime, r.endDateTime)), 0) AS total_duration, " +
+                        "    COALESCE(AVG(TIMESTAMPDIFF(HOUR, r.startDateTime, r.endDateTime)), 0) AS avg_duration, " +
+                        "    MAX(r.startDateTime) AS most_recent_rental " +
+                        "FROM customers c " +
+                        "LEFT JOIN rentals r ON c.customerID = r.customerID " +
+                        "    AND r.status = 'Completed' " +
+                        "    AND YEAR(r.startDateTime) = ? " +
+                        "LEFT JOIN payments p ON r.rentalID = p.rentalID " +
+                        "    AND p.status = 'Active' " +
+                        "WHERE c.status = 'Active' " +
+                        "GROUP BY c.customerID, c.firstName, c.lastName, c.emailAddress, c.contactNumber " +
+                        "HAVING number_of_rentals > 0 " +
+                        "ORDER BY " + orderByClause;
+
+        try (Connection conn = util.DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, year);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                CustomerRentalData data = new CustomerRentalData();
+                data.setCustomerID(rs.getString("customerID"));
+                data.setFirstName(rs.getString("firstName"));
+                data.setLastName(rs.getString("lastName"));
+                data.setEmail(rs.getString("emailAddress"));
+                data.setPhoneNumber(rs.getString("contactNumber"));
+                data.setNumberOfRentals(rs.getInt("number_of_rentals"));
+                data.setTotalRentalCost(rs.getDouble("total_cost"));
+                data.setAverageRentalCost(rs.getDouble("avg_cost"));
+                data.setTotalRentalDuration(rs.getDouble("total_duration"));
+                data.setAverageRentalDuration(rs.getDouble("avg_duration"));
+                data.setMostRecentRentalDate(rs.getTimestamp("most_recent_rental"));
+                data.setPreferredPaymentMethod(null); // Payment method not in schema
+
+                reportData.add(data);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error generating yearly customer rental report: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return reportData;
+    }
+
+    /**
+     * Print formatted report to console
+     */
+    public void printReport(List<CustomerRentalData> data, int year, int month, String sortBy) {
+        System.out.println("\n" + repeatChar("=", 150));
+
+        String[] months = {"", "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"};
+
+        if (month > 0) {
+            System.out.printf("CUSTOMER RENTAL REPORT - %s %d (Sorted by %s)", months[month], year, sortBy);
+        } else {
+            System.out.printf("CUSTOMER RENTAL REPORT - Year %d (Sorted by %s)", year, sortBy);
+        }
+        System.out.println();
+        System.out.println(repeatChar("=", 150));
+
+        if (data.isEmpty()) {
+            System.out.println("No customer rental data found for the specified period.");
+            System.out.println(repeatChar("=", 150) + "\n");
+            return;
+        }
+
+        // Table header
+        System.out.printf("%-12s %-25s %-8s %-15s %-12s %-12s %-12s %-15s %-15s\n",
+                "Customer ID", "Name", "Rentals", "Total Cost", "Avg Cost", "Total Hrs",
+                "Avg Hrs", "Last Rental", "Payment Method");
+        System.out.println(repeatChar("-", 150));
+
+        // Calculate totals
+        int totalRentals = 0;
+        double totalRevenue = 0;
+        double totalHours = 0;
+
+        // Display each customer
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        for (CustomerRentalData customer : data) {
+            String lastRentalDate = (customer.getMostRecentRentalDate() != null)
+                    ? dateFormat.format(customer.getMostRecentRentalDate())
+                    : "N/A";
+
+            System.out.printf("%-12s %-25s %-8d %,15.2f %,12.2f %,12.1f %,12.1f %-15s %-15s\n",
+                    customer.getCustomerID(),
+                    customer.getFullName(),
+                    customer.getNumberOfRentals(),
+                    customer.getTotalRentalCost(),
+                    customer.getAverageRentalCost(),
+                    customer.getTotalRentalDuration(),
+                    customer.getAverageRentalDuration(),
+                    lastRentalDate,
+                    customer.getPreferredPaymentMethod() != null ? customer.getPreferredPaymentMethod() : "N/A");
+
+            totalRentals += customer.getNumberOfRentals();
+            totalRevenue += customer.getTotalRentalCost();
+            totalHours += customer.getTotalRentalDuration();
+        }
+
+        System.out.println(repeatChar("-", 150));
+
+        // Summary
+        double avgRevenue = data.size() > 0 ? totalRevenue / data.size() : 0;
+        double avgHours = data.size() > 0 ? totalHours / data.size() : 0;
+
+        System.out.printf("Total (%d Customers)%9s %-8d %,15.2f %,12.2f %,12.1f %,12.1f\n",
+                data.size(), "", totalRentals, totalRevenue, avgRevenue, totalHours, avgHours);
+
+        System.out.println(repeatChar("=", 150) + "\n");
+    }
+
+    /**
+     * Export report to branded PDF
+     */
+    public void exportToPDF(List<CustomerRentalData> data, String filename, int year, int month, String sortBy) {
+        Document document = new Document(PageSize.A4.rotate());
+
+        try {
+            String fullPath = prepareOutputPath(filename);
+            PdfWriter.getInstance(document, new FileOutputStream(fullPath));
+            document.open();
+
+            // Title
+            String[] months = {"", "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"};
+            String title = "Customer Rental Report";
+            if (month > 0) {
+                title += " - " + months[month] + " " + year;
+            } else {
+                title += " - Year " + year;
+            }
+
+            PDFBrandingHelper.addHeaderSection(document, title, null);
+
+            if (data.isEmpty()) {
+                Paragraph noData = new Paragraph("No customer rental data found for the specified period.",
+                        new Font(Font.FontFamily.HELVETICA, 9));
+                noData.setAlignment(Element.ALIGN_CENTER);
+                noData.setSpacingBefore(30);
+                document.add(noData);
+                document.close();
+                System.out.println("✓ PDF saved to: " + fullPath);
+                return;
+            }
+
+            // Table
+            PdfPTable table = new PdfPTable(9);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{1.2f, 2.5f, 0.8f, 1.5f, 1.2f, 1.2f, 1.2f, 1.5f, 1.5f});
+
+            // Headers
+            String[] headers = {"Customer ID", "Name", "Rentals", "Total Cost (PHP)",
+                    "Avg Cost", "Total Hrs", "Avg Hrs", "Last Rental", "Payment Method"};
+            for (String header : headers) {
+                table.addCell(PDFBrandingHelper.createHeaderCell(header));
+            }
+
+            // Data
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+            int totalRentals = 0;
+            double totalRevenue = 0;
+            double totalHours = 0;
+
+            for (int i = 0; i < data.size(); i++) {
+                CustomerRentalData customer = data.get(i);
+
+                table.addCell(PDFBrandingHelper.createDataCell(customer.getCustomerID(), i));
+                table.addCell(PDFBrandingHelper.createDataCell(customer.getFullName(), i));
+                table.addCell(PDFBrandingHelper.createDataCell(String.valueOf(customer.getNumberOfRentals()), i, Element.ALIGN_CENTER));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("₱%,.2f", customer.getTotalRentalCost()), i, Element.ALIGN_RIGHT));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("₱%,.2f", customer.getAverageRentalCost()), i, Element.ALIGN_RIGHT));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("%.1f", customer.getTotalRentalDuration()), i, Element.ALIGN_CENTER));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("%.1f", customer.getAverageRentalDuration()), i, Element.ALIGN_CENTER));
+
+                String lastRental = (customer.getMostRecentRentalDate() != null)
+                        ? dateFormat.format(customer.getMostRecentRentalDate()) : "N/A";
+                table.addCell(PDFBrandingHelper.createDataCell(lastRental, i, Element.ALIGN_CENTER));
+
+                String paymentMethod = customer.getPreferredPaymentMethod() != null
+                        ? customer.getPreferredPaymentMethod() : "N/A";
+                table.addCell(PDFBrandingHelper.createDataCell(paymentMethod, i, Element.ALIGN_CENTER));
+
+                totalRentals += customer.getNumberOfRentals();
+                totalRevenue += customer.getTotalRentalCost();
+                totalHours += customer.getTotalRentalDuration();
+            }
+
+            document.add(table);
+
+            // Summary
+            Paragraph summaryTitle = new Paragraph("\nSummary Statistics",
+                    new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, PDFBrandingHelper.BRAND_GREEN));
+            summaryTitle.setSpacingBefore(20);
+            summaryTitle.setSpacingAfter(10);
+            document.add(summaryTitle);
+
+            PdfPTable summaryTable = new PdfPTable(2);
+            summaryTable.setWidthPercentage(60);
+            summaryTable.setWidths(new float[]{2f, 1f});
+
+            double avgRevenue = data.size() > 0 ? totalRevenue / data.size() : 0;
+            double avgHours = data.size() > 0 ? totalHours / data.size() : 0;
+
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Customers:", String.valueOf(data.size()));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Rentals:", String.valueOf(totalRentals));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Revenue:", String.format("₱%,.2f", totalRevenue));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Avg Revenue per Customer:", String.format("₱%,.2f", avgRevenue));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Hours:", String.format("%.1f", totalHours));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Avg Hours per Customer:", String.format("%.1f", avgHours));
+
+            document.add(summaryTable);
+
+            // Footer
+            PDFBrandingHelper.addFooter(document,
+                    new SimpleDateFormat("MMMM dd, yyyy 'at' hh:mm a").format(new java.util.Date()));
+
+            System.out.println("✓ PDF saved to: " + fullPath);
+
+        } catch (DocumentException | IOException e) {
+            System.err.println("Error generating PDF report: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            document.close();
+        }
+    }
+
+    /**
+     * Main method for testing
+     */
+    public static void main(String[] args) {
+        CustomerRentalReport report = new CustomerRentalReport();
+
+        System.out.println("=== CUSTOMER RENTAL REPORT TEST ===\n");
+
+        // Test monthly report
+        System.out.println("Testing Monthly Report for October 2024 (Sorted by Revenue)...");
+        List<CustomerRentalData> monthlyData = report.generateMonthlyReport(2024, 10, "Revenue");
+        report.printReport(monthlyData, 2024, 10, "Revenue");
+        report.exportToPDF(monthlyData, "Customer_Rental_Report_Oct2024.pdf", 2024, 10, "Revenue");
+
+        // Test yearly report
+        System.out.println("\nTesting Yearly Report for 2024 (Sorted by Rentals)...");
+        List<CustomerRentalData> yearlyData = report.generateYearlyReport(2024, "Rentals");
+        report.printReport(yearlyData, 2024, 0, "Rentals");
+        report.exportToPDF(yearlyData, "Customer_Rental_Report_2024.pdf", 2024, 0, "Rentals");
+
+        System.out.println("=== TEST COMPLETE ===");
+    }
 }

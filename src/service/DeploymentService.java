@@ -45,8 +45,8 @@ public class DeploymentService {
             return null;
         }
 
-        System.out.println("✓ Vehicle Found: " + vehicle.getVehicleModel());
-        System.out.println("   Type: " + vehicle.getVehicleType());
+        System.out.println("✓ Vehicle Found: " + vehicle.getVehicleType());
+        System.out.println("   Plate ID: " + vehicle.getPlateID());
         System.out.println("   Status: " + vehicle.getStatus());
 
         // VALIDATE LOCATION
@@ -124,7 +124,7 @@ public class DeploymentService {
         System.out.println("└────────────────────────────────┘");
         System.out.println("📋 Deployment Details:");
         System.out.println("   Deployment ID: " + deploymentID);
-        System.out.println("   Vehicle: " + vehicle.getPlateID() + " - " + vehicle.getVehicleModel());
+        System.out.println("   Vehicle: " + vehicle.getVehicleType() + " (" + vehicle.getPlateID() + ")");
         System.out.println("   Location: " + location.getName());
         System.out.println("   Start Date: " + startDate);
         System.out.println("────────────────────────────────\n");

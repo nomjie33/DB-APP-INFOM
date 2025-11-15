@@ -51,8 +51,8 @@ public class MaintenanceDAO {
      * @return true if insert successful, false otherwise
      */
     public boolean insertMaintenance(MaintenanceTransaction maintenance) {
-        String sql = "INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, " +
-                     "notes, technicianID, plateID, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, totalCost, " +
+                     "notes, technicianID, plateID, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -60,10 +60,11 @@ public class MaintenanceDAO {
             stmt.setString(1, maintenance.getMaintenanceID());
             stmt.setTimestamp(2, maintenance.getStartDateTime());
             stmt.setTimestamp(3, maintenance.getEndDateTime());
-            stmt.setString(4, maintenance.getNotes());
-            stmt.setString(5, maintenance.getTechnicianID());
-            stmt.setString(6, maintenance.getPlateID());
-            stmt.setString(7, maintenance.getStatus() != null ? maintenance.getStatus() : "Active");
+            stmt.setBigDecimal(4, maintenance.getTotalCost());
+            stmt.setString(5, maintenance.getNotes());
+            stmt.setString(6, maintenance.getTechnicianID());
+            stmt.setString(7, maintenance.getPlateID());
+            stmt.setString(8, maintenance.getStatus() != null ? maintenance.getStatus() : "Active");
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -84,7 +85,7 @@ public class MaintenanceDAO {
      * @return true if update successful, false otherwise
      */
     public boolean updateMaintenance(MaintenanceTransaction maintenance) {
-        String sql = "UPDATE maintenance SET startDateTime = ?, endDateTime = ?, notes = ?, " +
+        String sql = "UPDATE maintenance SET startDateTime = ?, endDateTime = ?, totalCost = ?, notes = ?, " +
                      "technicianID = ?, plateID = ? WHERE maintenanceID = ? AND status = 'Active'";
         
         try (Connection conn = DBConnection.getConnection();
@@ -92,10 +93,11 @@ public class MaintenanceDAO {
             
             stmt.setTimestamp(1, maintenance.getStartDateTime());
             stmt.setTimestamp(2, maintenance.getEndDateTime());
-            stmt.setString(3, maintenance.getNotes());
-            stmt.setString(4, maintenance.getTechnicianID());
-            stmt.setString(5, maintenance.getPlateID());
-            stmt.setString(6, maintenance.getMaintenanceID());
+            stmt.setBigDecimal(3, maintenance.getTotalCost());
+            stmt.setString(4, maintenance.getNotes());
+            stmt.setString(5, maintenance.getTechnicianID());
+            stmt.setString(6, maintenance.getPlateID());
+            stmt.setString(7, maintenance.getMaintenanceID());
             
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -344,6 +346,7 @@ public class MaintenanceDAO {
             rs.getString("maintenanceID"),
             rs.getTimestamp("startDateTime"),
             rs.getTimestamp("endDateTime"),
+            rs.getBigDecimal("totalCost"),
             rs.getString("notes"),
             rs.getString("technicianID"),
             rs.getString("plateID"),

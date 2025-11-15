@@ -8,7 +8,6 @@ package model;
  * FIELDS TO IMPLEMENT:
  * - vehicleId (int/String) - Primary key
  * - make (String) - Vehicle manufacturer (e.g., Toyota, Honda)
- * - model (String) - Vehicle model (e.g., Camry, Civic)
  * - year (int) - Year of manufacture
  * - licensePlate (String) - Unique plate number
  * - status (String) - Current status: "Available", "In Use", "Under Maintenance", "Defective"
@@ -30,7 +29,6 @@ public class Vehicle {
     // TODO: Add private fields for vehicle attributes
     private String plateID;
     private String vehicleType;
-    private String vehicleModel;
     private String status;
     private double rentalPrice;
 
@@ -40,11 +38,10 @@ public class Vehicle {
         this.status ="Available";
     }
 
-    public Vehicle(String plateID, String vehicleType, String vehicleModel, String status, double rentalPrice)
+    public Vehicle(String plateID, String vehicleType, String status, double rentalPrice)
     {
         this.plateID = plateID;
         this.vehicleType = vehicleType;
-        this.vehicleModel = vehicleModel;
         this.status = status;
         this.rentalPrice = rentalPrice;
     }
@@ -63,14 +60,6 @@ public class Vehicle {
     
     public void setVehicleType(String vehicleType) {
         this.vehicleType = vehicleType;
-    }
-    
-    public String getVehicleModel() {
-        return vehicleModel;
-    }
-    
-    public void setVehicleModel(String vehicleModel) {
-        this.vehicleModel = vehicleModel;
     }
     
     public String getStatus() {
@@ -107,7 +96,7 @@ public class Vehicle {
     }
     
     public String getDisplayName() {
-        return vehicleType + " - " + vehicleModel + " (" + plateID + ")";
+        return vehicleType + " (" + plateID + ")";
     }
     
     /**
@@ -145,7 +134,6 @@ public class Vehicle {
         return "Vehicle{" +
                 "plateID='" + plateID + '\'' +
                 ", type='" + vehicleType + '\'' +
-                ", model='" + vehicleModel + '\'' +
                 ", status='" + status + '\'' +
                 ", price=" + rentalPrice +
                 '}';

@@ -1,11 +1,13 @@
 package main.gui;
 
+// --- 1. ADD IMPORTS ---
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
+// --- END IMPORTS ---
 
 import dao.PartDAO;
 import model.Part;
@@ -26,7 +28,7 @@ public class Admin_partFormController {
     private Admin_dashboardController mainController;
     private PartDAO dao = new PartDAO();
     private boolean isEditMode = false;
-    private Part currentPart;
+    private Part currentPart; // To hold the part being edited
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
@@ -61,10 +63,12 @@ public class Admin_partFormController {
 
             boolean success;
             if (isEditMode) {
+                // Preserve status on update
                 Part oldPart = dao.getPartById(part.getPartId());
-                if (oldPart != null){
+                if (oldPart != null) {
                     part.setStatus(oldPart.getStatus());
                 } else {
+                    // Fallback just in case
                     part.setStatus(part.getQuantity() > 0 ? "Active" : "Out of Stock");
                 }
                 success = dao.updatePart(part);
@@ -73,10 +77,12 @@ public class Admin_partFormController {
                 success = dao.insertPart(part);
             }
 
+            // --- 2. UPDATED CONFIRMATION LOGIC ---
             if (success) {
-                if (isEditMode){
+                if (isEditMode) {
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Part record saved.");
                 } else {
+                    // Show custom dialog for new records
                     String title = "New Part Added!";
                     String content = "A new part has been successfully added.\n\n" +
                             "Part ID:\n" + part.getPartId() + "\n\n" +
@@ -88,8 +94,10 @@ public class Admin_partFormController {
                 }
                 mainController.loadPage("Admin-partRecords.fxml");
             } else {
-                showAlert(Alert.AlertType.ERROR, "Error", "Failed to save part.");
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to save part. The ID might already exist.");
             }
+            // --- END OF UPDATE ---
+
         } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Invalid Input", "Stock (e.g., 10) and Price (e.g., 1500.00) must be valid numbers.");
         }
@@ -105,6 +113,10 @@ public class Admin_partFormController {
             showAlert(Alert.AlertType.WARNING, "Validation Error", "ID and Name are required.");
             return false;
         }
+        if (stockField.getText().isEmpty() || priceField.getText().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Validation Error", "Stock and Price are required.");
+            return false;
+        }
         return true;
     }
 
@@ -116,17 +128,20 @@ public class Admin_partFormController {
         alert.showAndWait();
     }
 
+    // --- 3. ADD HELPER METHOD ---
+    /**
+     * Shows the new generic confirmation dialog.
+     */
     private void showConfirmationDialog(String title, String content) {
         try {
-
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-addRecordConfirmation.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin_addRecordConfirmation.fxml"));
             AnchorPane page = loader.load();
 
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Confirmation");
             dialogStage.initModality(Modality.WINDOW_MODAL);
 
-            if (mainController != null) {
+            if (mainController != null){
                 dialogStage.initOwner(mainController.getPrimaryStage());
             }
 
@@ -144,4 +159,5 @@ public class Admin_partFormController {
             showAlert(Alert.AlertType.ERROR, "Error", "Could not load confirmation dialog.");
         }
     }
+    // --- END OF HELPER METHOD ---
 }

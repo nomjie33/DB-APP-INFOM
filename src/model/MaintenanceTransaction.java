@@ -31,6 +31,7 @@ public class MaintenanceTransaction {
     private String maintenanceID;
     private Timestamp startDateTime;
     private Timestamp endDateTime;
+    private BigDecimal totalCost;  // Total maintenance cost (labor + parts)
     private String notes;
     private String technicianID;
     private String plateID;
@@ -47,18 +48,20 @@ public class MaintenanceTransaction {
         this.maintenanceID = maintenanceID;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
+        this.totalCost = BigDecimal.ZERO;  // Default to 0
         this.notes = notes;
         this.technicianID = technicianID;
         this.plateID = plateID;
         this.status = "Active";  // Default to Active
     }
     
-    // Full constructor (with status)
+    // Full constructor (with status and totalCost)
     public MaintenanceTransaction(String maintenanceID, Timestamp startDateTime, Timestamp endDateTime,
-                                  String notes, String technicianID, String plateID, String status) {
+                                  BigDecimal totalCost, String notes, String technicianID, String plateID, String status) {
         this.maintenanceID = maintenanceID;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
+        this.totalCost = totalCost != null ? totalCost : BigDecimal.ZERO;
         this.notes = notes;
         this.technicianID = technicianID;
         this.plateID = plateID;
@@ -88,6 +91,14 @@ public class MaintenanceTransaction {
 
     public void setEndDateTime(Timestamp endDateTime) {
         this.endDateTime = endDateTime;
+    }
+
+    public BigDecimal getTotalCost() {
+        return totalCost;
+    }
+
+    public void setTotalCost(BigDecimal totalCost) {
+        this.totalCost = totalCost;
     }
 
     public String getNotes() {

@@ -32,9 +32,12 @@ public class Customer {
     private String lastName;
     private String firstName;
     private String contactNumber;
-    private String address;
+    private Integer addressID;
     private String emailAddress;
     private String status;
+    
+    // Optional: reference to Address object for convenience
+    private Address address;
     
     // TODO: Add constructors (default and parameterized)
     public Customer() {
@@ -42,12 +45,12 @@ public class Customer {
     }
     
     public Customer(String customerID, String lastName, String firstName, 
-                   String contactNumber, String address, String emailAddress, String status) {
+                   String contactNumber, Integer addressID, String emailAddress, String status) {
         this.customerID = customerID;
         this.lastName = lastName;
         this.firstName = firstName;
         this.contactNumber = contactNumber;
-        this.address = address;
+        this.addressID = addressID;
         this.emailAddress = emailAddress;
         this.status = "Active";
 
@@ -86,12 +89,23 @@ public class Customer {
         this.contactNumber = contactNumber;
     }
     
-    public String getAddress() {
+    public Integer getAddressID() {
+        return addressID;
+    }
+    
+    public void setAddressID(Integer addressID) {
+        this.addressID = addressID;
+    }
+    
+    public Address getAddress() {
         return address;
     }
     
-    public void setAddress(String address) {
+    public void setAddress(Address address) {
         this.address = address;
+        if (address != null) {
+            this.addressID = address.getAddressID();
+        }
     }
     
     public String getEmailAddress() {
@@ -127,7 +141,8 @@ public class Customer {
                 "customerID='" + customerID + '\'' +
                 ", name='" + getFullName() + '\'' +
                 ", contactNumber='" + contactNumber + '\'' +
-                ", address='" + address + '\'' +
+                ", addressID=" + addressID +
+                (address != null ? ", address='" + address.getFullAddress() + '\'' : "") +
                 ", emailAddress='" + emailAddress + '\'' +
                 '}';
     }
