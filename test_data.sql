@@ -58,50 +58,134 @@ SELECT * FROM locations;
 -- E-BIKES (₱70-90/hour)
 -- E-TRIKES (₱95-120/hour, for couples/families)
 
-INSERT INTO vehicles (plateID, vehicleType, vehicleModel, status, rentalPrice) VALUES
-('ES-001', 'E-Scooter', 'Xiaomi M365 Pro', 'Available', 50.00),
-('ES-002', 'E-Scooter', 'Segway Ninebot Max', 'Available', 55.00),
-('ES-003', 'E-Scooter', 'Xiaomi Pro 2', 'In Use', 50.00),
-('ES-004', 'E-Scooter', 'Segway ES2', 'Available', 45.00),
-('ES-005', 'E-Scooter', 'Xiaomi M365', 'Maintenance', 48.00),
-('ES-006', 'E-Scooter', 'Ninebot ES4', 'Available', 52.00),
-('ES-007', 'E-Scooter', 'Xiaomi Essential', 'Available', 45.00),
-('ES-008', 'E-Scooter', 'Segway Max G30', 'In Use', 60.00),
-('ES-009', 'E-Scooter', 'Xiaomi Pro 3', 'Available', 58.00),
-('ES-010', 'E-Scooter', 'Ninebot F40', 'Available', 50.00),
-('EB-001', 'E-Bike', 'Fiido D11', 'Available', 80.00),
-('EB-002', 'E-Bike', 'Xiaomi Himo C20', 'Available', 75.00),
-('EB-003', 'E-Bike', 'Fiido D4S', 'In Use', 70.00),
-('EB-004', 'E-Bike', 'Xiaomi Qicycle', 'Available', 78.00),
-('EB-005', 'E-Bike', 'Fiido M1', 'Available', 85.00),
-('EB-006', 'E-Bike', 'Himo Z20', 'Maintenance', 82.00),
-('EB-007', 'E-Bike', 'Fiido D3S', 'Available', 72.00),
-('EB-008', 'E-Bike', 'Xiaomi C26', 'Available', 90.00),
-('ET-001', 'E-Trike', 'Passenger Trike Standard', 'Available', 100.00),
-('ET-002', 'E-Trike', 'Cargo E-Trike', 'Available', 95.00),
-('ET-003', 'E-Trike', 'Family Trike', 'In Use', 105.00),
-('ET-004', 'E-Trike', 'Deluxe Passenger Trike', 'Available', 120.00),
-('ET-005', 'E-Trike', 'Eco Trike', 'Available', 98.00);
+INSERT INTO vehicles (plateID, vehicleType, status, rentalPrice) VALUES
+('ES-001', 'E-Scooter', 'Available', 50.00),
+('ES-002', 'E-Scooter', 'Available', 55.00),
+('ES-003', 'E-Scooter', 'In Use', 50.00),
+('ES-004', 'E-Scooter', 'Available', 45.00),
+('ES-005', 'E-Scooter', 'Maintenance', 48.00),
+('ES-006', 'E-Scooter', 'Available', 52.00),
+('ES-007', 'E-Scooter', 'Available', 45.00),
+('ES-008', 'E-Scooter', 'In Use', 60.00),
+('ES-009', 'E-Scooter', 'Available', 58.00),
+('ES-010', 'E-Scooter', 'Available', 50.00),
+('EB-001', 'E-Bike', 'Available', 80.00),
+('EB-002', 'E-Bike', 'Available', 75.00),
+('EB-003', 'E-Bike', 'In Use', 70.00),
+('EB-004', 'E-Bike', 'Available', 78.00),
+('EB-005', 'E-Bike', 'Available', 85.00),
+('EB-006', 'E-Bike', 'Maintenance', 82.00),
+('EB-007', 'E-Bike', 'Available', 72.00),
+('EB-008', 'E-Bike', 'Available', 90.00),
+('ET-001', 'E-Trike', 'Available', 100.00),
+('ET-002', 'E-Trike', 'Available', 95.00),
+('ET-003', 'E-Trike', 'In Use', 105.00),
+('ET-004', 'E-Trike', 'Available', 120.00),
+('ET-005', 'E-Trike', 'Available', 98.00);
 
 -- =====================================================
--- 3. CUSTOMERS TABLE
+-- 3. CITIES TABLE
 -- =====================================================
--- Registered customers with contact information
+-- Cities in Metro Manila where customers reside
 
-INSERT INTO customers (customerID, lastName, firstName, contactNumber, address, emailAddress) VALUES
-('CUST-001', 'Reyes', 'Juan', '09171234567', '123 Bonifacio St, BGC, Taguig', 'juan.reyes@email.com'),
-('CUST-002', 'Santos', 'Maria', '09281234567', '456 Ayala Ave, Makati', 'maria.santos@email.com'),
-('CUST-003', 'Cruz', 'Pedro', '09391234567', '789 EDSA, Ortigas, Pasig', 'pedro.cruz@email.com'),
-('CUST-004', 'Garcia', 'Ana', '09171234568', '321 Eastwood Dr, Quezon City', 'ana.garcia@email.com'),
-('CUST-005', 'Mendoza', 'Jose', '09281234568', '654 UP Campus, Diliman', 'jose.mendoza@email.com'),
-('CUST-006', 'Villanueva', 'Sofia', '09391234568', '987 MOA Complex, Pasay', 'sofia.v@email.com'),
-('CUST-007', 'Torres', 'Miguel', '09171234569', '147 North Ave, Quezon City', 'miguel.torres@email.com'),
-('CUST-008', 'Ramos', 'Isabel', '09281234569', '258 Alabang Town, Muntinlupa', 'isabel.ramos@email.com'),
-('CUST-009', 'Fernandez', 'Carlos', '09391234569', '369 BGC High St, Taguig', 'carlos.f@email.com'),
-('CUST-010', 'Lopez', 'Elena', '09171234570', '741 Makati Ave, Makati', 'elena.lopez@email.com');
+INSERT INTO cities (name) VALUES
+('Taguig'),
+('Makati'),
+('Pasig'),
+('Quezon City'),
+('Pasay'),
+('Muntinlupa'),
+('Manila'),
+('Mandaluyong');
+
+SELECT * FROM cities;
 
 -- =====================================================
--- 4. TECHNICIANS TABLE
+-- 4. BARANGAYS TABLE
+-- =====================================================
+-- Barangays in each city
+
+INSERT INTO barangays (cityID, name) VALUES
+-- Taguig barangays
+(1, 'Bonifacio Global City'),
+(1, 'Western Bicutan'),
+(1, 'Fort Bonifacio'),
+-- Makati barangays
+(2, 'Bel-Air'),
+(2, 'Poblacion'),
+(2, 'San Lorenzo'),
+-- Pasig barangays
+(3, 'Ortigas Center'),
+(3, 'Kapitolyo'),
+(3, 'Ugong'),
+-- Quezon City barangays
+(4, 'Bagumbayan'),
+(4, 'Diliman'),
+(4, 'Bagong Pag-asa'),
+-- Pasay barangays
+(5, 'Bay City'),
+(5, 'Malibay'),
+-- Muntinlupa barangays
+(6, 'Alabang'),
+(6, 'Tunasan'),
+-- Manila barangays
+(7, 'Ermita'),
+(7, 'Malate'),
+-- Mandaluyong barangays
+(8, 'Plainview'),
+(8, 'Highway Hills');
+
+SELECT * FROM barangays;
+
+-- =====================================================
+-- 5. ADDRESSES TABLE
+-- =====================================================
+-- Complete addresses for customers
+
+INSERT INTO addresses (barangayID, street) VALUES
+-- Taguig addresses
+(1, '123 Bonifacio St'),        -- addressID 1
+(1, '369 BGC High St'),          -- addressID 2
+(3, '555 McKinley Rd'),          -- addressID 3
+-- Makati addresses
+(4, '456 Ayala Ave'),            -- addressID 4
+(4, '741 Makati Ave'),           -- addressID 5
+(5, '789 P. Burgos St'),         -- addressID 6
+-- Pasig addresses
+(7, '789 EDSA'),                 -- addressID 7
+(8, '321 Plaza Dr'),             -- addressID 8
+-- Quezon City addresses
+(10, '321 Eastwood Dr'),         -- addressID 9
+(11, '654 UP Campus'),           -- addressID 10
+(11, '147 North Ave'),           -- addressID 11
+-- Pasay addresses
+(13, '987 MOA Complex'),         -- addressID 12
+-- Muntinlupa addresses
+(15, '258 Alabang Town');        -- addressID 13
+
+SELECT * FROM addresses;
+
+-- =====================================================
+-- 6. CUSTOMERS TABLE
+-- =====================================================
+-- Registered customers with contact information and address references
+
+INSERT INTO customers (customerID, lastName, firstName, contactNumber, addressID, emailAddress) VALUES
+('CUST-001', 'Reyes', 'Juan', '09171234567', 1, 'juan.reyes@email.com'),
+('CUST-002', 'Santos', 'Maria', '09281234567', 4, 'maria.santos@email.com'),
+('CUST-003', 'Cruz', 'Pedro', '09391234567', 7, 'pedro.cruz@email.com'),
+('CUST-004', 'Garcia', 'Ana', '09171234568', 9, 'ana.garcia@email.com'),
+('CUST-005', 'Mendoza', 'Jose', '09281234568', 10, 'jose.mendoza@email.com'),
+('CUST-006', 'Villanueva', 'Sofia', '09391234568', 12, 'sofia.v@email.com'),
+('CUST-007', 'Torres', 'Miguel', '09171234569', 11, 'miguel.torres@email.com'),
+('CUST-008', 'Ramos', 'Isabel', '09281234569', 13, 'isabel.ramos@email.com'),
+('CUST-009', 'Fernandez', 'Carlos', '09391234569', 2, 'carlos.f@email.com'),
+('CUST-010', 'Lopez', 'Elena', '09171234570', 5, 'elena.lopez@email.com');
+
+SELECT * FROM customers;
+
+-- =====================================================
+-- 7. TECHNICIANS TABLE
 -- =====================================================
 -- Maintenance staff for vehicle repairs
 -- Specializations: ELECTRICAL, MECHANICAL, BATTERY
@@ -120,7 +204,7 @@ INSERT INTO technicians (technician_id, last_name, first_name, specialization_id
 SELECT * FROM technicians;
 
 -- =====================================================
--- 5. PARTS TABLE
+-- 8. PARTS TABLE
 -- =====================================================
 -- Spare parts inventory for maintenance
 -- Common parts for e-scooters, e-bikes, and e-trikes
@@ -143,39 +227,54 @@ INSERT INTO parts (part_id, part_name, quantity, price, status) VALUES
 ('PART-014', 'Pedal Set', 25, 180.00, 'Active'),
 ('PART-015', 'Rear Light', 70, 150.00, 'Active');
 
-SELECT * FROM parts;
+SELECT * FROM rentals;
 
 
 -- =====================================================
--- 6. RENTALS TABLE
+-- 9. RENTALS TABLE
 -- =====================================================
 -- Active and completed rental transactions
 -- startDateTime/endDateTime use DATETIME format (removed redundant rentalDate column)
 
-INSERT INTO rentals (rentalID, customerID, plateID, locationID, startDateTime, endDateTime) VALUES
--- Active rentals (ongoing, no end time yet)
-('RNT-001', 'CUST-003', 'ES-003', 'LOC-001', '2024-10-28 09:00:00', NULL),
-('RNT-002', 'CUST-009', 'ES-008', 'LOC-001', '2024-10-28 10:30:00', NULL),
-('RNT-003', 'CUST-005', 'EB-003', 'LOC-005', '2024-10-28 08:00:00', NULL),
-('RNT-004', 'CUST-007', 'ET-003', 'LOC-001', '2024-10-28 11:00:00', NULL),
--- Completed rentals with precise start and end times
-('RNT-005', 'CUST-001', 'ES-001', 'LOC-001', '2024-10-27 09:00:00', '2024-10-27 11:45:00'),
-('RNT-006', 'CUST-002', 'EB-001', 'LOC-002', '2024-10-27 14:00:00', '2024-10-27 17:30:00'),
-('RNT-007', 'CUST-004', 'ES-002', 'LOC-004', '2024-10-26 10:00:00', '2024-10-26 12:50:00'),
-('RNT-008', 'CUST-006', 'ET-001', 'LOC-006', '2024-10-26 15:00:00', '2024-10-26 18:00:00'),
-('RNT-009', 'CUST-008', 'EB-002', 'LOC-008', '2024-10-25 09:00:00', '2024-10-25 11:30:00'),
-('RNT-010', 'CUST-010', 'ES-004', 'LOC-002', '2024-10-25 13:00:00', '2024-10-25 16:15:00'),
-('RNT-011', 'CUST-001', 'ES-006', 'LOC-001', '2024-10-24 10:00:00', '2024-10-24 12:00:00'),
-('RNT-012', 'CUST-003', 'EB-004', 'LOC-003', '2024-10-24 14:00:00', '2024-10-24 16:30:00'),
-('RNT-013', 'CUST-002', 'ES-007', 'LOC-002', '2024-10-23 09:00:00', '2024-10-23 11:00:00'),
-('RNT-014', 'CUST-004', 'ET-002', 'LOC-004', '2024-10-23 15:00:00', '2024-10-23 18:00:00'),
-('RNT-015', 'CUST-006', 'ES-009', 'LOC-006', '2024-10-22 10:00:00', '2024-10-22 13:00:00');
+INSERT INTO rentals (rentalID, customerID, plateID, locationID, pickUpDateTime, startDateTime, endDateTime, status) VALUES
+-- Active rentals (ongoing, picked up - startDateTime is set by admin)
+('RNT-001', 'CUST-003', 'ES-003', 'LOC-001', '2024-10-28 09:00:00', '2024-10-28 09:05:00', NULL, 'Active'),
+('RNT-002', 'CUST-009', 'ES-008', 'LOC-001', '2024-10-28 10:30:00', '2024-10-28 10:35:00', NULL, 'Active'),
+('RNT-003', 'CUST-005', 'EB-003', 'LOC-005', '2024-10-28 08:00:00', '2024-10-28 08:10:00', NULL, 'Active'),
+('RNT-004', 'CUST-007', 'ET-003', 'LOC-001', '2024-10-28 11:00:00', '2024-10-28 11:05:00', NULL, 'Active'),
+-- Completed rentals with precise start and end times (pickUpDateTime set at booking, startDateTime when customer arrived)
+('RNT-005', 'CUST-001', 'ES-001', 'LOC-001', '2024-10-27 09:00:00', '2024-10-27 09:05:00', '2024-10-27 11:45:00', 'Completed'),
+('RNT-006', 'CUST-002', 'EB-001', 'LOC-002', '2024-10-27 14:00:00', '2024-10-27 14:10:00', '2024-10-27 17:30:00', 'Completed'),
+('RNT-007', 'CUST-004', 'ES-002', 'LOC-004', '2024-10-26 10:00:00', '2024-10-26 10:05:00', '2024-10-26 12:50:00', 'Completed'),
+('RNT-008', 'CUST-006', 'ET-001', 'LOC-006', '2024-10-26 15:00:00', '2024-10-26 15:10:00', '2024-10-26 18:00:00', 'Completed'),
+('RNT-009', 'CUST-008', 'EB-002', 'LOC-008', '2024-10-25 09:00:00', '2024-10-25 09:05:00', '2024-10-25 11:30:00', 'Completed'),
+('RNT-010', 'CUST-010', 'ES-004', 'LOC-002', '2024-10-25 13:00:00', '2024-10-25 13:05:00', '2024-10-25 16:15:00', 'Completed'),
+('RNT-011', 'CUST-001', 'ES-006', 'LOC-001', '2024-10-24 10:00:00', '2024-10-24 10:05:00', '2024-10-24 12:00:00', 'Completed'),
+('RNT-012', 'CUST-003', 'EB-004', 'LOC-003', '2024-10-24 14:00:00', '2024-10-24 14:05:00', '2024-10-24 16:30:00', 'Completed'),
+('RNT-013', 'CUST-002', 'ES-007', 'LOC-002', '2024-10-23 09:00:00', '2024-10-23 09:10:00', '2024-10-23 11:00:00', 'Completed'),
+('RNT-014', 'CUST-004', 'ET-002', 'LOC-004', '2024-10-23 15:00:00', '2024-10-23 15:05:00', '2024-10-23 18:00:00', 'Completed'),
+('RNT-015', 'CUST-006', 'ES-009', 'LOC-006', '2024-10-22 10:00:00', '2024-10-22 10:10:00', '2024-10-22 13:00:00', 'Completed'),
+-- Additional rentals for ES-005 (now in Maintenance) - heavy usage before defect
+('RNT-016', 'CUST-001', 'ES-005', 'LOC-001', '2024-10-15 08:00:00', '2024-10-15 08:05:00', '2024-10-15 12:00:00', 'Completed'),
+('RNT-017', 'CUST-002', 'ES-005', 'LOC-001', '2024-10-16 09:00:00', '2024-10-16 09:05:00', '2024-10-16 13:30:00', 'Completed'),
+('RNT-018', 'CUST-003', 'ES-005', 'LOC-001', '2024-10-17 10:00:00', '2024-10-17 10:05:00', '2024-10-17 14:00:00', 'Completed'),
+('RNT-019', 'CUST-004', 'ES-005', 'LOC-001', '2024-10-18 11:00:00', '2024-10-18 11:05:00', '2024-10-18 15:30:00', 'Completed'),
+('RNT-020', 'CUST-005', 'ES-005', 'LOC-001', '2024-10-19 09:00:00', '2024-10-19 09:05:00', '2024-10-19 12:00:00', 'Completed'),
+('RNT-021', 'CUST-006', 'ES-005', 'LOC-001', '2024-10-20 10:00:00', '2024-10-20 10:05:00', '2024-10-20 13:30:00', 'Completed'),
+('RNT-022', 'CUST-007', 'ES-005', 'LOC-001', '2024-10-21 08:30:00', '2024-10-21 08:35:00', '2024-10-21 11:00:00', 'Completed'),
+('RNT-023', 'CUST-008', 'ES-005', 'LOC-001', '2024-10-22 14:00:00', '2024-10-22 14:05:00', '2024-10-22 17:00:00', 'Completed'),
+-- Additional rentals for EB-006 (now in Maintenance) - moderate usage
+('RNT-024', 'CUST-009', 'EB-006', 'LOC-007', '2024-10-10 09:00:00', '2024-10-10 09:05:00', '2024-10-10 13:00:00', 'Completed'),
+('RNT-025', 'CUST-010', 'EB-006', 'LOC-007', '2024-10-12 10:00:00', '2024-10-12 10:05:00', '2024-10-12 14:30:00', 'Completed'),
+('RNT-026', 'CUST-001', 'EB-006', 'LOC-007', '2024-10-14 08:00:00', '2024-10-14 08:05:00', '2024-10-14 12:00:00', 'Completed'),
+('RNT-027', 'CUST-002', 'EB-006', 'LOC-007', '2024-10-16 11:00:00', '2024-10-16 11:05:00', '2024-10-16 15:00:00', 'Completed'),
+('RNT-028', 'CUST-003', 'EB-006', 'LOC-007', '2024-10-18 09:00:00', '2024-10-18 09:05:00', '2024-10-18 13:30:00', 'Completed');
 
 SELECT * FROM rentals;
 
 
 -- =====================================================
--- 7. PAYMENTS TABLE
+-- 10. PAYMENTS TABLE
 -- =====================================================
 -- Payment records for rentals
 -- Note: Only includes payments for completed rentals (RNT-005 to RNT-015)
@@ -194,7 +293,22 @@ INSERT INTO payments (paymentID, amount, rentalID, paymentDate, status) VALUES
 ('PAY-008', 8.13, 'RNT-012', '2024-10-24', 'Active'),   -- EB-004: 2.5h × ₱78/day
 ('PAY-009', 3.75, 'RNT-013', '2024-10-23', 'Active'),   -- ES-007: 2h × ₱45/day
 ('PAY-010', 11.88, 'RNT-014', '2024-10-23', 'Active'),  -- ET-002: 3h × ₱95/day
-('PAY-011', 7.25, 'RNT-015', '2024-10-22', 'Active');   -- ES-009: 3h × ₱58/day
+('PAY-011', 7.25, 'RNT-015', '2024-10-22', 'Active'),   -- ES-009: 3h × ₱58/day
+-- Additional payments for ES-005 rentals (before maintenance)
+('PAY-016', 8.00, 'RNT-016', '2024-10-15', 'Active'),   -- ES-005: 4h × ₱48/day
+('PAY-017', 9.00, 'RNT-017', '2024-10-16', 'Active'),   -- ES-005: 4.5h × ₱48/day
+('PAY-018', 8.00, 'RNT-018', '2024-10-17', 'Active'),   -- ES-005: 4h × ₱48/day
+('PAY-019', 9.00, 'RNT-019', '2024-10-18', 'Active'),   -- ES-005: 4.5h × ₱48/day
+('PAY-020', 6.00, 'RNT-020', '2024-10-19', 'Active'),   -- ES-005: 3h × ₱48/day
+('PAY-021', 7.00, 'RNT-021', '2024-10-20', 'Active'),   -- ES-005: 3.5h × ₱48/day
+('PAY-022', 5.00, 'RNT-022', '2024-10-21', 'Active'),   -- ES-005: 2.5h × ₱48/day
+('PAY-023', 6.00, 'RNT-023', '2024-10-22', 'Active'),   -- ES-005: 3h × ₱48/day
+-- Additional payments for EB-006 rentals (before maintenance)
+('PAY-024', 13.67, 'RNT-024', '2024-10-10', 'Active'),  -- EB-006: 4h × ₱82/day
+('PAY-025', 15.42, 'RNT-025', '2024-10-12', 'Active'),  -- EB-006: 4.5h × ₱82/day
+('PAY-026', 13.67, 'RNT-026', '2024-10-14', 'Active'),  -- EB-006: 4h × ₱82/day
+('PAY-027', 13.67, 'RNT-027', '2024-10-16', 'Active'),  -- EB-006: 4h × ₱82/day
+('PAY-028', 15.42, 'RNT-028', '2024-10-18', 'Active');  -- EB-006: 4.5h × ₱82/day
 
 -- =====================================================
 -- Placeholder payments for ongoing rentals (one record per rental)
@@ -214,40 +328,47 @@ SELECT * FROM payments;
 
 
 -- =====================================================
--- 8. MAINTENANCE TABLE (Refactored)
+-- 11. MAINTENANCE TABLE (Refactored)
 -- =====================================================
 -- Maintenance records without part information
 -- Parts tracked separately in maintenance_cheque table
 -- startDateTime/endDateTime use DATETIME format, hoursWorked removed (calculated dynamically)
 
-INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, notes, technicianID, plateID, status) VALUES
+INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, totalCost, notes, technicianID, plateID, status) VALUES
 -- Recent maintenance - E-Scooters (completed) - All Active
-('MAINT-001', '2024-10-20 08:00:00', '2024-10-21 11:30:00', 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001', 'Active'),
-('MAINT-002', '2024-10-22 09:00:00', '2024-10-22 10:00:00', 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002', 'Active'),
-('MAINT-003', '2024-10-25 10:00:00', '2024-10-26 12:30:00', 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005', 'Active'),
-('MAINT-004', '2024-10-23 13:00:00', '2024-10-23 14:30:00', 'LED headlight and throttle replacement', 'TECH-001', 'ES-006', 'Active'),
-('MAINT-005', '2024-10-24 09:00:00', '2024-10-24 09:45:00', 'Front tire puncture - replaced', 'TECH-002', 'ES-007', 'Active'),
-('MAINT-006', '2024-10-21 14:00:00', '2024-10-21 14:30:00', 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009', 'Active'),
-('MAINT-007', '2024-10-19 08:00:00', '2024-10-19 08:30:00', 'Brake cable fraying - preventive', 'TECH-002', 'ES-010', 'Active'),
+('MAINT-001', '2024-10-20 08:00:00', '2024-10-21 11:30:00', 22125.00, 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001', 'Active'),
+('MAINT-002', '2024-10-22 09:00:00', '2024-10-22 10:00:00', 770.00, 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002', 'Active'),
+('MAINT-003', '2024-10-25 10:00:00', '2024-10-26 12:30:00', 17540.00, 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005', 'Active'),
+('MAINT-004', '2024-10-23 13:00:00', '2024-10-23 14:30:00', 1475.00, 'LED headlight and throttle replacement', 'TECH-001', 'ES-006', 'Active'),
+('MAINT-005', '2024-10-24 09:00:00', '2024-10-24 09:45:00', 540.00, 'Front tire puncture - replaced', 'TECH-002', 'ES-007', 'Active'),
+('MAINT-006', '2024-10-21 14:00:00', '2024-10-21 14:30:00', 515.00, 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009', 'Active'),
+('MAINT-007', '2024-10-19 08:00:00', '2024-10-19 08:30:00', 310.00, 'Brake cable fraying - preventive', 'TECH-002', 'ES-010', 'Active'),
 
 -- E-Bikes maintenance (completed)
-('MAINT-008', '2024-10-18 09:00:00', '2024-10-19 13:00:00', 'Battery and display replacement', 'TECH-003', 'EB-001', 'Active'),
-('MAINT-009', '2024-10-20 10:00:00', '2024-10-21 11:15:00', 'Chain and brake maintenance', 'TECH-002', 'EB-002', 'Active'),
-('MAINT-010', '2024-10-22 14:00:00', '2024-10-22 15:00:00', 'Brake pads and cables replaced', 'TECH-005', 'EB-004', 'Active'),
-('MAINT-011', '2024-10-23 09:00:00', '2024-10-23 11:00:00', 'Display screen malfunction', 'TECH-001', 'EB-005', 'Active'),
-('MAINT-012', '2024-10-26 08:00:00', '2024-10-27 11:00:00', 'Battery capacity critical - emergency', 'TECH-006', 'EB-006', 'Active'),
-('MAINT-013', '2024-10-24 13:00:00', '2024-10-24 14:30:00', 'Pedal and seat replacement', 'TECH-002', 'EB-007', 'Active'),
-('MAINT-014', '2024-10-25 09:00:00', '2024-10-25 10:00:00', 'Rear light and brake maintenance', 'TECH-004', 'EB-008', 'Active'),
+('MAINT-008', '2024-10-18 09:00:00', '2024-10-19 13:00:00', 22820.00, 'Battery and display replacement', 'TECH-003', 'EB-001', 'Active'),
+('MAINT-009', '2024-10-20 10:00:00', '2024-10-21 11:15:00', 8780.00, 'Chain and brake maintenance', 'TECH-002', 'EB-002', 'Active'),
+('MAINT-010', '2024-10-22 14:00:00', '2024-10-22 15:00:00', 910.00, 'Brake pads and cables replaced', 'TECH-005', 'EB-004', 'Active'),
+('MAINT-011', '2024-10-23 09:00:00', '2024-10-23 11:00:00', 1500.00, 'Display screen malfunction', 'TECH-001', 'EB-005', 'Active'),
+('MAINT-012', '2024-10-26 08:00:00', '2024-10-27 11:00:00', 22585.00, 'Battery capacity critical - emergency', 'TECH-006', 'EB-006', 'Active'),
+('MAINT-013', '2024-10-24 13:00:00', '2024-10-24 14:30:00', 1130.00, 'Pedal and seat replacement', 'TECH-002', 'EB-007', 'Active'),
+('MAINT-014', '2024-10-25 09:00:00', '2024-10-25 10:00:00', 710.00, 'Rear light and brake maintenance', 'TECH-004', 'EB-008', 'Active'),
 
 -- E-Trikes maintenance (completed)
-('MAINT-015', '2024-10-21 10:00:00', '2024-10-22 11:15:00', 'Tire and brake inspection', 'TECH-002', 'ET-001', 'Active'),
-('MAINT-016', '2024-10-19 09:00:00', '2024-10-20 11:30:00', 'Battery and controller check', 'TECH-003', 'ET-002', 'Active'),
-('MAINT-017', '2024-10-23 13:00:00', '2024-10-23 15:00:00', 'Complete brake system service', 'TECH-005', 'ET-004', 'Active'),
-('MAINT-018', '2024-10-24 08:00:00', '2024-10-25 10:30:00', 'Motor controller replacement', 'TECH-007', 'ET-005', 'Active'),
+('MAINT-015', '2024-10-21 10:00:00', '2024-10-22 11:15:00', 9330.00, 'Tire and brake inspection', 'TECH-002', 'ET-001', 'Active'),
+('MAINT-016', '2024-10-19 09:00:00', '2024-10-20 11:30:00', 22510.00, 'Battery and controller check', 'TECH-003', 'ET-002', 'Active'),
+('MAINT-017', '2024-10-23 13:00:00', '2024-10-23 15:00:00', 1620.00, 'Complete brake system service', 'TECH-005', 'ET-004', 'Active'),
+('MAINT-018', '2024-10-24 08:00:00', '2024-10-25 10:30:00', 18172.50, 'Motor controller replacement', 'TECH-007', 'ET-005', 'Active'),
+
+-- Additional maintenance for ES-005 (multiple incidents in October 2024)
+('MAINT-021', '2024-10-12 08:00:00', '2024-10-12 10:30:00', 1000.00, 'Brake cable replacement', 'TECH-002', 'ES-005', 'Active'),
+('MAINT-022', '2024-10-16 14:00:00', '2024-10-17 09:00:00', 7550.00, 'Display screen glitching', 'TECH-001', 'ES-005', 'Active'),
+-- Additional maintenance for EB-006 (multiple incidents in October 2024)
+('MAINT-023', '2024-10-08 09:00:00', '2024-10-09 11:00:00', 8570.00, 'Chain replacement due to wear', 'TECH-002', 'EB-006', 'Active'),
+('MAINT-024', '2024-10-15 08:00:00', '2024-10-15 10:00:00', 1070.00, 'Rear tire puncture', 'TECH-005', 'EB-006', 'Active'),
 
 -- Ongoing maintenance (not yet completed - endDateTime is NULL)
-('MAINT-019', '2024-10-27 09:00:00', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005', 'Active'),
-('MAINT-020', '2024-10-27 10:00:00', NULL, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006', 'Active');
+('MAINT-019', '2024-10-27 09:00:00', NULL, 0.00, 'Brake inspection in progress', 'TECH-002', 'ES-005', 'Active'),
+('MAINT-020', '2024-10-27 10:00:00', NULL, 0.00, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006', 'Active');
 
 SELECT * FROM maintenance;
 
@@ -328,35 +449,48 @@ INSERT INTO maintenance_cheque (maintenanceID, partID, quantityUsed, status) VAL
 ('MAINT-019', 'PART-003', 2.00, 'Active'),
 
 -- MAINT-020: Seat replacement (awaiting delivery - no parts used yet)
-('MAINT-020', 'PART-013', 1.00, 'Active');
+('MAINT-020', 'PART-013', 1.00, 'Active'),
+
+-- MAINT-021: Brake cable (ES-005)
+('MAINT-021', 'PART-011', 1.00, 'Active'),
+
+-- MAINT-022: Display screen (ES-005)
+('MAINT-022', 'PART-012', 1.00, 'Active'),
+
+-- MAINT-023: Chain replacement (EB-006)
+('MAINT-023', 'PART-010', 1.00, 'Active'),
+
+-- MAINT-024: Rear tire (EB-006)
+('MAINT-024', 'PART-006', 1.00, 'Active');
 
 SELECT * FROM maintenance_cheque;
 
 
 
 -- =====================================================
--- 9. PENALTIES TABLE
+-- 12. PENALTIES TABLE
 -- =====================================================
 -- Penalty records for damage/repair costs charged to customers
 -- Linked to maintenance records via maintenanceID
 
-INSERT INTO penalty (penaltyID, rentalID, totalPenalty, penaltyStatus, maintenanceID, dateIssued) VALUES
+INSERT INTO penalty (penaltyID, rentalID, totalPenalty, penaltyStatus, maintenanceID, dateIssued, status) VALUES
 -- Penalties for completed maintenance (customer charged for damages)
-('PEN-001', 'RNT-005', 3725.00, 'UNPAID', 'MAINT-001', '2024-10-21'),  -- Battery replacement: 3.5h × ₱350 + ₱2500 = ₱3,725
-('PEN-002', 'RNT-007', 745.00, 'PAID', 'MAINT-002', '2024-10-22'),     -- Brake maintenance: 1.0h × ₱330 + (2×₱150 + ₱95) = ₱725
-('PEN-003', 'RNT-006', 3535.00, 'UNPAID', 'MAINT-008', '2024-10-19'),  -- Battery + display: 4.0h × ₱380 + (₱2500 + ₱1200) = ₱5,220
-('PEN-004', 'RNT-009', 565.00, 'PAID', 'MAINT-009', '2024-10-21'),     -- Chain + brakes: 1.25h × ₱320 + (₱200 + 2×₱150) = ₱900
-('PEN-005', 'RNT-012', 1275.00, 'UNPAID', 'MAINT-011', '2024-10-23'),  -- Display screen: 2.0h × ₱350 + ₱1200 = ₱1,900
-('PEN-006', 'RNT-013', 562.50, 'PAID', 'MAINT-004', '2024-10-23'),     -- Headlight + throttle: 1.5h × ₱350 + (₱350 + ₱280) = ₱1,155
-('PEN-007', 'RNT-014', 1470.00, 'UNPAID', 'MAINT-016', '2024-10-20'),  -- Battery + controller: 2.5h × ₱380 + (₱2500 + ₱1800) = ₱5,250
-('PEN-008', 'RNT-015', 600.00, 'PAID', 'MAINT-005', '2024-10-24'),     -- Tire replacement: 0.75h × ₱320 + ₱450 = ₱690
-('PEN-009', 'RNT-011', 1130.00, 'UNPAID', 'MAINT-013', '2024-10-24'),  -- Pedal + seat: 1.5h × ₱320 + (₱180 + ₱350) = ₱1,010
-('PEN-010', 'RNT-010', 925.00, 'PAID', 'MAINT-017', '2024-10-23');     -- Complete brake system: 2.0h × ₱330 + (4×₱150 + 2×₱95) = ₱1,450
+-- status field: 'Active' = penalty is active, 'Inactive' = soft deleted (cancelled/voided)
+('PEN-001', 'RNT-005', 3725.00, 'UNPAID', 'MAINT-001', '2024-10-21', 'Active'),  -- Battery replacement: 3.5h × ₱350 + ₱2500 = ₱3,725
+('PEN-002', 'RNT-007', 745.00, 'PAID', 'MAINT-002', '2024-10-22', 'Active'),     -- Brake maintenance: 1.0h × ₱330 + (2×₱150 + ₱95) = ₱725
+('PEN-003', 'RNT-006', 3535.00, 'UNPAID', 'MAINT-008', '2024-10-19', 'Active'),  -- Battery + display: 4.0h × ₱380 + (₱2500 + ₱1200) = ₱5,220
+('PEN-004', 'RNT-009', 565.00, 'PAID', 'MAINT-009', '2024-10-21', 'Active'),     -- Chain + brakes: 1.25h × ₱320 + (₱200 + 2×₱150) = ₱900
+('PEN-005', 'RNT-012', 1275.00, 'UNPAID', 'MAINT-011', '2024-10-23', 'Active'),  -- Display screen: 2.0h × ₱350 + ₱1200 = ₱1,900
+('PEN-006', 'RNT-013', 562.50, 'PAID', 'MAINT-004', '2024-10-23', 'Active'),     -- Headlight + throttle: 1.5h × ₱350 + (₱350 + ₱280) = ₱1,155
+('PEN-007', 'RNT-014', 1470.00, 'UNPAID', 'MAINT-016', '2024-10-20', 'Active'),  -- Battery + controller: 2.5h × ₱380 + (₱2500 + ₱1800) = ₱5,250
+('PEN-008', 'RNT-015', 600.00, 'PAID', 'MAINT-005', '2024-10-24', 'Active'),     -- Tire replacement: 0.75h × ₱320 + ₱450 = ₱690
+('PEN-009', 'RNT-011', 1130.00, 'UNPAID', 'MAINT-013', '2024-10-24', 'Active'),  -- Pedal + seat: 1.5h × ₱320 + (₱180 + ₱350) = ₱1,010
+('PEN-010', 'RNT-010', 925.00, 'PAID', 'MAINT-017', '2024-10-23', 'Active');     -- Complete brake system: 2.0h × ₱330 + (4×₱150 + 2×₱95) = ₱1,450
 
 SELECT * FROM penalty;
 
 -- =====================================================
--- 10. DEPLOYMENTS TABLE (NOT READY YET - COMMENTED OUT)
+-- 13. DEPLOYMENTS TABLE (NOT READY YET - COMMENTED OUT)
 -- =====================================================
 -- Vehicle location history and movements
 

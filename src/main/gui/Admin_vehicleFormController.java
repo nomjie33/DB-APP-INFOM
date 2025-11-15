@@ -50,6 +50,7 @@ public class Admin_vehicleFormController {
             // This part is the same, gathering the data
             Vehicle v = new Vehicle();
             v.setPlateID(plateField.getText());
+            //v.setVehicleModel(modelField.getText());
             v.setVehicleType(typeField.getText());
             v.setRentalPrice(Double.parseDouble(priceField.getText()));
 

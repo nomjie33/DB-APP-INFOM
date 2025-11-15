@@ -84,6 +84,7 @@ src/
 │   └── Helpers.java
 │
 └── main/               # Application entry
+    ├── gui/
     └── VehicleRentalApp.java
 ```
 
