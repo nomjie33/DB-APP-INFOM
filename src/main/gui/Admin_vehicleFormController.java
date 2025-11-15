@@ -42,7 +42,7 @@ public class Admin_vehicleFormController {
         try {
             Vehicle v = new Vehicle();
             v.setPlateID(plateField.getText());
-            v.setVehicleModel(modelField.getText());
+            //v.setVehicleModel(modelField.getText());
             v.setVehicleType(typeField.getText());
             v.setRentalPrice(Double.parseDouble(priceField.getText()));
 
