@@ -11,7 +11,6 @@ public class Admin_vehicleFormController {
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField plateField;
-    @FXML private TextField modelField;
     @FXML private TextField typeField;
     @FXML private TextField priceField;
 
@@ -29,7 +28,6 @@ public class Admin_vehicleFormController {
             formHeaderLabel.setText("Update Vehicle");
 
             plateField.setText(vehicle.getPlateID());
-            //modelField.setText(vehicle.getVehicleModel());
             typeField.setText(vehicle.getVehicleType());
             priceField.setText(String.valueOf(vehicle.getRentalPrice()));
 
@@ -44,7 +42,7 @@ public class Admin_vehicleFormController {
         try {
             Vehicle v = new Vehicle();
             v.setPlateID(plateField.getText());
-            //v.setVehicleModel(modelField.getText());
+            v.setVehicleModel(modelField.getText());
             v.setVehicleType(typeField.getText());
             v.setRentalPrice(Double.parseDouble(priceField.getText()));
 
@@ -77,7 +75,7 @@ public class Admin_vehicleFormController {
     }
 
     private boolean validateFields(){
-        if (plateField.getText().isEmpty() || modelField.getText().isEmpty() ||
+        if (plateField.getText().isEmpty() ||
                 typeField.getText().isEmpty() || priceField.getText().isEmpty()){
             showAlert(Alert.AlertType.WARNING, "Validation Error!!!", "Please fill in all required Fields.");
             return false;

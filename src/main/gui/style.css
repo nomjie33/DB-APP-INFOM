@@ -304,13 +304,13 @@
  .add-button{
     -fx-background-color: #33a398;
     -fx-text-fill: white;
-    -fx-font-family: "SFT Schrifted Sans TRIAL"
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
     -fx-font-weight: bold;
     -fx-font-size: 20px;
     -fx-background-radius: 50;
  }
 
- .add-button: hover {
+ .add-button:hover {
     -fx-background-color: #2b8a7f;
     -fx-cursor: hand;
  }
@@ -322,7 +322,7 @@
     -fx-background-radius: 5;
  }
 
- .edit-button: hover{
+ .edit-button:hover {
     -fx-background-color: #2b8a7f;
     -fx-cursor: hand;
  }
