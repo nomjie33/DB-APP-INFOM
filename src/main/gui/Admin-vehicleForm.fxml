@@ -16,9 +16,6 @@
                 <Label layoutX="30.0" layoutY="30.0" styleClass="sidebar-title" text="Plate ID" />
                 <TextField fx:id="plateField" layoutX="30.0" layoutY="55.0" prefWidth="250.0" promptText="ABC-123" styleClass="form-text-field" />
 
-                <Label layoutX="300.0" layoutY="30.0" styleClass="sidebar-title" text="Vehicle Model" />
-                <TextField fx:id="modelField" layoutX="300.0" layoutY="55.0" prefWidth="250.0" promptText="e.g. Toyota Vios" styleClass="form-text-field" />
-
                 <Label layoutX="30.0" layoutY="110.0" styleClass="sidebar-title" text="Vehicle Type" />
                 <TextField fx:id="typeField" layoutX="30.0" layoutY="135.0" prefWidth="250.0" promptText="e.g. Sedan, SUV" styleClass="form-text-field" />
 
