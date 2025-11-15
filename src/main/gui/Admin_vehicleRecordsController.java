@@ -24,7 +24,6 @@ public class Admin_vehicleRecordsController implements  Initializable{
     @FXML private Label vehicleCountLabel;
     @FXML private TableView<Vehicle> vehicleTable;
     @FXML private TableColumn<Vehicle, String> plateColumn;
-    @FXML private TableColumn<Vehicle, String> modelColumn;
     @FXML private TableColumn<Vehicle, String> typeColumn;
     @FXML private TableColumn<Vehicle, Double> priceColumn;
     @FXML private TableColumn<Vehicle, String> statusColumn;
@@ -36,7 +35,6 @@ public class Admin_vehicleRecordsController implements  Initializable{
     @Override
     public void initialize(URL url, ResourceBundle rb){
         plateColumn.setCellValueFactory(new PropertyValueFactory<>("plateID"));
-        modelColumn.setCellValueFactory(new PropertyValueFactory<>("vehicleModel"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("vehicleType"));
         priceColumn.setCellValueFactory(new PropertyValueFactory<>("rentalPrice"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
