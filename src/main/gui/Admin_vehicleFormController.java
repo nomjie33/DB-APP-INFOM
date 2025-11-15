@@ -29,7 +29,7 @@ public class Admin_vehicleFormController {
             formHeaderLabel.setText("Update Vehicle");
 
             plateField.setText(vehicle.getPlateID());
-            modelField.setText(vehicle.getVehicleModel());
+            //modelField.setText(vehicle.getVehicleModel());
             typeField.setText(vehicle.getVehicleType());
             priceField.setText(String.valueOf(vehicle.getRentalPrice()));
 
@@ -44,7 +44,7 @@ public class Admin_vehicleFormController {
         try {
             Vehicle v = new Vehicle();
             v.setPlateID(plateField.getText());
-            v.setVehicleModel(modelField.getText());
+            //v.setVehicleModel(modelField.getText());
             v.setVehicleType(typeField.getText());
             v.setRentalPrice(Double.parseDouble(priceField.getText()));
 

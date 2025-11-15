@@ -1,16 +1,16 @@
 /**
  * CUSTOMER RENTAL REPORT
- * 
+ *
  * PURPOSE:
  * Analyze customer rental behavior and spending patterns. Identify top customers,
  * rental frequency, and total revenue per customer for loyalty programs and
  * targeted marketing.
- * 
+ *
  * DATA SOURCES:
  * - Rental Records (rentalID, customerID, startDateTime, endDateTime)
  * - Customer Records (customerID, firstName, lastName, email, phoneNumber)
  * - Payment Transaction Records (rentalID, amount, paymentDate, paymentMethod)
- * 
+ *
  * REPORT OUTPUT:
  * - Customer ID
  * - Customer Name (firstName + lastName)
@@ -22,7 +22,7 @@
  * - Average Rental Duration (average hours per rental)
  * - Most Recent Rental Date
  * - Preferred Payment Method (most frequently used)
- * 
+ *
  * USER INPUTS:
  * 1. Report Period Type (Day/Month/Year)
  * 2. Year (required)
@@ -30,14 +30,14 @@
  * 4. Day (required if period is Day)
  * 5. Sort By ("Rentals", "Revenue", "Duration") - Optional, defaults to Revenue
  * 6. Top N Customers - Optional, show only top N customers
- * 
+ *
  * EXPECTED METHODS:
  * - generateDailyReport(int year, int month, int day, String sortBy, int topN)
  * - generateMonthlyReport(int year, int month, String sortBy, int topN)
  * - generateYearlyReport(int year, String sortBy, int topN)
  * - printReport(List<CustomerRentalData> data) - Format and display results
  * - calculateCustomerLifetimeValue(String customerID) - Total revenue from customer
- * 
+ *
  * SQL LOGIC:
  * - JOIN rentals with customers on customerID
  * - JOIN rentals with payments on rentalID
@@ -52,14 +52,14 @@
  *   * MAX(startDateTime) - most recent rental
  * - Sort by specified column (revenue, rentals, or duration)
  * - LIMIT to topN if specified
- * 
+ *
  * BUSINESS INSIGHTS:
  * - High revenue customers = VIP treatment, loyalty rewards
  * - Frequent renters = subscription model opportunity
  * - Long duration renters = may prefer ownership, offer purchase options
  * - Inactive customers = re-engagement marketing campaigns
  * - Payment method preferences = optimize payment options
- * 
+ *
  * EXAMPLE OUTPUT:
  * ================================================================
  * CUSTOMER RENTAL REPORT - October 2024 (Top 5 by Revenue)
@@ -74,7 +74,7 @@
  * ---------------------------------------------------------------------------------------------------------
  * Total (Top 5 Customers)        | 90      | P 11,250.00| P 125.00 | 225.0     | 2.5     |
  * ================================================================
- * 
+ *
  * RECOMMENDATIONS:
  * - Consider loyalty program for customers with 10+ monthly rentals
  * - Offer subscription packages for frequent renters
@@ -130,6 +130,18 @@ public class CustomerRentalReport {
             sb.append(ch);
         }
         return sb.toString();
+    }
+
+    /**
+     * Create output directory and return full path for PDF
+     */
+    private static String prepareOutputPath(String filename) {
+        String outputDir = "reports_output";
+        File dir = new File(outputDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return outputDir + File.separator + filename;
     }
 
     /**
@@ -248,7 +260,7 @@ public class CustomerRentalReport {
                         "    MAX(r.startDateTime) AS most_recent_rental " +
                         "FROM customers c " +
                         "LEFT JOIN rentals r ON c.customerID = r.customerID " +
-                        "    AND r.status = 'Active' " +
+                        "    AND r.status = 'Completed' " +
                         "    AND YEAR(r.startDateTime) = ? " +
                         "    AND MONTH(r.startDateTime) = ? " +
                         "LEFT JOIN payments p ON r.rentalID = p.rentalID " +
@@ -325,7 +337,7 @@ public class CustomerRentalReport {
                         "    MAX(r.startDateTime) AS most_recent_rental " +
                         "FROM customers c " +
                         "LEFT JOIN rentals r ON c.customerID = r.customerID " +
-                        "    AND r.status = 'Active' " +
+                        "    AND r.status = 'Completed' " +
                         "    AND YEAR(r.startDateTime) = ? " +
                         "LEFT JOIN payments p ON r.rentalID = p.rentalID " +
                         "    AND p.status = 'Active' " +
@@ -437,123 +449,111 @@ public class CustomerRentalReport {
     }
 
     /**
-     * Export report to PDF
+     * Export report to branded PDF
      */
-    public void exportToPDF(List<CustomerRentalData> data, String filename, int year, int month,
-                            String sortBy) {
-        Document document = new Document(PageSize.A4.rotate()); // Landscape for wide table
+    public void exportToPDF(List<CustomerRentalData> data, String filename, int year, int month, String sortBy) {
+        Document document = new Document(PageSize.A4.rotate());
 
         try {
-            PdfWriter.getInstance(document, new FileOutputStream(filename));
+            String fullPath = prepareOutputPath(filename);
+            PdfWriter.getInstance(document, new FileOutputStream(fullPath));
             document.open();
 
-            // Add title
-            Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
+            // Title
             String[] months = {"", "January", "February", "March", "April", "May", "June",
                     "July", "August", "September", "October", "November", "December"};
-
-            String title = "CUSTOMER RENTAL REPORT";
+            String title = "Customer Rental Report";
             if (month > 0) {
                 title += " - " + months[month] + " " + year;
             } else {
                 title += " - Year " + year;
             }
-            title += " (Sorted by " + sortBy + ")";
 
-            Paragraph titlePara = new Paragraph(title, titleFont);
-            titlePara.setAlignment(Element.ALIGN_CENTER);
-            titlePara.setSpacingAfter(20);
-            document.add(titlePara);
+            PDFBrandingHelper.addHeaderSection(document, title, null);
 
             if (data.isEmpty()) {
-                Paragraph noData = new Paragraph("No customer rental data found for the specified period.");
+                Paragraph noData = new Paragraph("No customer rental data found for the specified period.",
+                        new Font(Font.FontFamily.HELVETICA, 9));
                 noData.setAlignment(Element.ALIGN_CENTER);
+                noData.setSpacingBefore(30);
                 document.add(noData);
                 document.close();
+                System.out.println("✓ PDF saved to: " + fullPath);
                 return;
             }
 
-            // Create table
-            PdfPTable table = new PdfPTable(9); // 9 columns
+            // Table
+            PdfPTable table = new PdfPTable(9);
             table.setWidthPercentage(100);
             table.setWidths(new float[]{1.2f, 2.5f, 0.8f, 1.5f, 1.2f, 1.2f, 1.2f, 1.5f, 1.5f});
 
-            // Header font
-            Font headerFont = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD);
-
-            // Add headers
+            // Headers
             String[] headers = {"Customer ID", "Name", "Rentals", "Total Cost (PHP)",
                     "Avg Cost", "Total Hrs", "Avg Hrs", "Last Rental", "Payment Method"};
-
             for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cell.setPadding(5);
-                table.addCell(cell);
+                table.addCell(PDFBrandingHelper.createHeaderCell(header));
             }
 
-            // Add data rows
-            Font dataFont = new Font(Font.FontFamily.HELVETICA, 8);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
+            // Data
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
             int totalRentals = 0;
             double totalRevenue = 0;
             double totalHours = 0;
 
-            for (CustomerRentalData customer : data) {
-                table.addCell(new Phrase(customer.getCustomerID(), dataFont));
-                table.addCell(new Phrase(customer.getFullName(), dataFont));
-                table.addCell(new Phrase(String.valueOf(customer.getNumberOfRentals()), dataFont));
-                table.addCell(new Phrase(String.format("%,.2f", customer.getTotalRentalCost()), dataFont));
-                table.addCell(new Phrase(String.format("%,.2f", customer.getAverageRentalCost()), dataFont));
-                table.addCell(new Phrase(String.format("%.1f", customer.getTotalRentalDuration()), dataFont));
-                table.addCell(new Phrase(String.format("%.1f", customer.getAverageRentalDuration()), dataFont));
+            for (int i = 0; i < data.size(); i++) {
+                CustomerRentalData customer = data.get(i);
+
+                table.addCell(PDFBrandingHelper.createDataCell(customer.getCustomerID(), i));
+                table.addCell(PDFBrandingHelper.createDataCell(customer.getFullName(), i));
+                table.addCell(PDFBrandingHelper.createDataCell(String.valueOf(customer.getNumberOfRentals()), i, Element.ALIGN_CENTER));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("₱%,.2f", customer.getTotalRentalCost()), i, Element.ALIGN_RIGHT));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("₱%,.2f", customer.getAverageRentalCost()), i, Element.ALIGN_RIGHT));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("%.1f", customer.getTotalRentalDuration()), i, Element.ALIGN_CENTER));
+                table.addCell(PDFBrandingHelper.createDataCell(String.format("%.1f", customer.getAverageRentalDuration()), i, Element.ALIGN_CENTER));
 
                 String lastRental = (customer.getMostRecentRentalDate() != null)
                         ? dateFormat.format(customer.getMostRecentRentalDate()) : "N/A";
-                table.addCell(new Phrase(lastRental, dataFont));
+                table.addCell(PDFBrandingHelper.createDataCell(lastRental, i, Element.ALIGN_CENTER));
 
                 String paymentMethod = customer.getPreferredPaymentMethod() != null
                         ? customer.getPreferredPaymentMethod() : "N/A";
-                table.addCell(new Phrase(paymentMethod, dataFont));
+                table.addCell(PDFBrandingHelper.createDataCell(paymentMethod, i, Element.ALIGN_CENTER));
 
                 totalRentals += customer.getNumberOfRentals();
                 totalRevenue += customer.getTotalRentalCost();
                 totalHours += customer.getTotalRentalDuration();
             }
 
-            // Add total row
-            Font totalFont = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD);
-            PdfPCell totalLabel = new PdfPCell(new Phrase("TOTAL (" + data.size() + " Customers)", totalFont));
-            totalLabel.setColspan(2);
-            totalLabel.setBackgroundColor(BaseColor.LIGHT_GRAY);
-            table.addCell(totalLabel);
-
-            table.addCell(new Phrase(String.valueOf(totalRentals), totalFont));
-            table.addCell(new Phrase(String.format("%,.2f", totalRevenue), totalFont));
-
-            double avgRevenue = data.size() > 0 ? totalRevenue / data.size() : 0;
-            table.addCell(new Phrase(String.format("%,.2f", avgRevenue), totalFont));
-
-            table.addCell(new Phrase(String.format("%.1f", totalHours), totalFont));
-
-            double avgHours = data.size() > 0 ? totalHours / data.size() : 0;
-            table.addCell(new Phrase(String.format("%.1f", avgHours), totalFont));
-
-            table.addCell(new Phrase("", totalFont));
-            table.addCell(new Phrase("", totalFont));
-
             document.add(table);
 
-            // Add footer
-            Paragraph footer = new Paragraph("\nGenerated on: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                    new Font(Font.FontFamily.HELVETICA, 8, Font.ITALIC));
-            footer.setAlignment(Element.ALIGN_RIGHT);
-            footer.setSpacingBefore(20);
-            document.add(footer);
+            // Summary
+            Paragraph summaryTitle = new Paragraph("\nSummary Statistics",
+                    new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, PDFBrandingHelper.BRAND_GREEN));
+            summaryTitle.setSpacingBefore(20);
+            summaryTitle.setSpacingAfter(10);
+            document.add(summaryTitle);
 
-            System.out.println("PDF report generated successfully: " + filename);
+            PdfPTable summaryTable = new PdfPTable(2);
+            summaryTable.setWidthPercentage(60);
+            summaryTable.setWidths(new float[]{2f, 1f});
+
+            double avgRevenue = data.size() > 0 ? totalRevenue / data.size() : 0;
+            double avgHours = data.size() > 0 ? totalHours / data.size() : 0;
+
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Customers:", String.valueOf(data.size()));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Rentals:", String.valueOf(totalRentals));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Revenue:", String.format("₱%,.2f", totalRevenue));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Avg Revenue per Customer:", String.format("₱%,.2f", avgRevenue));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Total Hours:", String.format("%.1f", totalHours));
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Avg Hours per Customer:", String.format("%.1f", avgHours));
+
+            document.add(summaryTable);
+
+            // Footer
+            PDFBrandingHelper.addFooter(document,
+                    new SimpleDateFormat("MMMM dd, yyyy 'at' hh:mm a").format(new java.util.Date()));
+
+            System.out.println("✓ PDF saved to: " + fullPath);
 
         } catch (DocumentException | IOException e) {
             System.err.println("Error generating PDF report: " + e.getMessage());

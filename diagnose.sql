@@ -5,6 +5,18 @@
 
 USE vehicle_rental_db;
 
+
+SHOW COLUMNS FROM maintenance;
+
+SELECT YEAR(startDateTime) as year, MONTH(startDateTime) as month, COUNT(*) as count
+FROM rentals
+WHERE status = 'Active'
+GROUP BY YEAR(startDateTime), MONTH(startDateTime)
+ORDER BY year, month;
+
+SELECT status, COUNT(*) 
+FROM rentals 
+GROUP BY status;
 -- 1. Check ALL rentals (regardless of status)
 SELECT
     COUNT(*) AS total_rentals,
@@ -14,11 +26,33 @@ SELECT
 FROM rentals
 GROUP BY status;
 
+SELECT COUNT(*) FROM payments WHERE status = 'Active';
+SELECT * FROM payments LIMIT 5;
+
+
+SELECT rentalID FROM rentals LIMIT 5;
+
+SELECT DISTINCT rentalID FROM payments LIMIT 5;
+SELECT 
+    r.rentalID,
+    r.customerID,
+    r.status as rental_status,
+    DATE(r.startDateTime) as rental_date,
+    p.paymentID,
+    p.amount
+FROM rentals r
+LEFT JOIN payments p ON r.rentalID = p.rentalID AND p.status = 'Active'
+WHERE YEAR(r.startDateTime) = 2024 AND MONTH(r.startDateTime) = 10
+ORDER BY r.rentalID
+LIMIT 10;
+
 -- 2. Check rentals for October 2024 specifically
 SELECT * FROM rentals
 WHERE YEAR(startDateTime) = 2024
   AND MONTH(startDateTime) = 10
     LIMIT 10;
+
+
 
 -- 3. Check if you have ANY completed rentals
 SELECT COUNT(*) AS completed_rentals
