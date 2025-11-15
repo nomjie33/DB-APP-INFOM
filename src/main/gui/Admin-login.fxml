@@ -11,7 +11,7 @@
         <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <children>
 
-                <VBox fx:id="AdminLoginRoot" alignment="TOP_CENTER" layoutX="24.0" layoutY="18.0" prefHeight="731.0" prefWidth="975.0" spacing="30.0" style="-fx-background-color: #FC7222; -fx-background-radius: 20;" AnchorPane.leftAnchor="24.0" AnchorPane.topAnchor="18.0">
+                <VBox fx:id="adminLoginRoot" alignment="TOP_CENTER" layoutX="24.0" layoutY="18.0" prefHeight="731.0" prefWidth="975.0" spacing="30.0" style="-fx-background-color: #FC7222; -fx-background-radius: 20;" AnchorPane.leftAnchor="24.0" AnchorPane.topAnchor="18.0">
                     <children>
                         <ImageView fitHeight="197.0" fitWidth="197.0" pickOnBounds="true" preserveRatio="true">
                             <image>

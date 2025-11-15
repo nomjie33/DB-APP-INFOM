@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="adminDashboardRoot" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="768.0" prefWidth="1024.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_dashboardController">
+    <left>
+        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="220.0" style="-fx-background-color: #FC7222;" BorderPane.alignment="CENTER">
+            <children>
+                <AnchorPane prefHeight="769.0" prefWidth="220.0">
+                    <children>
+                        <ImageView fitHeight="108.0" fitWidth="172.0" layoutX="24.0" layoutY="37.0" pickOnBounds="true" preserveRatio="true" />
+
+                        <HBox fx:id="homeButton" alignment="CENTER_LEFT" layoutX="10.0" layoutY="161.0" onMouseClicked="#handleHome" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button">
+                            <children>
+                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/home.png" /></image></ImageView>
+                                <Label prefHeight="20.0" styleClass="label" text="Home" textFill="WHITE" />
+                            </children>
+                        </HBox>
+                        <HBox fx:id="settingsButton" alignment="CENTER_LEFT" layoutX="10.0" layoutY="187.0" onMouseClicked="#handleSettings" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button">
+                            <children>
+                                <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/settings.png" /></image></ImageView>
+                                <Label prefHeight="20.0" styleClass="label" text="Settings" textFill="WHITE" />
+                            </children>
+                        </HBox>
+
+                        <Label layoutX="14.0" layoutY="213.0" styleClass="sidebar-title" text="Core Records" textFill="WHITE" />
+                        <Separator layoutX="14.0" layoutY="232.0" prefWidth="192.0" />
+                        <VBox layoutX="10.0" layoutY="245.0" prefWidth="200.0" spacing="2.0">
+                            <children>
+                                <HBox fx:id="customerRecordsButton" alignment="CENTER_LEFT" onMouseClicked="#handleCustomerRecords" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/customer-records.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Customer records" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="vehicleRecordsButton" alignment="CENTER_LEFT" onMouseClicked="#handleVehicleRecords" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/vehicle-records.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Vehicle records" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="locationRecordsButton" alignment="CENTER_LEFT" onMouseClicked="#handleLocationRecords" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/location.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Location records" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="technicianRecordsButton" alignment="CENTER_LEFT" onMouseClicked="#handleTechnicianRecords" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="13.0" fitWidth="13.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/technician-records.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Technician records" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="partRecordsButton" alignment="CENTER_LEFT" onMouseClicked="#handlePartRecords" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/part-records.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Part records" textFill="WHITE" /></children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <Label layoutX="14.0" layoutY="361.0" styleClass="sidebar-title" text="Transaction Records" textFill="WHITE" />
+                        <Separator layoutX="14.0" layoutY="380.0" prefWidth="192.0" />
+                        <VBox layoutX="10.0" layoutY="395.0" prefWidth="200.0" spacing="2.0">
+                            <children>
+                                <HBox fx:id="rentalTransactionsButton" alignment="CENTER_LEFT" onMouseClicked="#handleRentalTransactions" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/rental-transactions.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Rental transactions" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="paymentTransactionsButton" alignment="CENTER_LEFT" onMouseClicked="#handlePaymentTransactions" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/payment-transactions.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Payment transactions" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="deploymentTransactionsButton" alignment="CENTER_LEFT" onMouseClicked="#handleDeploymentTransactions" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/deployment-transaction.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Deployment transactions" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="maintenanceTransactionsButton" alignment="CENTER_LEFT" onMouseClicked="#handleMaintenanceTransactions" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/maintenance-transaction.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Maintenance transactions" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="maintenanceChequesButton" alignment="CENTER_LEFT" onMouseClicked="#handleMaintenanceCheques" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/maintenance-cheques.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Maintenance cheques" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="penaltyTransactionsButton" alignment="CENTER_LEFT" onMouseClicked="#handlePenaltyTransactions" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/penalty.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Penalty transactions" textFill="WHITE" /></children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <Label layoutX="14.0" layoutY="540.0" styleClass="sidebar-title" text="Reports" textFill="WHITE" />
+                        <Separator layoutX="14.0" layoutY="559.0" prefWidth="192.0" />
+
+                        <VBox layoutX="10.0" layoutY="570.0" prefWidth="200.0" spacing="2.0">
+                            <children>
+                                <HBox fx:id="reportRentalRevenueButton" alignment="CENTER_LEFT" onMouseClicked="#handleReportRentalRevenue" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/revenue.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Rental Revenue" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="reportDefectiveVehiclesButton" alignment="CENTER_LEFT" onMouseClicked="#handleReportDefectiveVehicles" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/defective-vehicles.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Defective Vehicles" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="reportLocationFrequencyButton" alignment="CENTER_LEFT" onMouseClicked="#handleReportLocationFrequency" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/location.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Location Frequency" textFill="WHITE" /></children>
+                                </HBox>
+                                <HBox fx:id="reportCustomerRentalButton" alignment="CENTER_LEFT" onMouseClicked="#handleReportCustomerRental" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button-sub">
+                                    <children><ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/customer-rental.png" /></image></ImageView><Label prefHeight="20.0" styleClass="label" text="Customer Rental" textFill="WHITE" /></children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <Button fx:id="quitButton" layoutX="35.0" layoutY="710.0" mnemonicParsing="false" onAction="#handleLogout" prefHeight="29.0" prefWidth="150.0" text="Logout" />
+
+                    </children>
+                </AnchorPane>
+            </children>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+            <children>
+                <AnchorPane fx:id="centerContentPane" prefHeight="771.0" prefWidth="823.0" />
+            </children>
+        </VBox>
+    </center>
+</BorderPane>

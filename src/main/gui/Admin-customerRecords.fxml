@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_customerRecordsController">
+    <children>
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 20px;" text="Section" />
+        <Label layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Customer list" />
+        <Label fx:id="customerCountLabel" layoutX="38.0" layoutY="100.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="(0) CUSTOMERS:" />
+
+        <Button fx:id="addButton" layoutX="699.0" layoutY="99.0" onAction="#handleAddCustomer" prefHeight="31.0" prefWidth="72.0" styleClass="add-button" text="+" />
+
+        <TableView fx:id="customerTable" layoutX="38.0" layoutY="140.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
+            <columns>
+                <TableColumn fx:id="customerIDColumn" prefWidth="75.0" text="Customer ID" />
+                <TableColumn fx:id="lastNameColumn" prefWidth="100.0" text="Last Name" />
+                <TableColumn fx:id="firstNameColumn" prefWidth="100.0" text="First Name" />
+                <TableColumn fx:id="contactColumn" prefWidth="110.0" text="Contact Number" />
+                <TableColumn fx:id="addressColumn" prefWidth="150.0" text="Address" />
+                <TableColumn fx:id="emailColumn" prefWidth="130.0" text="Email Address" />
+                <TableColumn fx:id="editColumn" prefWidth="80.0" text="Action" />
+            </columns>
+        </TableView>
+
+    </children>
+</AnchorPane>

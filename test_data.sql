@@ -405,8 +405,6 @@ INSERT INTO penalty (penaltyID, rentalID, totalPenalty, penaltyStatus, maintenan
 
 SELECT * FROM penalty;
 
-
-
 -- =====================================================
 -- 10. DEPLOYMENTS TABLE (NOT READY YET - COMMENTED OUT)
 -- =====================================================
@@ -441,6 +439,16 @@ INSERT INTO deployments (deploymentID, plateID, locationID, startDate, endDate) 
 ('DEP-026', 'ES-008', 'LOC-003', '2024-10-01', '2024-10-15'),
 ('DEP-027', 'ET-003', 'LOC-005', '2024-10-01', '2024-10-20');
 
+-- =====================================================
+-- STAFF TABLE
+-- =====================================================
+INSERT INTO staff (staffID, username, staffEmail, password) VALUES
+('STAFF-001', 'nomjie33', 'naomi_reyes@uvr.com', 'nomsUVR124'),
+('STAFF-002', 'cj1ayi', 'nate_tan@uvr.com', 'nateUVR124'),
+('STAFF-003', 'catDespair', 'airon_bantillo@uvr.com', 'AironUVR124'),
+('STAFF-004', 'alexxxxxxxxx', 'alexandra_gonzales@uvr.com', 'AlexUVR124');
+
+SELECT * FROM staff;
 
 -- =====================================================
 -- VERIFICATION QUERIES
@@ -468,7 +476,9 @@ SELECT 'Maintenance_Cheque', COUNT(*) FROM maintenance_cheque
 UNION ALL
 SELECT 'Penalties', COUNT(*) FROM penalty
 UNION ALL
-SELECT 'Deployments', COUNT(*) FROM deployments;
+SELECT 'Deployments', COUNT(*) FROM deployments
+UNION ALL
+SELECT 'Staff', COUNT(*) FROM staff;
 
 -- Check vehicle distribution by status
 SELECT status, COUNT(*) as count
