@@ -42,25 +42,21 @@
                 </VBox>
 
                 <Label style="-fx-font-weight: bold;" text="Address" />
-                <VBox>
-                    <Label text="Street" />
-                    <TextField fx:id="streetField" promptText="Street" styleClass="form-text-field" />
-                </VBox>
+
                 <HBox spacing="10.0">
                     <VBox HBox.hgrow="ALWAYS">
-                        <Label text="Barangay" />
-                        <TextField fx:id="barangayField" promptText="Barangay" styleClass="form-text-field" />
+                        <Label text="City" />
+                        <ComboBox fx:id="cityComboBox" prefWidth="400.0" promptText="Select City" styleClass="form-text-field" />
                     </VBox>
                     <VBox HBox.hgrow="ALWAYS">
-                        <Label text="City" />
-                        <TextField fx:id="cityField" promptText="City" styleClass="form-text-field" />
+                        <Label text="Barangay" />
+                        <ComboBox fx:id="barangayComboBox" disable="true" prefWidth="400.0" promptText="Select City First" styleClass="form-text-field" />
                     </VBox>
                 </HBox>
                 <VBox>
-                    <Label text="Province" />
-                    <TextField fx:id="provinceField" promptText="Province" styleClass="form-text-field" />
+                    <Label text="Street / House No." />
+                    <TextField fx:id="streetField" promptText="e.g. 123 Main St." styleClass="form-text-field" />
                 </VBox>
-
                 <VBox>
                     <Label text="Email Address" />
                     <TextField fx:id="emailField" promptText="Email Address" styleClass="form-text-field" />

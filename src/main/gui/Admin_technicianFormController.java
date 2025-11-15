@@ -1,5 +1,12 @@
 package main.gui;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import java.io.IOException;
+
 import dao.TechnicianDAO;
 import model.Technician;
 import javafx.fxml.FXML;
@@ -7,7 +14,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
-import javax.swing.text.html.HTMLDocument;
 import java.math.BigDecimal;
 
 public class Admin_technicianFormController {
@@ -59,6 +65,12 @@ public class Admin_technicianFormController {
 
             boolean success;
             if (isEditMode){
+                Technician oldTech = technicianDAO.getTechnicianById(technician.getTechnicianId());
+                if (oldTech != null){
+                    technician.setStatus(oldTech.getStatus());
+                } else {
+                    technician.setStatus("Active");
+                }
                 success = technicianDAO.updateTechnician(technician);
             } else {
                 technician.setStatus("Active");
@@ -66,7 +78,18 @@ public class Admin_technicianFormController {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Technician record saved.");
+                if (isEditMode){
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Technician record saved.");
+                } else {
+                    String title = "New Technician Added!";
+                    String content = "A new technician has been successfully added.\n\n" +
+                            "Technician ID:\n" + technician.getTechnicianId() + "\n\n" +
+                            "Name:\n" + technician.getFirstName() + " " + technician.getLastName() + "\n\n" +
+                            "Specialization:\n" + technician.getSpecializationId() + "\n\n" +
+                            "Rate:\n₱" + String.format("%.2f", technician.getRate());
+
+                    showConfirmationDialog(title, content);
+                }
                 mainController.loadPage("Admin-technicianRecords.fxml");
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to save technician.");
@@ -85,6 +108,10 @@ public class Admin_technicianFormController {
             showAlert(Alert.AlertType.WARNING, "Validation Error", "ID, Last Name, and First Name are required.");
             return false;
         }
+        if (rateField.getText().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Validation Error", "Rate is required.");
+            return false;
+        }
         return true;
     }
 
@@ -94,5 +121,34 @@ public class Admin_technicianFormController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private void showConfirmationDialog(String title, String content) {
+        try {
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-addRecordConfirmation.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Confirmation");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            if (mainController != null) {
+                dialogStage.initOwner(mainController.getPrimaryStage());
+            }
+
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            Admin_addRecordConfirmationController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setData(title, content);
+
+            dialogStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not load confirmation dialog.");
+        }
     }
 }

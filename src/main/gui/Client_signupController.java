@@ -1,62 +1,197 @@
-/*
-=====================================
-This code displays four options:
-1. Admin login
-2. Client login
-4. Client signup
-3. Quit
-
-Version: 1.0
-Latest edit: November 10, 2025
-
-Authors:
-Airon Matthew Bantillo | S22-07
-Alexandra Gayle Gonzales | S22-07
-Naomi Isabel Reyes | S22-07
-Roberta Netanya Tan | S22-07
-=====================================
-*/
-
 package main.gui;
 
 import dao.CustomerDAO;
+import dao.AddressDAO;
+import dao.BarangayDAO;
+import dao.CityDAO;
 import model.Customer;
+import model.Address;
+import model.Barangay;
+import model.City;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class Client_signupController {
+public class Client_signupController implements Initializable {
 
+    // DAOs
     private CustomerDAO customerDAO = new CustomerDAO();
+    private AddressDAO addressDAO = new AddressDAO();
+    private CityDAO cityDAO = new CityDAO();
+    private BarangayDAO barangayDAO = new BarangayDAO();
 
+    // FXML Fields
     @FXML private TextField lastNameField;
     @FXML private TextField firstNameField;
     @FXML private TextField contactNumberField;
-    @FXML private TextField streetField;
-    @FXML private TextField barangayField;
-    @FXML private TextField cityField;
-    @FXML private TextField provinceField;
     @FXML private TextField emailField;
+
+    @FXML private ComboBox<City> cityComboBox;
+    @FXML private ComboBox<Barangay> barangayComboBox;
+    @FXML private TextField streetField;
 
     @FXML private Label errorLabel;
     @FXML private Button confirmButton;
     @FXML private Button cancelButton;
 
     /**
-     =========================================
-     This function brings the user back to the
-     main login scene if the cancel button is
-     clicked.
-     ========================================
+     * This method is called when the FXML is loaded.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        // 1. Load all cities into the first dropdown
+        cityComboBox.getItems().setAll(cityDAO.getAllCities());
+
+        // 2. Add a listener to the city ComboBox
+        cityComboBox.getSelectionModel().selectedItemProperty().addListener((options, oldVal, newVal) -> {
+            onCitySelected(newVal); // Call helper method
+        });
+    }
+
+    /**
+     * Called when a user selects a city from the dropdown.
+     * This populates the barangay dropdown.
+     */
+    private void onCitySelected(City selectedCity) {
+        if (selectedCity != null) {
+            // A city is selected:
+            // 1. Enable the barangay dropdown
+            barangayComboBox.setDisable(false);
+            barangayComboBox.setPromptText("Select a Barangay");
+            // 2. Load all barangays for that city
+            barangayComboBox.getItems().setAll(barangayDAO.getBarangaysByCity(selectedCity.getCityID()));
+        } else {
+            // No city is selected:
+            // 1. Disable and clear the barangay dropdown
+            barangayComboBox.setDisable(true);
+            barangayComboBox.setPromptText("Select a City first");
+            barangayComboBox.getItems().clear();
+        }
+    }
+
+    /**
+     * Called when the "Confirm" button is clicked.
+     */
+    @FXML
+    void handleConfirmSignup() {
+        // --- 1. Get Data ---
+        String lastName = lastNameField.getText().trim();
+        String firstName = firstNameField.getText().trim();
+        String contactNumber = contactNumberField.getText().trim();
+        String email = emailField.getText().trim();
+        Barangay selectedBarangay = barangayComboBox.getValue();
+        String street = streetField.getText().trim();
+
+        // --- 2. Validation ---
+        if (!validateFields(lastName, firstName, contactNumber, email, selectedBarangay)) {
+            return; // showError is called inside validateFields
+        }
+
+        errorLabel.setVisible(false);
+
+        // --- 3. Process Signup ---
+        try {
+            // --- A. Create the Address ---
+            Address newAddress = new Address();
+            newAddress.setBarangayID(selectedBarangay.getBarangayID());
+            newAddress.setStreet(street);
+
+            // Insert address. Your DAO is smart and sets the new ID on the object.
+            boolean addressSuccess = addressDAO.insertAddress(newAddress);
+
+            if (!addressSuccess || newAddress.getAddressID() == null) {
+                showError("Registration failed: Could not save address.");
+                return;
+            }
+
+            // --- B. Create the Customer ---
+            String newCustomerID = "CUST-" + (System.currentTimeMillis() % 100000);
+            Customer newCustomer = new Customer();
+            newCustomer.setCustomerID(newCustomerID);
+            newCustomer.setLastName(lastName);
+            newCustomer.setFirstName(firstName);
+            newCustomer.setContactNumber(contactNumber);
+            newCustomer.setEmailAddress(email);
+            newCustomer.setAddressID(newAddress.getAddressID()); // Link to the new address
+            // newCustomer.setStatus("Active"); // Your Customer constructor does this
+
+            // --- C. Insert the Customer ---
+            boolean customerSuccess = customerDAO.insertCustomer(newCustomer);
+
+            if (customerSuccess) {
+                System.out.println("New customer registered: " + newCustomerID);
+                showAlert(
+                        "Registration Successful!",
+                        "Welcome, " + newCustomer.getFirstName() + "!",
+                        "Your Customer ID is: " + newCustomerID +
+                                "\nPlease use your Contact Number as your password to log in!"
+                );
+                navigateToMain();
+            } else {
+                showError("Registration failed. A unique constraint or data error likely occurred.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("System Error: Could not process registration.");
+        }
+    }
+
+    /**
+     * Validates all input fields for the signup form.
+     * @return true if all fields are valid, false otherwise.
+     */
+    private boolean validateFields(String last, String first, String contact, String email, Barangay barangay) {
+        if (last.isEmpty() || first.isEmpty() || contact.isEmpty() || email.isEmpty()) {
+            showError("Please fill out all personal information fields.");
+            return false;
+        }
+        if (barangay == null) {
+            showError("Please select a City and Barangay.");
+            return false;
+        }
+        if (customerDAO.getCustomerByEmail(email) != null){
+            showError("Registration failed: An account with this Email already exists.");
+            return false;
+        }
+        return true;
+    }
+
+    private void showError(String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+    }
+
+    private void showAlert(String title, String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    /**
+     * Called when the "Cancel" button is clicked.
+     */
+    @FXML
+    void handleCancelSignup() {
+        System.out.println("Signup cancelled. Returning to main menu.");
+        navigateToMain();
+    }
+
+    /**
+     * Navigates the user back to the Main-login.fxml scene.
      */
     private void navigateToMain() {
         try {
@@ -67,93 +202,6 @@ public class Client_signupController {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    /**
-     ============================================
-     This is just a sanity check for cancel.
-     ============================================
-     */
-    @FXML void handleCancelSignup() {
-        System.out.println("Signup cancelled. Returning to main menu.");
-        navigateToMain();
-    }
-
-    /**
-     =============================================================
-     This function handles the Confirm button action, performing
-     validation, ID generation, and inserting of the new customer
-     record into the database.
-     =============================================================
-     */
-    @FXML void handleConfirmSignup() {
-
-        // Customer record attribute related variables
-        String lastName = lastNameField.getText().trim();
-        String firstName = firstNameField.getText().trim();
-        String contactNumber = contactNumberField.getText().trim();
-        String street = streetField.getText().trim();
-        String barangay = barangayField.getText().trim();
-        String city = cityField.getText().trim();
-        String province = provinceField.getText().trim();
-        String email = emailField.getText().trim();
-
-        if (lastName.isEmpty() || firstName.isEmpty() || contactNumber.isEmpty() || city.isEmpty()) {
-            errorLabel.setText("Please fill out all required fields.");
-            errorLabel.setVisible(true);
-            return;
-        }
-
-        if (customerDAO.getCustomerByEmail(email) != null){
-            errorLabel.setText("Registration failed: An account with this Email already exists.");
-            errorLabel.setVisible(true);
-            return;
-        }
-
-        errorLabel.setVisible(false);
-
-        try {
-
-            String newCustomerID = "CUST-" + (System.currentTimeMillis() % 100000);
-
-            String fullAddress = java.util.Arrays.asList(street, barangay, city, province).stream().filter(s-> !s.isEmpty()).collect(Collectors.joining(", "));
-
-            if (fullAddress.isEmpty()){ fullAddress = city; }
-
-            Customer newCustomer = new Customer();
-            newCustomer.setCustomerID(newCustomerID);
-            newCustomer.setLastName(lastName);
-            newCustomer.setFirstName(firstName);
-            newCustomer.setContactNumber(contactNumber);
-            newCustomer.setAddress(fullAddress);
-            newCustomer.setEmailAddress(email);
-
-            //Auto-generated ID
-            boolean success = customerDAO.insertCustomer(newCustomer);
-
-            //Alex can you study how this can be costumized? But I'm sure it's costumized.
-            if (success) {
-                System.out.println("New customer registered: " + newCustomerID);
-
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Registration Successful!");
-
-                alert.setHeaderText("Welcome, " + newCustomer.getFirstName() + "!");
-                alert.setContentText("Your Customer ID is: " + newCustomerID +
-                        "\nPlease use your Contact Number as your password to log in!");
-                alert.showAndWait();
-
-                navigateToMain();
-
-            } else {
-                errorLabel.setText("Registration failed. A unique constraint or data error likely occurred.");
-                errorLabel.setVisible(true);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            errorLabel.setText("System Error: Could not process registration.");
-            errorLabel.setVisible(true);
         }
     }
 }

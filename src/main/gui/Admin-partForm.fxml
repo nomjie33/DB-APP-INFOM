@@ -1,14 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="main.gui.AdminPartForm"
-            prefHeight="400.0" prefWidth="600.0">
+<AnchorPane prefHeight="400.0" prefWidth="500.0" stylesheets="@style.css"
+            xmlns="http://javafx.com/javafx/17.0.12"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="main.gui.Admin_partFormController">
+    <children>
+        <Label fx:id="formHeaderLabel" layoutX="38.0" layoutY="35.0"
+               style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;"
+               text="Add New Part" />
+        <GridPane layoutX="38.0" layoutY="100.0" hgap="10" vgap="15">
+            <Label text="Part ID:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+            <TextField fx:id="idField" prefWidth="300.0" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
-</AnchorPane>
+            <Label text="Part Name:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+            <TextField fx:id="nameField" prefWidth="300.0" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+            <Label text="Stock:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+            <TextField fx:id="stockField" prefWidth="300.0" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+            <Label text="Price (₱):" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+            <TextField fx:id="priceField" prefWidth="300.0" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+        </GridPane>
+
+    <HBox layoutX="265.0" layoutY="330.0" spacing="15">
+        <children>
+            <Button onAction="#handleCancel" prefWidth="100.0" styleClass="cancel-button" text="Cancel" />
+            <Button onAction="#handleSave" prefWidth="100.0" styleClass="save-button" text="Save" />
+        </children>
+    </HBox>
+</children>
+        </AnchorPane>

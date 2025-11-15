@@ -66,12 +66,7 @@ public class Barangay {
     // Utility methods
     @Override
     public String toString() {
-        return "Barangay{" +
-                "barangayID=" + barangayID +
-                ", cityID=" + cityID +
-                ", name='" + name + '\'' +
-                (city != null ? ", city=" + city.getName() : "") +
-                '}';
+        return name;
     }
     
     @Override

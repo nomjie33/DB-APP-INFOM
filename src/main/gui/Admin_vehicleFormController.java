@@ -1,5 +1,12 @@
 package main.gui;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import java.io.IOException;
+import javafx.scene.control.DialogPane;
 import dao.VehicleDAO;
 import model.Vehicle;
 import javafx.fxml.FXML;
@@ -40,6 +47,7 @@ public class Admin_vehicleFormController {
         if(!validateFields()) return;
 
         try {
+            // This part is the same, gathering the data
             Vehicle v = new Vehicle();
             v.setPlateID(plateField.getText());
             //v.setVehicleModel(modelField.getText());
@@ -48,21 +56,33 @@ public class Admin_vehicleFormController {
 
             boolean success;
             if (isEditMode){
-
                 Vehicle target = vehicleDAO.getVehicleById(v.getPlateID());
                 if(target != null) v.setStatus(target.getStatus());
-
                 success = vehicleDAO.updateVehicle(v);
-
             } else {
+                v.setStatus("Available");
                 success = vehicleDAO.insertVehicle(v);
             }
 
             if (success){
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Vehicle record saved.");
+                if (isEditMode) {
+                    showAlert(Alert.AlertType.INFORMATION, "Update Successful", "Vehicle record has been updated.");
+                } else {
+
+                    String title = "New Vehicle Added!";
+                    String content = "A new vehicle has been successfully added.\n\n" +
+                            "Plate ID:\n" + v.getPlateID() + "\n\n" +
+                            "Vehicle Type:\n" + v.getVehicleType() + "\n\n" +
+                            "Price per Day:\n₱" + String.format("%.2f", v.getRentalPrice()) + "\n\n" +
+                            "Status:\nAvailable";
+
+                    showConfirmationDialog(title, content);
+                }
+
                 mainController.loadPage("Admin-vehicleRecords.fxml");
+
             } else {
-                showAlert(Alert.AlertType.ERROR, "Error", "Failed to save vehicle.");
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to save vehicle. The Plate ID might already exist.");
             }
 
         } catch (NumberFormatException e){
@@ -81,6 +101,35 @@ public class Admin_vehicleFormController {
             return false;
         }
         return true;
+    }
+
+    private void showConfirmationDialog(String title, String content) {
+        try {
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-addRecordConfirmation.fxml"));
+            AnchorPane page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Confirmation");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+
+            if (mainController != null) {
+                dialogStage.initOwner(mainController.getPrimaryStage());
+            }
+
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            Admin_addRecordConfirmationController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setData(title, content);
+
+            dialogStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not load confirmation dialog.");
+        }
     }
 
     private void showAlert(Alert.AlertType type, String title, String content){
