@@ -3,7 +3,6 @@ package service;
 import dao.*;
 import model.*;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Date;
 import java.util.List;
 import java.util.ArrayList;
@@ -11,167 +10,65 @@ import java.util.ArrayList;
 /**
  * Business Logic Service for PENALTY operations.
  * 
- * PURPOSE: Calculates and manages customer penalties based on maintenance costs.
+ * PURPOSE: Manages customer penalties based on maintenance costs.
  * 
- * IMPORTANT: PenaltyService is the ONLY service that calculates costs.
- * MaintenanceService only tracks maintenance work (parts used, hours worked).
+ * IMPORTANT: MaintenanceService is responsible for calculating ALL maintenance costs.
+ * PenaltyService retrieves the pre-calculated cost from MaintenanceTransaction.
  * A penalty must be created to charge maintenance costs to customers.
  * 
- * COST FORMULAS:
- * - Labor Cost = hoursWorked × technician rate
- * - Parts Cost = Σ(part price × quantity used)
- * - Total Maintenance Cost = Labor Cost + Parts Cost
- * - Penalty Amount = Total Maintenance Cost
- * 
  * WORKFLOW:
- * 1. MaintenanceService completes maintenance and logs hours/parts
- * 2. PenaltyService calculates total cost from maintenance record
- * 3. PenaltyService creates penalty transaction to charge customer
+ * 1. MaintenanceService completes maintenance, calculates and stores total cost
+ * 2. Admin decides if customer is at fault
+ * 3. PenaltyService creates penalty transaction using stored maintenance cost
  */
 public class PenaltyService {
     
     private PenaltyDAO penaltyDAO;
     private MaintenanceDAO maintenanceDAO;
-    private TechnicianDAO technicianDAO;
-    private dao.MaintenanceChequeDAO maintenanceChequeDAO;
-    private PartDAO partDAO;
+    private MaintenanceService maintenanceService;
     
     public PenaltyService() {
         this.penaltyDAO = new PenaltyDAO();
         this.maintenanceDAO = new MaintenanceDAO();
-        this.technicianDAO = new TechnicianDAO();
-        this.maintenanceChequeDAO = new dao.MaintenanceChequeDAO();
-        this.partDAO = new PartDAO();
+        this.maintenanceService = new MaintenanceService();
     }
     
     /**
-     * Calculate labor cost for a maintenance job.
-     * Formula: hoursWorked × technician rate
+     * Get maintenance cost from MaintenanceService.
+     * Retrieves the pre-calculated totalCost from the maintenance record.
+     * If totalCost is not set (NULL or 0), calculates it on-demand.
+     * 
+     * @param maintenanceID Maintenance record ID
+     * @return Total maintenance cost
      */
-    public BigDecimal calculateLaborCost(String maintenanceID) {
-        System.out.println("\n=== CALCULATING LABOR COST ===");
-        System.out.println("Maintenance ID: " + maintenanceID);
-        
+    public BigDecimal getMaintenanceCost(String maintenanceID) {
         try {
-            // Get maintenance record (including inactive for historical penalty calculations)
             MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceByIdIncludingInactive(maintenanceID);
             if (maintenance == null) {
-                System.out.println(":( Maintenance record not found");
+                System.out.println(":( Maintenance record not found: " + maintenanceID);
                 return BigDecimal.ZERO;
             }
             
-            BigDecimal hoursWorked = maintenance.getHoursWorked();
-            if (hoursWorked == null || hoursWorked.compareTo(BigDecimal.ZERO) <= 0) {
-                System.out.println(":( Hours worked not recorded for this maintenance");
-                return BigDecimal.ZERO;
+            // Try to get stored totalCost first
+            BigDecimal storedCost = maintenance.getTotalCost();
+            if (storedCost != null && storedCost.compareTo(BigDecimal.ZERO) > 0) {
+                return storedCost;
             }
             
-            // Get technician rate (including inactive for historical records)
-            Technician technician = technicianDAO.getTechnicianByIdIncludingInactive(maintenance.getTechnicianID());
-            if (technician == null) {
-                System.out.println(":( Technician not found");
-                return BigDecimal.ZERO;
-            }
-            
-            BigDecimal rate = technician.getRate();
-            BigDecimal laborCost = hoursWorked.multiply(rate).setScale(2, RoundingMode.HALF_UP);
-            
-            System.out.println("Hours Worked: " + hoursWorked);
-            System.out.println("Technician Rate: Php" + rate);
-            System.out.println("Labor Cost: Php" + laborCost);
-            System.out.println(":) Labor cost calculated successfully");
-            
-            return laborCost;
+            // If not stored, calculate on-demand using MaintenanceService
+            System.out.println("Cost not stored, calculating on-demand for maintenance " + maintenanceID);
+            return maintenanceService.calculateMaintenanceCost(maintenanceID);
             
         } catch (Exception e) {
-            System.out.println(":( Error calculating labor cost: " + e.getMessage());
+            System.out.println(":( Error retrieving maintenance cost: " + e.getMessage());
             e.printStackTrace();
             return BigDecimal.ZERO;
         }
-    }
-    
-    /**
-     * Calculate parts cost for a maintenance job.
-     * Formula: Σ(part price × quantity used)
-     */
-    public BigDecimal calculatePartsCost(String maintenanceID) {
-        System.out.println("\n=== CALCULATING PARTS COST ===");
-        System.out.println("Maintenance ID: " + maintenanceID);
-        
-        try {
-            // Get all parts used in this maintenance (including inactive for historical accuracy)
-            List<model.MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenanceIncludingInactive(maintenanceID);
-            
-            if (cheques == null || cheques.isEmpty()) {
-                System.out.println("No parts used in this maintenance");
-                return BigDecimal.ZERO;
-            }
-            
-            BigDecimal totalPartsCost = BigDecimal.ZERO;
-            System.out.println("\nParts breakdown:");
-            
-            for (model.MaintenanceCheque cheque : cheques) {
-                String partID = cheque.getPartID();
-                BigDecimal quantityUsed = cheque.getQuantityUsed();
-                
-                // Get part details including price (including inactive parts for historical accuracy)
-                Part part = partDAO.getPartByIdIncludingInactive(partID);
-                if (part == null) {
-                    System.out.println(":( Part not found: " + partID);
-                    continue;
-                }
-                
-                BigDecimal partPrice = part.getPrice();
-                if (partPrice == null || partPrice.compareTo(BigDecimal.ZERO) <= 0) {
-                    System.out.println(":( Price not set for part: " + part.getPartName());
-                    continue;
-                }
-                
-                BigDecimal partCost = partPrice.multiply(quantityUsed).setScale(2, RoundingMode.HALF_UP);
-                totalPartsCost = totalPartsCost.add(partCost);
-                
-                System.out.println("- " + part.getPartName() + ": " + quantityUsed + " × Php" + partPrice + " = Php" + partCost);
-            }
-            
-            System.out.println("\nTotal Parts Cost: Php" + totalPartsCost);
-            System.out.println(":) Parts cost calculated successfully");
-            
-            return totalPartsCost;
-            
-        } catch (Exception e) {
-            System.out.println(":( Error calculating parts cost: " + e.getMessage());
-            e.printStackTrace();
-            return BigDecimal.ZERO;
-        }
-    }
-    
-    /**
-     * Calculate total maintenance cost.
-     * Formula: Labor Cost + Parts Cost
-     */
-    public BigDecimal calculateMaintenanceCost(String maintenanceID) {
-        System.out.println("\n========================================");
-        System.out.println("CALCULATING TOTAL MAINTENANCE COST");
-        System.out.println("========================================");
-        System.out.println("Maintenance ID: " + maintenanceID);
-        
-        BigDecimal laborCost = calculateLaborCost(maintenanceID);
-        BigDecimal partsCost = calculatePartsCost(maintenanceID);
-        BigDecimal totalCost = laborCost.add(partsCost).setScale(2, RoundingMode.HALF_UP);
-        
-        System.out.println("\n--- COST SUMMARY ---");
-        System.out.println("Labor Cost:  Php" + laborCost);
-        System.out.println("Parts Cost:  Php" + partsCost);
-        System.out.println("-------------------");
-        System.out.println("TOTAL COST:  Php" + totalCost);
-        System.out.println("========================================");
-        
-        return totalCost;
     }
     
     /**
      * Create a penalty from a maintenance transaction.
-     * The penalty amount is the total maintenance cost.
+     * The penalty amount is retrieved from the maintenance record's totalCost.
      */
     public boolean createPenaltyFromMaintenance(String penaltyID, String rentalID, String maintenanceID, Date dateIssued) {
         System.out.println("\n=== CREATING PENALTY FROM MAINTENANCE ===");
@@ -180,8 +77,8 @@ public class PenaltyService {
         System.out.println("Maintenance ID: " + maintenanceID);
         
         try {
-            // Calculate total maintenance cost
-            BigDecimal amount = calculateMaintenanceCost(maintenanceID);
+            // Get maintenance cost from maintenance record
+            BigDecimal amount = getMaintenanceCost(maintenanceID);
             
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println(":( Cannot create penalty with zero or negative amount");
@@ -322,60 +219,38 @@ public class PenaltyService {
     
     /**
      * Get detailed cost breakdown for a maintenance job.
+     * Retrieves breakdown information from the maintenance record.
+     * 
+     * @param maintenanceID Maintenance record ID
+     * @return Formatted cost breakdown string
      */
     public String getMaintenanceCostBreakdown(String maintenanceID) {
-        System.out.println("\n=== MAINTENANCE COST BREAKDOWN ===");
-        
         StringBuilder breakdown = new StringBuilder();
         breakdown.append("Maintenance ID: ").append(maintenanceID).append("\n");
         breakdown.append("========================================\n");
         
         try {
-            // Get maintenance including inactive for historical penalty breakdown
+            // Get maintenance record
             MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceByIdIncludingInactive(maintenanceID);
             if (maintenance == null) {
                 return "Maintenance record not found";
             }
             
-            // Labor details (including inactive for historical records)
-            BigDecimal laborCost = calculateLaborCost(maintenanceID);
-            Technician tech = technicianDAO.getTechnicianByIdIncludingInactive(maintenance.getTechnicianID());
+            // Get costs using MaintenanceService
+            BigDecimal laborCost = maintenanceService.calculateLaborCost(maintenanceID);
+            BigDecimal partsCost = maintenanceService.calculatePartsCost(maintenanceID);
+            BigDecimal totalCost = maintenance.getTotalCost();
             
-            breakdown.append("\nLABOR:\n");
-            if (tech != null && maintenance.getHoursWorked() != null) {
-                breakdown.append("Technician: ").append(tech.getFullName()).append("\n");
-                breakdown.append("Hours Worked: ").append(maintenance.getHoursWorked()).append(" hours\n");
-                breakdown.append("Rate: Php").append(tech.getRate()).append("/hour\n");
-                breakdown.append("Labor Cost: Php").append(laborCost).append("\n");
-            } else {
-                breakdown.append("Labor details not available\n");
+            // If totalCost not stored, calculate it
+            if (totalCost == null || totalCost.compareTo(BigDecimal.ZERO) == 0) {
+                totalCost = laborCost.add(partsCost);
             }
             
-            // Parts details (including inactive for historical accuracy)
-            BigDecimal partsCost = calculatePartsCost(maintenanceID);
-            List<model.MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenanceIncludingInactive(maintenanceID);
-            
-            breakdown.append("\nPARTS:\n");
-            if (cheques != null && !cheques.isEmpty()) {
-                for (model.MaintenanceCheque cheque : cheques) {
-                    Part part = partDAO.getPartById(cheque.getPartID());
-                    if (part != null && part.getPrice() != null) {
-                        BigDecimal itemCost = part.getPrice().multiply(cheque.getQuantityUsed());
-                        breakdown.append("- ").append(part.getPartName())
-                                 .append(": ").append(cheque.getQuantityUsed())
-                                 .append(" × Php").append(part.getPrice())
-                                 .append(" = Php").append(itemCost).append("\n");
-                    }
-                }
-                breakdown.append("Parts Cost: Php").append(partsCost).append("\n");
-            } else {
-                breakdown.append("No parts used\n");
-            }
-            
-            // Total
-            BigDecimal totalCost = laborCost.add(partsCost);
-            breakdown.append("\n========================================\n");
-            breakdown.append("TOTAL MAINTENANCE COST: Php").append(totalCost).append("\n");
+            breakdown.append("\nCOST BREAKDOWN:\n");
+            breakdown.append("Labor Cost:  Php").append(laborCost).append("\n");
+            breakdown.append("Parts Cost:  Php").append(partsCost).append("\n");
+            breakdown.append("-------------------\n");
+            breakdown.append("TOTAL COST:  Php").append(totalCost).append("\n");
             breakdown.append("========================================\n");
             
             return breakdown.toString();

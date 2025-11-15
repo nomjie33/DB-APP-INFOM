@@ -684,8 +684,63 @@ public class ServiceTest {
             
             System.out.println();
             
-            // === TEST 3.5: Error Handling - Invalid Vehicle ===
-            System.out.println("─── 3.5 ERROR HANDLING: Testing invalid vehicle ───");
+            // === TEST 3.5: Calculate Labor Cost ===
+            System.out.println("─── 3.5 LABOR COST: Testing labor cost calculation ───");
+            System.out.println("Calculating labor cost for maintenance MAINT-001...");
+            
+            BigDecimal laborCost = maintenanceService.calculateLaborCost("MAINT-001");
+            if (laborCost != null && laborCost.compareTo(BigDecimal.ZERO) > 0) {
+                System.out.println(" Labor cost calculated: Php" + laborCost);
+                recordTest(true);
+            } else {
+                System.out.println("✗ ERROR: Labor cost calculation failed");
+                recordTest(false);
+            }
+            
+            System.out.println();
+            
+            // === TEST 3.6: Calculate Parts Cost ===
+            System.out.println("─── 3.6 PARTS COST: Testing parts cost calculation ───");
+            System.out.println("Calculating parts cost for maintenance MAINT-001...");
+            
+            BigDecimal partsCost = maintenanceService.calculatePartsCost("MAINT-001");
+            if (partsCost != null && partsCost.compareTo(BigDecimal.ZERO) >= 0) {
+                System.out.println(" Parts cost calculated: Php" + partsCost);
+                recordTest(true);
+            } else {
+                System.out.println("✗ ERROR: Parts cost calculation failed");
+                recordTest(false);
+            }
+            
+            System.out.println();
+            
+            // === TEST 3.7: Calculate Total Maintenance Cost ===
+            System.out.println("─── 3.7 TOTAL COST: Testing total maintenance cost ───");
+            System.out.println("Calculating total maintenance cost for MAINT-001...");
+            
+            BigDecimal totalCost = maintenanceService.calculateMaintenanceCost("MAINT-001");
+            if (totalCost != null && totalCost.compareTo(BigDecimal.ZERO) >= 0) {
+                System.out.println(" Total cost calculated: Php" + totalCost);
+                recordTest(true);
+                
+                // Verify it equals labor + parts
+                BigDecimal expectedTotal = laborCost.add(partsCost);
+                if (totalCost.compareTo(expectedTotal) == 0) {
+                    System.out.println(" Total = Labor + Parts (correct)");
+                    recordTest(true);
+                } else {
+                    System.out.println("⚠ Total doesn't match Labor + Parts");
+                    recordTest(false);
+                }
+            } else {
+                System.out.println("✗ ERROR: Total cost calculation failed");
+                recordTest(false);
+            }
+            
+            System.out.println();
+            
+            // === TEST 3.8: Error Handling - Invalid Vehicle ===
+            System.out.println("─── 3.8 ERROR HANDLING: Testing invalid vehicle ───");
             System.out.println("Attempting maintenance for non-existent vehicle...");
             
             boolean invalidSchedule = maintenanceService.scheduleMaintenance(
@@ -707,7 +762,7 @@ public class ServiceTest {
             System.out.println();
             
             // === CLEANUP ===
-            System.out.println("─── 3.6 CLEANUP: Removing test maintenance ───");
+            System.out.println("─── 3.9 CLEANUP: Removing test maintenance ───");
             maintenanceDAO.deactivateMaintenance(testMaintenanceID);
             System.out.println(" Test maintenance deactivated");
             
@@ -871,63 +926,39 @@ public class ServiceTest {
         String testPenaltyID = "TST-P-" + (System.currentTimeMillis() % 100000); // Keep under 11 chars
         
         try {
-            // === TEST 5.1: Calculate Labor Cost ===
-            System.out.println("─── 5.1 LABOR COST: Testing labor cost calculation ───");
-            System.out.println("Calculating labor cost for maintenance MAINT-001...");
+            // === TEST 5.1: Get Maintenance Cost ===
+            System.out.println("─── 5.1 GET MAINTENANCE COST: Testing cost retrieval ───");
+            System.out.println("Getting stored maintenance cost for MAINT-001...");
             
-            BigDecimal laborCost = penaltyService.calculateLaborCost("MAINT-001");
-            if (laborCost != null && laborCost.compareTo(BigDecimal.ZERO) > 0) {
-                System.out.println(" Labor cost calculated: Php" + laborCost);
+            BigDecimal maintenanceCost = penaltyService.getMaintenanceCost("MAINT-001");
+            if (maintenanceCost != null && maintenanceCost.compareTo(BigDecimal.ZERO) >= 0) {
+                System.out.println(" Maintenance cost retrieved: Php" + maintenanceCost);
                 recordTest(true);
             } else {
-                System.out.println("⚠ Labor cost is zero (may be expected if no hours recorded)");
-                recordTest(true); // Not a failure, just no data
-            }
-            
-            System.out.println();
-            
-            // === TEST 5.2: Calculate Parts Cost ===
-            System.out.println("─── 5.2 PARTS COST: Testing parts cost calculation ───");
-            System.out.println("Calculating parts cost for maintenance MAINT-001...");
-            
-            BigDecimal partsCost = penaltyService.calculatePartsCost("MAINT-001");
-            if (partsCost != null && partsCost.compareTo(BigDecimal.ZERO) >= 0) {
-                System.out.println(" Parts cost calculated: Php" + partsCost);
-                recordTest(true);
-            } else {
-                System.out.println("✗ ERROR: Parts cost calculation failed");
+                System.out.println("✗ ERROR: Failed to get maintenance cost");
                 recordTest(false);
             }
             
             System.out.println();
             
-            // === TEST 5.3: Calculate Total Maintenance Cost ===
-            System.out.println("─── 5.3 TOTAL COST: Testing total maintenance cost ───");
-            System.out.println("Calculating total maintenance cost for MAINT-001...");
+            // === TEST 5.2: Get Maintenance Cost Breakdown ===
+            System.out.println("─── 5.2 COST BREAKDOWN: Testing detailed cost breakdown ───");
+            System.out.println("Getting cost breakdown for MAINT-001...");
             
-            BigDecimal totalCost = penaltyService.calculateMaintenanceCost("MAINT-001");
-            if (totalCost != null && totalCost.compareTo(BigDecimal.ZERO) >= 0) {
-                System.out.println(" Total cost calculated: Php" + totalCost);
+            String breakdown = penaltyService.getMaintenanceCostBreakdown("MAINT-001");
+            if (breakdown != null && !breakdown.isEmpty()) {
+                System.out.println(" Cost breakdown retrieved:");
+                System.out.println(breakdown);
                 recordTest(true);
-                
-                // Verify it equals labor + parts
-                BigDecimal expectedTotal = laborCost.add(partsCost);
-                if (totalCost.compareTo(expectedTotal) == 0) {
-                    System.out.println(" Total = Labor + Parts (correct)");
-                    recordTest(true);
-                } else {
-                    System.out.println("⚠ Total doesn't match Labor + Parts");
-                    recordTest(false);
-                }
             } else {
-                System.out.println("✗ ERROR: Total cost calculation failed");
+                System.out.println("✗ ERROR: Failed to get cost breakdown");
                 recordTest(false);
             }
             
             System.out.println();
             
-            // === TEST 5.4: Create Penalty for Maintenance ===
-            System.out.println("─── 5.4 CREATE PENALTY: Testing penalty creation ───");
+            // === TEST 5.3: Create Penalty for Maintenance ===
+            System.out.println("─── 5.3 CREATE PENALTY: Testing penalty creation ───");
             System.out.println("Creating penalty for maintenance MAINT-001...");
             
             Date today = new Date(System.currentTimeMillis());
@@ -960,8 +991,8 @@ public class ServiceTest {
             
             System.out.println();
             
-            // === TEST 5.5: Get Penalties by Rental ===
-            System.out.println("─── 5.5 GET PENALTIES: Testing penalty retrieval ───");
+            // === TEST 5.4: Get Penalties by Rental ===
+            System.out.println("─── 5.4 GET PENALTIES: Testing penalty retrieval ───");
             System.out.println("Getting penalties for rental RNT-005...");
             
             List<PenaltyTransaction> penalties = penaltyService.getPenaltiesByRental("RNT-005");
@@ -978,11 +1009,11 @@ public class ServiceTest {
             
             System.out.println();
             
-            // === TEST 5.6: Error Handling - Invalid Maintenance ===
-            System.out.println("─── 5.6 ERROR HANDLING: Testing invalid maintenance ───");
-            System.out.println("Attempting to calculate cost for non-existent maintenance...");
+            // === TEST 5.5: Error Handling - Invalid Maintenance ===
+            System.out.println("─── 5.5 ERROR HANDLING: Testing invalid maintenance ───");
+            System.out.println("Attempting to get cost for non-existent maintenance...");
             
-            BigDecimal invalidCost = penaltyService.calculateMaintenanceCost("INVALID-999");
+            BigDecimal invalidCost = penaltyService.getMaintenanceCost("INVALID-999");
             if (invalidCost.compareTo(BigDecimal.ZERO) == 0) {
                 System.out.println(" Correctly returned zero for invalid maintenance");
                 recordTest(true);
@@ -994,7 +1025,7 @@ public class ServiceTest {
             System.out.println();
             
             // === CLEANUP ===
-            System.out.println("─── 5.7 CLEANUP: Removing test penalty ───");
+            System.out.println("─── 5.6 CLEANUP: Removing test penalty ───");
             penaltyDAO.deactivatePenalty(testPenaltyID);
             System.out.println(" Test penalty deactivated");
             

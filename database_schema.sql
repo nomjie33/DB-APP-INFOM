@@ -201,12 +201,13 @@ CREATE TABLE payments (
 -- - startDateTime: When maintenance/repair work begins (date + time)
 -- - endDateTime: When maintenance/repair work completes (NULL if in progress)
 -- - Labor hours calculated dynamically from start/end difference
--- - Cost = (endDateTime - startDateTime in hours) × technician rate + parts
+-- - totalCost: Total maintenance cost (labor + parts), calculated on completion
 
 CREATE TABLE maintenance (
     maintenanceID VARCHAR(11) PRIMARY KEY,
     startDateTime TIMESTAMP NOT NULL,
     endDateTime TIMESTAMP NULL,
+    totalCost DECIMAL(10, 2) DEFAULT 0.00 ,
     notes VARCHAR(125),
     technicianID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,

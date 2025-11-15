@@ -250,41 +250,41 @@ SELECT * FROM payments;
 -- Parts tracked separately in maintenance_cheque table
 -- startDateTime/endDateTime use DATETIME format, hoursWorked removed (calculated dynamically)
 
-INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, notes, technicianID, plateID, status) VALUES
+INSERT INTO maintenance (maintenanceID, startDateTime, endDateTime, totalCost, notes, technicianID, plateID, status) VALUES
 -- Recent maintenance - E-Scooters (completed) - All Active
-('MAINT-001', '2024-10-20 08:00:00', '2024-10-21 11:30:00', 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001', 'Active'),
-('MAINT-002', '2024-10-22 09:00:00', '2024-10-22 10:00:00', 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002', 'Active'),
-('MAINT-003', '2024-10-25 10:00:00', '2024-10-26 12:30:00', 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005', 'Active'),
-('MAINT-004', '2024-10-23 13:00:00', '2024-10-23 14:30:00', 'LED headlight and throttle replacement', 'TECH-001', 'ES-006', 'Active'),
-('MAINT-005', '2024-10-24 09:00:00', '2024-10-24 09:45:00', 'Front tire puncture - replaced', 'TECH-002', 'ES-007', 'Active'),
-('MAINT-006', '2024-10-21 14:00:00', '2024-10-21 14:30:00', 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009', 'Active'),
-('MAINT-007', '2024-10-19 08:00:00', '2024-10-19 08:30:00', 'Brake cable fraying - preventive', 'TECH-002', 'ES-010', 'Active'),
+('MAINT-001', '2024-10-20 08:00:00', '2024-10-21 11:30:00', 22125.00, 'Battery replacement - capacity degraded to 65%', 'TECH-001', 'ES-001', 'Active'),
+('MAINT-002', '2024-10-22 09:00:00', '2024-10-22 10:00:00', 770.00, 'Routine brake maintenance - 75% worn', 'TECH-002', 'ES-002', 'Active'),
+('MAINT-003', '2024-10-25 10:00:00', '2024-10-26 12:30:00', 17540.00, 'Motor controller malfunction - replaced unit', 'TECH-005', 'ES-005', 'Active'),
+('MAINT-004', '2024-10-23 13:00:00', '2024-10-23 14:30:00', 1475.00, 'LED headlight and throttle replacement', 'TECH-001', 'ES-006', 'Active'),
+('MAINT-005', '2024-10-24 09:00:00', '2024-10-24 09:45:00', 540.00, 'Front tire puncture - replaced', 'TECH-002', 'ES-007', 'Active'),
+('MAINT-006', '2024-10-21 14:00:00', '2024-10-21 14:30:00', 515.00, 'Throttle assembly loose - replaced', 'TECH-004', 'ES-009', 'Active'),
+('MAINT-007', '2024-10-19 08:00:00', '2024-10-19 08:30:00', 310.00, 'Brake cable fraying - preventive', 'TECH-002', 'ES-010', 'Active'),
 
 -- E-Bikes maintenance (completed)
-('MAINT-008', '2024-10-18 09:00:00', '2024-10-19 13:00:00', 'Battery and display replacement', 'TECH-003', 'EB-001', 'Active'),
-('MAINT-009', '2024-10-20 10:00:00', '2024-10-21 11:15:00', 'Chain and brake maintenance', 'TECH-002', 'EB-002', 'Active'),
-('MAINT-010', '2024-10-22 14:00:00', '2024-10-22 15:00:00', 'Brake pads and cables replaced', 'TECH-005', 'EB-004', 'Active'),
-('MAINT-011', '2024-10-23 09:00:00', '2024-10-23 11:00:00', 'Display screen malfunction', 'TECH-001', 'EB-005', 'Active'),
-('MAINT-012', '2024-10-26 08:00:00', '2024-10-27 11:00:00', 'Battery capacity critical - emergency', 'TECH-006', 'EB-006', 'Active'),
-('MAINT-013', '2024-10-24 13:00:00', '2024-10-24 14:30:00', 'Pedal and seat replacement', 'TECH-002', 'EB-007', 'Active'),
-('MAINT-014', '2024-10-25 09:00:00', '2024-10-25 10:00:00', 'Rear light and brake maintenance', 'TECH-004', 'EB-008', 'Active'),
+('MAINT-008', '2024-10-18 09:00:00', '2024-10-19 13:00:00', 22820.00, 'Battery and display replacement', 'TECH-003', 'EB-001', 'Active'),
+('MAINT-009', '2024-10-20 10:00:00', '2024-10-21 11:15:00', 8780.00, 'Chain and brake maintenance', 'TECH-002', 'EB-002', 'Active'),
+('MAINT-010', '2024-10-22 14:00:00', '2024-10-22 15:00:00', 910.00, 'Brake pads and cables replaced', 'TECH-005', 'EB-004', 'Active'),
+('MAINT-011', '2024-10-23 09:00:00', '2024-10-23 11:00:00', 1500.00, 'Display screen malfunction', 'TECH-001', 'EB-005', 'Active'),
+('MAINT-012', '2024-10-26 08:00:00', '2024-10-27 11:00:00', 22585.00, 'Battery capacity critical - emergency', 'TECH-006', 'EB-006', 'Active'),
+('MAINT-013', '2024-10-24 13:00:00', '2024-10-24 14:30:00', 1130.00, 'Pedal and seat replacement', 'TECH-002', 'EB-007', 'Active'),
+('MAINT-014', '2024-10-25 09:00:00', '2024-10-25 10:00:00', 710.00, 'Rear light and brake maintenance', 'TECH-004', 'EB-008', 'Active'),
 
 -- E-Trikes maintenance (completed)
-('MAINT-015', '2024-10-21 10:00:00', '2024-10-22 11:15:00', 'Tire and brake inspection', 'TECH-002', 'ET-001', 'Active'),
-('MAINT-016', '2024-10-19 09:00:00', '2024-10-20 11:30:00', 'Battery and controller check', 'TECH-003', 'ET-002', 'Active'),
-('MAINT-017', '2024-10-23 13:00:00', '2024-10-23 15:00:00', 'Complete brake system service', 'TECH-005', 'ET-004', 'Active'),
-('MAINT-018', '2024-10-24 08:00:00', '2024-10-25 10:30:00', 'Motor controller replacement', 'TECH-007', 'ET-005', 'Active'),
+('MAINT-015', '2024-10-21 10:00:00', '2024-10-22 11:15:00', 9330.00, 'Tire and brake inspection', 'TECH-002', 'ET-001', 'Active'),
+('MAINT-016', '2024-10-19 09:00:00', '2024-10-20 11:30:00', 22510.00, 'Battery and controller check', 'TECH-003', 'ET-002', 'Active'),
+('MAINT-017', '2024-10-23 13:00:00', '2024-10-23 15:00:00', 1620.00, 'Complete brake system service', 'TECH-005', 'ET-004', 'Active'),
+('MAINT-018', '2024-10-24 08:00:00', '2024-10-25 10:30:00', 18172.50, 'Motor controller replacement', 'TECH-007', 'ET-005', 'Active'),
 
 -- Additional maintenance for ES-005 (multiple incidents in October 2024)
-('MAINT-021', '2024-10-12 08:00:00', '2024-10-12 10:30:00', 'Brake cable replacement', 'TECH-002', 'ES-005', 'Active'),
-('MAINT-022', '2024-10-16 14:00:00', '2024-10-17 09:00:00', 'Display screen glitching', 'TECH-001', 'ES-005', 'Active'),
+('MAINT-021', '2024-10-12 08:00:00', '2024-10-12 10:30:00', 1000.00, 'Brake cable replacement', 'TECH-002', 'ES-005', 'Active'),
+('MAINT-022', '2024-10-16 14:00:00', '2024-10-17 09:00:00', 7550.00, 'Display screen glitching', 'TECH-001', 'ES-005', 'Active'),
 -- Additional maintenance for EB-006 (multiple incidents in October 2024)
-('MAINT-023', '2024-10-08 09:00:00', '2024-10-09 11:00:00', 'Chain replacement due to wear', 'TECH-002', 'EB-006', 'Active'),
-('MAINT-024', '2024-10-15 08:00:00', '2024-10-15 10:00:00', 'Rear tire puncture', 'TECH-005', 'EB-006', 'Active'),
+('MAINT-023', '2024-10-08 09:00:00', '2024-10-09 11:00:00', 8570.00, 'Chain replacement due to wear', 'TECH-002', 'EB-006', 'Active'),
+('MAINT-024', '2024-10-15 08:00:00', '2024-10-15 10:00:00', 1070.00, 'Rear tire puncture', 'TECH-005', 'EB-006', 'Active'),
 
 -- Ongoing maintenance (not yet completed - endDateTime is NULL)
-('MAINT-019', '2024-10-27 09:00:00', NULL, 'Brake inspection in progress', 'TECH-002', 'ES-005', 'Active'),
-('MAINT-020', '2024-10-27 10:00:00', NULL, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006', 'Active');
+('MAINT-019', '2024-10-27 09:00:00', NULL, 0.00, 'Brake inspection in progress', 'TECH-002', 'ES-005', 'Active'),
+('MAINT-020', '2024-10-27 10:00:00', NULL, 0.00, 'Seat replacement - awaiting parts', 'TECH-006', 'EB-006', 'Active');
 
 SELECT * FROM maintenance;
 

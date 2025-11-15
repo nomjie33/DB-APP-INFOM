@@ -205,12 +205,7 @@ public class DefectiveVehiclesReport {
             "    v.vehicleModel, " +
             "    v.status AS current_status, " +
             "    COUNT(DISTINCT m.maintenanceID) AS times_maintained, " +
-            "    COALESCE(SUM( " +
-            "        CASE WHEN m.endDateTime IS NOT NULL " +
-            "             THEN TIMESTAMPDIFF(HOUR, m.startDateTime, m.endDateTime) * t.rate + COALESCE(parts_cost.total, 0) " +
-            "             ELSE 0 " +
-            "        END " +
-            "    ), 0) AS total_maintenance_cost, " +
+            "    COALESCE(SUM(m.totalCost), 0) AS total_maintenance_cost, " +
             "    ROUND(COALESCE(SUM( " +
             "        CASE WHEN m.endDateTime IS NOT NULL " +
             "             THEN TIMESTAMPDIFF(HOUR, m.startDateTime, m.endDateTime) " +
@@ -234,14 +229,6 @@ public class DefectiveVehiclesReport {
             "              AND p.status = 'Active'), 0) AS total_revenue " +
             "FROM maintenance m " +
             "INNER JOIN vehicles v ON m.plateID = v.plateID " +
-            "INNER JOIN technicians t ON m.technicianID = t.technician_id " +
-            "LEFT JOIN ( " +
-            "    SELECT mc.maintenanceID, SUM(mc.quantityUsed * p.price) AS total " +
-            "    FROM maintenance_cheque mc " +
-            "    JOIN parts p ON mc.partID = p.part_id " +
-            "    WHERE mc.status = 'Active' " +
-            "    GROUP BY mc.maintenanceID " +
-            ") parts_cost ON m.maintenanceID = parts_cost.maintenanceID " +
             "WHERE m.status = 'Active' " +
             "    AND YEAR(m.startDateTime) = ? " +
             "    AND MONTH(m.startDateTime) = ? " +
@@ -321,12 +308,7 @@ public class DefectiveVehiclesReport {
             "    v.vehicleModel, " +
             "    v.status AS current_status, " +
             "    COUNT(DISTINCT m.maintenanceID) AS times_maintained, " +
-            "    COALESCE(SUM( " +
-            "        CASE WHEN m.endDateTime IS NOT NULL " +
-            "             THEN TIMESTAMPDIFF(HOUR, m.startDateTime, m.endDateTime) * t.rate + COALESCE(parts_cost.total, 0) " +
-            "             ELSE 0 " +
-            "        END " +
-            "    ), 0) AS total_maintenance_cost, " +
+            "    COALESCE(SUM(m.totalCost), 0) AS total_maintenance_cost, " +
             "    ROUND(COALESCE(SUM( " +
             "        CASE WHEN m.endDateTime IS NOT NULL " +
             "             THEN TIMESTAMPDIFF(HOUR, m.startDateTime, m.endDateTime) " +
@@ -349,14 +331,6 @@ public class DefectiveVehiclesReport {
             "              AND p.status = 'Active'), 0) AS total_revenue " +
             "FROM maintenance m " +
             "INNER JOIN vehicles v ON m.plateID = v.plateID " +
-            "INNER JOIN technicians t ON m.technicianID = t.technician_id " +
-            "LEFT JOIN ( " +
-            "    SELECT mc.maintenanceID, SUM(mc.quantityUsed * p.price) AS total " +
-            "    FROM maintenance_cheque mc " +
-            "    JOIN parts p ON mc.partID = p.part_id " +
-            "    WHERE mc.status = 'Active' " +
-            "    GROUP BY mc.maintenanceID " +
-            ") parts_cost ON m.maintenanceID = parts_cost.maintenanceID " +
             "WHERE m.status = 'Active' " +
             "    AND YEAR(m.startDateTime) = ? " +
             "GROUP BY v.plateID, v.vehicleType, v.vehicleModel, v.status " +
