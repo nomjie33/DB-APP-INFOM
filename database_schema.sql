@@ -27,6 +27,9 @@ DROP TABLE IF EXISTS deployments;
 DROP TABLE IF EXISTS rentals;
 DROP TABLE IF EXISTS vehicles;
 DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS addresses;
+DROP TABLE IF EXISTS barangays;
+DROP TABLE IF EXISTS cities;
 DROP TABLE IF EXISTS technicians;
 DROP TABLE IF EXISTS parts;
 DROP TABLE IF EXISTS locations;
@@ -50,7 +53,56 @@ CREATE TABLE locations (
 
 
 -- =====================================================
--- 2. CUSTOMERS TABLE
+-- 2. CITIES TABLE
+-- =====================================================
+-- Stores city information for customer addresses
+CREATE TABLE cities (
+    cityID INT(11) PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(30) NOT NULL,
+    
+    INDEX idx_city_name (name)
+);
+
+
+-- =====================================================
+-- 3. BARANGAYS TABLE
+-- =====================================================
+-- Stores barangay information for customer addresses
+CREATE TABLE barangays (
+    barangayID INT(11) PRIMARY KEY AUTO_INCREMENT,
+    cityID INT(11) NOT NULL,
+    name VARCHAR(30) NOT NULL,
+    
+    CONSTRAINT fk_barangay_city
+        FOREIGN KEY (cityID) REFERENCES cities(cityID)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    
+    INDEX idx_barangay_city (cityID),
+    INDEX idx_barangay_name (name)
+);
+
+
+-- =====================================================
+-- 4. ADDRESSES TABLE
+-- =====================================================
+-- Stores complete address information for customers
+CREATE TABLE addresses (
+    addressID INT(11) PRIMARY KEY AUTO_INCREMENT,
+    barangayID INT(11) NOT NULL,
+    street VARCHAR(30),
+    
+    CONSTRAINT fk_address_barangay
+        FOREIGN KEY (barangayID) REFERENCES barangays(barangayID)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    
+    INDEX idx_address_barangay (barangayID)
+);
+
+
+-- =====================================================
+-- 5. CUSTOMERS TABLE
 -- =====================================================
 -- Stores customer information
 CREATE TABLE customers (
@@ -58,17 +110,24 @@ CREATE TABLE customers (
     lastName VARCHAR(25) NOT NULL,
     firstName VARCHAR(25) NOT NULL,
     contactNumber VARCHAR(11),
-    address VARCHAR(80),
+    addressID INT(11),
     emailAddress VARCHAR(80),
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
     
+    CONSTRAINT fk_customer_address
+        FOREIGN KEY (addressID) REFERENCES addresses(addressID)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+    
     CONSTRAINT chk_customer_status
-        CHECK (status IN ('Active', 'Inactive'))
+        CHECK (status IN ('Active', 'Inactive')),
+    
+    INDEX idx_customer_address (addressID)
 );
 
 
 -- =====================================================
--- 3. VEHICLES TABLE
+-- 6. VEHICLES TABLE
 -- =====================================================
 -- Stores vehicle inventory
 CREATE TABLE vehicles (
@@ -82,7 +141,7 @@ CREATE TABLE vehicles (
 );
 
 -- =====================================================
--- 4. TECHNICIANS TABLE
+-- 7. TECHNICIANS TABLE
 -- =====================================================
 -- Stores technician/mechanic information
 -- Uses soft delete: status field marks records as 'Active' or 'Inactive'
@@ -102,7 +161,7 @@ CREATE TABLE technicians (
 );
 
 -- =====================================================
--- 5. PARTS TABLE
+-- 8. PARTS TABLE
 -- =====================================================
 -- Stores parts inventory
 -- Uses soft delete: status field marks records as 'Active' or 'Inactive'
@@ -122,7 +181,7 @@ CREATE TABLE parts (
 
 
 -- =====================================================
--- 6. RENTALS TABLE
+-- 9. RENTALS TABLE
 -- =====================================================
 -- Stores rental transaction records
 -- Links customers, vehicles, and locations
@@ -168,7 +227,7 @@ CREATE INDEX idx_rental_start_date ON rentals(startDateTime);
 
 
 -- =====================================================
--- 7. PAYMENTS TABLE
+-- 10. PAYMENTS TABLE
 -- =====================================================
 -- Stores payment transaction records
 CREATE TABLE payments (
@@ -190,7 +249,7 @@ CREATE TABLE payments (
 );
 
 -- =====================================================
--- 8. MAINTENANCE TABLE
+-- 11. MAINTENANCE TABLE
 -- =====================================================
 -- Stores vehicle maintenance/repair records
 -- Parts used are tracked separately in maintenance_cheque table
@@ -231,7 +290,7 @@ CREATE TABLE maintenance (
 );
 
 -- =====================================================
--- 8B. MAINTENANCE_CHEQUE TABLE
+-- 11B. MAINTENANCE_CHEQUE TABLE
 -- =====================================================
 -- Junction table tracking parts used in maintenance
 -- Supports multiple parts per maintenance with quantity tracking
@@ -265,7 +324,7 @@ CREATE TABLE maintenance_cheque (
 );
 
 -- =====================================================
--- 9. PENALTIES TABLE
+-- 12. PENALTIES TABLE
 -- =====================================================
 -- Stores customer penalty records
 -- Tracks penalties associated with rentals and maintenance
@@ -305,7 +364,7 @@ CREATE TABLE penalty (
 );
 
 -- =====================================================
--- 10. DEPLOYMENTS TABLE
+-- 13. DEPLOYMENTS TABLE
 -- =====================================================
 -- Stores vehicle deployment/transfer records
 CREATE TABLE deployments (
@@ -335,7 +394,7 @@ CREATE INDEX idx_deployment_location ON deployments(locationID);
 
 
 -- =====================================================
--- 11. STAFF TABLE
+-- 14. STAFF TABLE
 -- =====================================================
 -- Verifies admin access before entering app
 CREATE TABLE staff (

@@ -1,6 +1,7 @@
 package dao;
 
 import model.Customer;
+import model.Address;
 import util.DBConnection;
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,9 +12,11 @@ import java.util.List;
  */
 public class CustomerDAO {
     
+    private AddressDAO addressDAO = new AddressDAO();
+    
     public boolean insertCustomer(Customer customer) {
         String sql = "INSERT INTO customers (customerID, lastName, firstName, " +
-                    "contactNumber, address, emailAddress, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    "contactNumber, addressID, emailAddress, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -22,7 +25,11 @@ public class CustomerDAO {
             stmt.setString(2, customer.getLastName());
             stmt.setString(3, customer.getFirstName());
             stmt.setString(4, customer.getContactNumber());
-            stmt.setString(5, customer.getAddress());
+            if (customer.getAddressID() != null) {
+                stmt.setInt(5, customer.getAddressID());
+            } else {
+                stmt.setNull(5, Types.INTEGER);
+            }
             stmt.setString(6, customer.getEmailAddress());
             stmt.setString(7, "Active"); // Default to Active
             
@@ -38,7 +45,7 @@ public class CustomerDAO {
     
     public boolean updateCustomer(Customer customer) {
         String sql = "UPDATE customers SET lastName = ?, firstName = ?, " +
-                     "contactNumber = ?, address = ?, emailAddress = ?, status = ? WHERE customerID = ?";
+                     "contactNumber = ?, addressID = ?, emailAddress = ?, status = ? WHERE customerID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -46,7 +53,11 @@ public class CustomerDAO {
             stmt.setString(1, customer.getLastName());
             stmt.setString(2, customer.getFirstName());
             stmt.setString(3, customer.getContactNumber());
-            stmt.setString(4, customer.getAddress());
+            if (customer.getAddressID() != null) {
+                stmt.setInt(4, customer.getAddressID());
+            } else {
+                stmt.setNull(4, Types.INTEGER);
+            }
             stmt.setString(5, customer.getEmailAddress());
             stmt.setString(6, customer.getStatus());
             stmt.setString(7, customer.getCustomerID());
@@ -269,9 +280,48 @@ public class CustomerDAO {
         customer.setLastName(rs.getString("lastName"));
         customer.setFirstName(rs.getString("firstName"));
         customer.setContactNumber(rs.getString("contactNumber"));
-        customer.setAddress(rs.getString("address"));
+        
+        // Handle addressID (can be NULL)
+        int addressID = rs.getInt("addressID");
+        if (!rs.wasNull()) {
+            customer.setAddressID(addressID);
+        }
+        
         customer.setEmailAddress(rs.getString("emailAddress"));
-        customer.setStatus(rs.getString("status"));  // ADDED
+        customer.setStatus(rs.getString("status"));
         return customer;
+    }
+    
+    /**
+     * Get customer with full address details (including barangay and city).
+     * Use this method when you need complete address information.
+     * 
+     * @param customerID Customer ID to retrieve
+     * @return Customer object with Address information, null if not found
+     */
+    public Customer getCustomerWithAddress(String customerID) {
+        Customer customer = getCustomerById(customerID);
+        if (customer != null && customer.getAddressID() != null) {
+            Address address = addressDAO.getAddressWithFullDetails(customer.getAddressID());
+            customer.setAddress(address);
+        }
+        return customer;
+    }
+    
+    /**
+     * Get all customers with full address details.
+     * Use this method when you need complete address information for reporting.
+     * 
+     * @return List of customers with Address information
+     */
+    public List<Customer> getAllCustomersWithAddress() {
+        List<Customer> customers = getAllCustomers();
+        for (Customer customer : customers) {
+            if (customer.getAddressID() != null) {
+                Address address = addressDAO.getAddressWithFullDetails(customer.getAddressID());
+                customer.setAddress(address);
+            }
+        }
+        return customers;
     }
 }

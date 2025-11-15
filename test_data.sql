@@ -84,24 +84,108 @@ INSERT INTO vehicles (plateID, vehicleType, status, rentalPrice) VALUES
 ('ET-005', 'E-Trike', 'Available', 98.00);
 
 -- =====================================================
--- 3. CUSTOMERS TABLE
+-- 3. CITIES TABLE
 -- =====================================================
--- Registered customers with contact information
+-- Cities in Metro Manila where customers reside
 
-INSERT INTO customers (customerID, lastName, firstName, contactNumber, address, emailAddress) VALUES
-('CUST-001', 'Reyes', 'Juan', '09171234567', '123 Bonifacio St, BGC, Taguig', 'juan.reyes@email.com'),
-('CUST-002', 'Santos', 'Maria', '09281234567', '456 Ayala Ave, Makati', 'maria.santos@email.com'),
-('CUST-003', 'Cruz', 'Pedro', '09391234567', '789 EDSA, Ortigas, Pasig', 'pedro.cruz@email.com'),
-('CUST-004', 'Garcia', 'Ana', '09171234568', '321 Eastwood Dr, Quezon City', 'ana.garcia@email.com'),
-('CUST-005', 'Mendoza', 'Jose', '09281234568', '654 UP Campus, Diliman', 'jose.mendoza@email.com'),
-('CUST-006', 'Villanueva', 'Sofia', '09391234568', '987 MOA Complex, Pasay', 'sofia.v@email.com'),
-('CUST-007', 'Torres', 'Miguel', '09171234569', '147 North Ave, Quezon City', 'miguel.torres@email.com'),
-('CUST-008', 'Ramos', 'Isabel', '09281234569', '258 Alabang Town, Muntinlupa', 'isabel.ramos@email.com'),
-('CUST-009', 'Fernandez', 'Carlos', '09391234569', '369 BGC High St, Taguig', 'carlos.f@email.com'),
-('CUST-010', 'Lopez', 'Elena', '09171234570', '741 Makati Ave, Makati', 'elena.lopez@email.com');
+INSERT INTO cities (name) VALUES
+('Taguig'),
+('Makati'),
+('Pasig'),
+('Quezon City'),
+('Pasay'),
+('Muntinlupa'),
+('Manila'),
+('Mandaluyong');
+
+SELECT * FROM cities;
 
 -- =====================================================
--- 4. TECHNICIANS TABLE
+-- 4. BARANGAYS TABLE
+-- =====================================================
+-- Barangays in each city
+
+INSERT INTO barangays (cityID, name) VALUES
+-- Taguig barangays
+(1, 'Bonifacio Global City'),
+(1, 'Western Bicutan'),
+(1, 'Fort Bonifacio'),
+-- Makati barangays
+(2, 'Bel-Air'),
+(2, 'Poblacion'),
+(2, 'San Lorenzo'),
+-- Pasig barangays
+(3, 'Ortigas Center'),
+(3, 'Kapitolyo'),
+(3, 'Ugong'),
+-- Quezon City barangays
+(4, 'Bagumbayan'),
+(4, 'Diliman'),
+(4, 'Bagong Pag-asa'),
+-- Pasay barangays
+(5, 'Bay City'),
+(5, 'Malibay'),
+-- Muntinlupa barangays
+(6, 'Alabang'),
+(6, 'Tunasan'),
+-- Manila barangays
+(7, 'Ermita'),
+(7, 'Malate'),
+-- Mandaluyong barangays
+(8, 'Plainview'),
+(8, 'Highway Hills');
+
+SELECT * FROM barangays;
+
+-- =====================================================
+-- 5. ADDRESSES TABLE
+-- =====================================================
+-- Complete addresses for customers
+
+INSERT INTO addresses (barangayID, street) VALUES
+-- Taguig addresses
+(1, '123 Bonifacio St'),        -- addressID 1
+(1, '369 BGC High St'),          -- addressID 2
+(3, '555 McKinley Rd'),          -- addressID 3
+-- Makati addresses
+(4, '456 Ayala Ave'),            -- addressID 4
+(4, '741 Makati Ave'),           -- addressID 5
+(5, '789 P. Burgos St'),         -- addressID 6
+-- Pasig addresses
+(7, '789 EDSA'),                 -- addressID 7
+(8, '321 Plaza Dr'),             -- addressID 8
+-- Quezon City addresses
+(10, '321 Eastwood Dr'),         -- addressID 9
+(11, '654 UP Campus'),           -- addressID 10
+(11, '147 North Ave'),           -- addressID 11
+-- Pasay addresses
+(13, '987 MOA Complex'),         -- addressID 12
+-- Muntinlupa addresses
+(15, '258 Alabang Town');        -- addressID 13
+
+SELECT * FROM addresses;
+
+-- =====================================================
+-- 6. CUSTOMERS TABLE
+-- =====================================================
+-- Registered customers with contact information and address references
+
+INSERT INTO customers (customerID, lastName, firstName, contactNumber, addressID, emailAddress) VALUES
+('CUST-001', 'Reyes', 'Juan', '09171234567', 1, 'juan.reyes@email.com'),
+('CUST-002', 'Santos', 'Maria', '09281234567', 4, 'maria.santos@email.com'),
+('CUST-003', 'Cruz', 'Pedro', '09391234567', 7, 'pedro.cruz@email.com'),
+('CUST-004', 'Garcia', 'Ana', '09171234568', 9, 'ana.garcia@email.com'),
+('CUST-005', 'Mendoza', 'Jose', '09281234568', 10, 'jose.mendoza@email.com'),
+('CUST-006', 'Villanueva', 'Sofia', '09391234568', 12, 'sofia.v@email.com'),
+('CUST-007', 'Torres', 'Miguel', '09171234569', 11, 'miguel.torres@email.com'),
+('CUST-008', 'Ramos', 'Isabel', '09281234569', 13, 'isabel.ramos@email.com'),
+('CUST-009', 'Fernandez', 'Carlos', '09391234569', 2, 'carlos.f@email.com'),
+('CUST-010', 'Lopez', 'Elena', '09171234570', 5, 'elena.lopez@email.com');
+
+SELECT * FROM customers;
+
+-- =====================================================
+-- 7. TECHNICIANS TABLE
 -- =====================================================
 -- Maintenance staff for vehicle repairs
 -- Specializations: ELECTRICAL, MECHANICAL, BATTERY
@@ -120,7 +204,7 @@ INSERT INTO technicians (technician_id, last_name, first_name, specialization_id
 SELECT * FROM technicians;
 
 -- =====================================================
--- 5. PARTS TABLE
+-- 8. PARTS TABLE
 -- =====================================================
 -- Spare parts inventory for maintenance
 -- Common parts for e-scooters, e-bikes, and e-trikes
@@ -143,11 +227,11 @@ INSERT INTO parts (part_id, part_name, quantity, price, status) VALUES
 ('PART-014', 'Pedal Set', 25, 180.00, 'Active'),
 ('PART-015', 'Rear Light', 70, 150.00, 'Active');
 
-SELECT * FROM parts;
+SELECT * FROM rentals;
 
 
 -- =====================================================
--- 6. RENTALS TABLE
+-- 9. RENTALS TABLE
 -- =====================================================
 -- Active and completed rental transactions
 -- startDateTime/endDateTime use DATETIME format (removed redundant rentalDate column)
@@ -190,7 +274,7 @@ SELECT * FROM rentals;
 
 
 -- =====================================================
--- 7. PAYMENTS TABLE
+-- 10. PAYMENTS TABLE
 -- =====================================================
 -- Payment records for rentals
 -- Note: Only includes payments for completed rentals (RNT-005 to RNT-015)
@@ -244,7 +328,7 @@ SELECT * FROM payments;
 
 
 -- =====================================================
--- 8. MAINTENANCE TABLE (Refactored)
+-- 11. MAINTENANCE TABLE (Refactored)
 -- =====================================================
 -- Maintenance records without part information
 -- Parts tracked separately in maintenance_cheque table
@@ -384,7 +468,7 @@ SELECT * FROM maintenance_cheque;
 
 
 -- =====================================================
--- 9. PENALTIES TABLE
+-- 12. PENALTIES TABLE
 -- =====================================================
 -- Penalty records for damage/repair costs charged to customers
 -- Linked to maintenance records via maintenanceID
@@ -406,7 +490,7 @@ INSERT INTO penalty (penaltyID, rentalID, totalPenalty, penaltyStatus, maintenan
 SELECT * FROM penalty;
 
 -- =====================================================
--- 10. DEPLOYMENTS TABLE (NOT READY YET - COMMENTED OUT)
+-- 13. DEPLOYMENTS TABLE (NOT READY YET - COMMENTED OUT)
 -- =====================================================
 -- Vehicle location history and movements
 

@@ -1,11 +1,19 @@
 package test;
 
+import dao.AddressDAO;
+import dao.BarangayDAO;
+import dao.CityDAO;
+import dao.CustomerDAO;
 import dao.MaintenanceDAO;
 import dao.MaintenanceChequeDAO;
 import dao.PartDAO;
 import dao.PaymentDAO;
 import dao.PenaltyDAO;
 import dao.TechnicianDAO;
+import model.Address;
+import model.Barangay;
+import model.City;
+import model.Customer;
 import model.MaintenanceTransaction;
 import model.MaintenanceCheque;
 import model.Part;
@@ -50,6 +58,10 @@ public class DAOCRUDTest {
         System.out.println("═══════════════════════════════════════════════════\n");
         
         // Test each DAO with all CRUD operations
+        testCityDAO();
+        testBarangayDAO();
+        testAddressDAO();
+        testCustomerDAO();
         testTechnicianDAO();
         testPartDAO();
         testMaintenanceDAO();
@@ -63,11 +75,418 @@ public class DAOCRUDTest {
     }
     
     /**
-     * Test 1: Complete CRUD testing for TechnicianDAO
+     * Test 1: Complete CRUD testing for CityDAO
+     */
+    private static void testCityDAO() {
+        System.out.println("═══════════════════════════════════════════════════");
+        System.out.println("TEST 1: CityDAO - CRUD Operations");
+        System.out.println("═══════════════════════════════════════════════════\n");
+        
+        CityDAO dao = new CityDAO();
+        
+        try {
+            // === CREATE (Insert) ===
+            System.out.println("─── 1.1 CREATE: Inserting City ───");
+            City city = new City(null, "Test City");
+            
+            boolean insertSuccess = dao.insertCity(city);
+            System.out.println(insertSuccess ? 
+                ":) INSERT successful: City ID = " + city.getCityID() : 
+                ":( INSERT failed");
+            
+            Integer testCityId = city.getCityID();
+            
+            // === READ (Select by ID) ===
+            System.out.println("\n─── 1.2 READ: Retrieving City by ID ───");
+            City retrieved = dao.getCityById(testCityId);
+            
+            if (retrieved != null) {
+                System.out.println(":) SELECT by ID successful:");
+                System.out.println("  City ID: " + retrieved.getCityID());
+                System.out.println("  Name: " + retrieved.getName());
+            } else {
+                System.out.println(":( SELECT by ID failed - Record not found");
+            }
+            
+            // === READ (Select All) ===
+            System.out.println("\n─── 1.3 READ: Retrieving All Cities ───");
+            List<City> allCities = dao.getAllCities();
+            System.out.println(":) SELECT ALL successful: Found " + allCities.size() + " cities");
+            System.out.println("  First 5 cities:");
+            for (int i = 0; i < Math.min(5, allCities.size()); i++) {
+                City c = allCities.get(i);
+                System.out.println("  - " + c.getCityID() + ": " + c.getName());
+            }
+            
+            // === UPDATE ===
+            System.out.println("\n─── 1.4 UPDATE: Modifying City ───");
+            if (retrieved != null) {
+                retrieved.setName("Updated Test City");
+                
+                boolean updateSuccess = dao.updateCity(retrieved);
+                System.out.println(updateSuccess ? 
+                    ":) UPDATE successful" : 
+                    ":( UPDATE failed");
+                
+                // Verify update
+                City updated = dao.getCityById(testCityId);
+                if (updated != null) {
+                    System.out.println("  New Name: " + updated.getName());
+                }
+            }
+            
+            // === SEARCH ===
+            System.out.println("\n─── 1.5 SEARCH: Finding Cities by Name ───");
+            List<City> searchResults = dao.searchCitiesByName("Test");
+            System.out.println(":) SEARCH successful: Found " + searchResults.size() + " matching cities");
+            
+            // === DELETE ===
+            System.out.println("\n─── 1.6 DELETE: Removing City ───");
+            boolean deleteSuccess = dao.deleteCity(testCityId);
+            System.out.println(deleteSuccess ? 
+                ":) DELETE successful" : 
+                ":( DELETE failed");
+            
+            // Verify deletion
+            City deleted = dao.getCityById(testCityId);
+            System.out.println(deleted == null ? 
+                ":) Verified: Record no longer exists" : 
+                ":( Warning: Record still exists");
+            
+            System.out.println("\n> CityDAO Tests Complete\n");
+            
+        } catch (Exception e) {
+            System.out.println(":( ERROR in CityDAO test: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Test 2: Complete CRUD testing for BarangayDAO
+     */
+    private static void testBarangayDAO() {
+        System.out.println("═══════════════════════════════════════════════════");
+        System.out.println("TEST 2: BarangayDAO - CRUD Operations");
+        System.out.println("═══════════════════════════════════════════════════\n");
+        
+        BarangayDAO bDao = new BarangayDAO();
+        CityDAO cDao = new CityDAO();
+        
+        try {
+            // Setup: Create supporting city
+            System.out.println("─── 2.0 SETUP: Creating supporting city ───");
+            City city = new City(null, "Support City for Barangay");
+            cDao.insertCity(city);
+            Integer testCityId = city.getCityID();
+            System.out.println(":) Support city created: ID = " + testCityId);
+            
+            // === CREATE (Insert) ===
+            System.out.println("\n─── 2.1 CREATE: Inserting Barangay ───");
+            Barangay barangay = new Barangay(null, testCityId, "Test Barangay");
+            
+            boolean insertSuccess = bDao.insertBarangay(barangay);
+            System.out.println(insertSuccess ? 
+                ":) INSERT successful: Barangay ID = " + barangay.getBarangayID() : 
+                ":( INSERT failed");
+            
+            Integer testBarangayId = barangay.getBarangayID();
+            
+            // === READ (Select by ID) ===
+            System.out.println("\n─── 2.2 READ: Retrieving Barangay by ID ───");
+            Barangay retrieved = bDao.getBarangayById(testBarangayId);
+            
+            if (retrieved != null) {
+                System.out.println(":) SELECT by ID successful:");
+                System.out.println("  Barangay ID: " + retrieved.getBarangayID());
+                System.out.println("  Name: " + retrieved.getName());
+                System.out.println("  City ID: " + retrieved.getCityID());
+                if (retrieved.getCity() != null) {
+                    System.out.println("  City Name: " + retrieved.getCity().getName());
+                }
+            } else {
+                System.out.println(":( SELECT by ID failed - Record not found");
+            }
+            
+            // === READ (Select by City) ===
+            System.out.println("\n─── 2.3 READ: Retrieving Barangays by City ───");
+            List<Barangay> cityBarangays = bDao.getBarangaysByCity(testCityId);
+            System.out.println(":) SELECT by City successful: Found " + cityBarangays.size() + " barangays");
+            
+            // === UPDATE ===
+            System.out.println("\n─── 2.4 UPDATE: Modifying Barangay ───");
+            if (retrieved != null) {
+                retrieved.setName("Updated Test Barangay");
+                
+                boolean updateSuccess = bDao.updateBarangay(retrieved);
+                System.out.println(updateSuccess ? 
+                    ":) UPDATE successful" : 
+                    ":( UPDATE failed");
+                
+                // Verify update
+                Barangay updated = bDao.getBarangayById(testBarangayId);
+                if (updated != null) {
+                    System.out.println("  New Name: " + updated.getName());
+                }
+            }
+            
+            // === DELETE ===
+            System.out.println("\n─── 2.5 DELETE: Removing Barangay ───");
+            boolean deleteSuccess = bDao.deleteBarangay(testBarangayId);
+            System.out.println(deleteSuccess ? 
+                ":) DELETE successful" : 
+                ":( DELETE failed");
+            
+            // Cleanup: Remove supporting city
+            System.out.println("\n─── 2.6 CLEANUP: Removing supporting city ───");
+            cDao.deleteCity(testCityId);
+            System.out.println(":) Cleanup complete");
+            
+            System.out.println("\n> BarangayDAO Tests Complete\n");
+            
+        } catch (Exception e) {
+            System.out.println(":( ERROR in BarangayDAO test: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Test 3: Complete CRUD testing for AddressDAO
+     */
+    private static void testAddressDAO() {
+        System.out.println("═══════════════════════════════════════════════════");
+        System.out.println("TEST 3: AddressDAO - CRUD Operations");
+        System.out.println("═══════════════════════════════════════════════════\n");
+        
+        AddressDAO aDao = new AddressDAO();
+        BarangayDAO bDao = new BarangayDAO();
+        CityDAO cDao = new CityDAO();
+        
+        try {
+            // Setup: Create supporting records
+            System.out.println("─── 3.0 SETUP: Creating supporting records ───");
+            City city = new City(null, "Support City for Address");
+            cDao.insertCity(city);
+            Integer testCityId = city.getCityID();
+            
+            Barangay barangay = new Barangay(null, testCityId, "Support Barangay");
+            bDao.insertBarangay(barangay);
+            Integer testBarangayId = barangay.getBarangayID();
+            
+            System.out.println(":) Setup complete: City & Barangay created");
+            
+            // === CREATE (Insert) ===
+            System.out.println("\n─── 3.1 CREATE: Inserting Address ───");
+            Address address = new Address(null, testBarangayId, "123 Test Street");
+            
+            boolean insertSuccess = aDao.insertAddress(address);
+            System.out.println(insertSuccess ? 
+                ":) INSERT successful: Address ID = " + address.getAddressID() : 
+                ":( INSERT failed");
+            
+            Integer testAddressId = address.getAddressID();
+            
+            // === READ (Select by ID) ===
+            System.out.println("\n─── 3.2 READ: Retrieving Address by ID ───");
+            Address retrieved = aDao.getAddressById(testAddressId);
+            
+            if (retrieved != null) {
+                System.out.println(":) SELECT by ID successful:");
+                System.out.println("  Address ID: " + retrieved.getAddressID());
+                System.out.println("  Street: " + retrieved.getStreet());
+                System.out.println("  Barangay ID: " + retrieved.getBarangayID());
+                if (retrieved.getBarangay() != null) {
+                    System.out.println("  Full Address: " + retrieved.getFullAddress());
+                }
+            } else {
+                System.out.println(":( SELECT by ID failed - Record not found");
+            }
+            
+            // === READ (Select with Full Details) ===
+            System.out.println("\n─── 3.3 READ: Retrieving Address with Full Hierarchy ───");
+            Address fullDetails = aDao.getAddressWithFullDetails(testAddressId);
+            
+            if (fullDetails != null) {
+                System.out.println(":) SELECT with full details successful:");
+                System.out.println("  Full Address: " + fullDetails.getFullAddress());
+            }
+            
+            // === UPDATE ===
+            System.out.println("\n─── 3.4 UPDATE: Modifying Address ───");
+            if (retrieved != null) {
+                retrieved.setStreet("456 Updated Test Street");
+                
+                boolean updateSuccess = aDao.updateAddress(retrieved);
+                System.out.println(updateSuccess ? 
+                    ":) UPDATE successful" : 
+                    ":( UPDATE failed");
+                
+                // Verify update
+                Address updated = aDao.getAddressById(testAddressId);
+                if (updated != null) {
+                    System.out.println("  New Street: " + updated.getStreet());
+                }
+            }
+            
+            // === DELETE ===
+            System.out.println("\n─── 3.5 DELETE: Removing Address ───");
+            boolean deleteSuccess = aDao.deleteAddress(testAddressId);
+            System.out.println(deleteSuccess ? 
+                ":) DELETE successful" : 
+                ":( DELETE failed");
+            
+            // Cleanup: Remove supporting records
+            System.out.println("\n─── 3.6 CLEANUP: Removing supporting records ───");
+            bDao.deleteBarangay(testBarangayId);
+            cDao.deleteCity(testCityId);
+            System.out.println(":) Cleanup complete");
+            
+            System.out.println("\n> AddressDAO Tests Complete\n");
+            
+        } catch (Exception e) {
+            System.out.println(":( ERROR in AddressDAO test: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Test 4: Complete CRUD testing for CustomerDAO with new address structure
+     */
+    private static void testCustomerDAO() {
+        System.out.println("═══════════════════════════════════════════════════");
+        System.out.println("TEST 4: CustomerDAO - CRUD Operations (New Address Structure)");
+        System.out.println("═══════════════════════════════════════════════════\n");
+        
+        CustomerDAO custDao = new CustomerDAO();
+        AddressDAO aDao = new AddressDAO();
+        BarangayDAO bDao = new BarangayDAO();
+        CityDAO cDao = new CityDAO();
+        
+        String testCustomerId = "CRUD-C001";
+        
+        try {
+            // Setup: Create supporting address hierarchy
+            System.out.println("─── 4.0 SETUP: Creating supporting address hierarchy ───");
+            City city = new City(null, "Test Customer City");
+            cDao.insertCity(city);
+            Integer testCityId = city.getCityID();
+            
+            Barangay barangay = new Barangay(null, testCityId, "Test Customer Barangay");
+            bDao.insertBarangay(barangay);
+            Integer testBarangayId = barangay.getBarangayID();
+            
+            Address address = new Address(null, testBarangayId, "789 Customer Test St");
+            aDao.insertAddress(address);
+            Integer testAddressId = address.getAddressID();
+            
+            System.out.println(":) Setup complete: Address hierarchy created (ID: " + testAddressId + ")");
+            
+            // === CREATE (Insert) ===
+            System.out.println("\n─── 4.1 CREATE: Inserting Customer with addressID ───");
+            Customer customer = new Customer(
+                testCustomerId,
+                "Test",
+                "Customer",
+                "09999999999",
+                testAddressId,  // Using addressID instead of address string
+                "test.customer@email.com",
+                "Active"
+            );
+            
+            boolean insertSuccess = custDao.insertCustomer(customer);
+            System.out.println(insertSuccess ? 
+                ":) INSERT successful: " + testCustomerId : 
+                ":( INSERT failed");
+            
+            // === READ (Select by ID) ===
+            System.out.println("\n─── 4.2 READ: Retrieving Customer by ID ───");
+            Customer retrieved = custDao.getCustomerById(testCustomerId);
+            
+            if (retrieved != null) {
+                System.out.println(":) SELECT by ID successful:");
+                System.out.println("  Customer ID: " + retrieved.getCustomerID());
+                System.out.println("  Name: " + retrieved.getFullName());
+                System.out.println("  Contact: " + retrieved.getContactNumber());
+                System.out.println("  Address ID: " + retrieved.getAddressID());
+                System.out.println("  Email: " + retrieved.getEmailAddress());
+                System.out.println("  Status: " + retrieved.getStatus());
+            } else {
+                System.out.println(":( SELECT by ID failed - Record not found");
+            }
+            
+            // === READ (Select with Address Details) ===
+            System.out.println("\n─── 4.3 READ: Retrieving Customer with Full Address ───");
+            Customer withAddress = custDao.getCustomerWithAddress(testCustomerId);
+            
+            if (withAddress != null && withAddress.getAddress() != null) {
+                System.out.println(":) SELECT with address successful:");
+                System.out.println("  Customer: " + withAddress.getFullName());
+                System.out.println("  Full Address: " + withAddress.getAddress().getFullAddress());
+            }
+            
+            // === READ (Select All) ===
+            System.out.println("\n─── 4.4 READ: Retrieving All Active Customers ───");
+            List<Customer> allCustomers = custDao.getAllCustomers();
+            System.out.println(":) SELECT ALL successful: Found " + allCustomers.size() + " active customers");
+            System.out.println("  First 5 customers:");
+            for (int i = 0; i < Math.min(5, allCustomers.size()); i++) {
+                Customer c = allCustomers.get(i);
+                System.out.println("  - " + c.getCustomerID() + ": " + c.getFullName() + 
+                                 " (AddressID: " + c.getAddressID() + ")");
+            }
+            
+            // === UPDATE ===
+            System.out.println("\n─── 4.5 UPDATE: Modifying Customer ───");
+            if (retrieved != null) {
+                retrieved.setFirstName("Updated");
+                retrieved.setContactNumber("09888888888");
+                
+                boolean updateSuccess = custDao.updateCustomer(retrieved);
+                System.out.println(updateSuccess ? 
+                    ":) UPDATE successful" : 
+                    ":( UPDATE failed");
+                
+                // Verify update
+                Customer updated = custDao.getCustomerById(testCustomerId);
+                if (updated != null) {
+                    System.out.println("  New Name: " + updated.getFullName());
+                    System.out.println("  New Contact: " + updated.getContactNumber());
+                }
+            }
+            
+            // === SOFT DELETE (Deactivate) ===
+            System.out.println("\n─── 4.6 SOFT DELETE: Deactivating Customer ───");
+            boolean deactivateSuccess = custDao.deactivateCustomer(testCustomerId);
+            System.out.println(deactivateSuccess ? 
+                ":) DEACTIVATE successful (status set to 'Inactive')" : 
+                ":( DEACTIVATE failed");
+            
+            // Verify deactivation
+            Customer deactivated = custDao.getCustomerById(testCustomerId);
+            System.out.println(deactivated == null ? 
+                ":) Verified: Record is now inactive (not returned by active-only query)" : 
+                ":( Warning: Record still active");
+            
+            // Cleanup: Remove supporting records
+            System.out.println("\n─── 4.7 CLEANUP: Removing supporting records ───");
+            aDao.deleteAddress(testAddressId);
+            bDao.deleteBarangay(testBarangayId);
+            cDao.deleteCity(testCityId);
+            System.out.println(":) Cleanup complete");
+            
+            System.out.println("\n> CustomerDAO Tests Complete\n");
+            
+        } catch (Exception e) {
+            System.out.println(":( ERROR in CustomerDAO test: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Test 5: Complete CRUD testing for TechnicianDAO
      */
     private static void testTechnicianDAO() {
         System.out.println("═══════════════════════════════════════════════════");
-        System.out.println("TEST 1: TechnicianDAO - CRUD Operations");
+        System.out.println("TEST 5: TechnicianDAO - CRUD Operations");
         System.out.println("═══════════════════════════════════════════════════\n");
         
         TechnicianDAO dao = new TechnicianDAO();
@@ -75,7 +494,7 @@ public class DAOCRUDTest {
         
         try {
             // === CREATE (Insert) ===
-            System.out.println("─── 1.1 CREATE: Inserting Technician ───");
+            System.out.println("─── 5.1 CREATE: Inserting Technician ───");
             Technician technician = new Technician(
                 testId,
                 "Test",
@@ -158,11 +577,11 @@ public class DAOCRUDTest {
     }
     
     /**
-     * Test 2: Complete CRUD testing for PartDAO
+     * Test 6: Complete CRUD testing for PartDAO
      */
     private static void testPartDAO() {
         System.out.println("═══════════════════════════════════════════════════");
-        System.out.println("TEST 2: PartDAO - CRUD Operations");
+        System.out.println("TEST 6: PartDAO - CRUD Operations");
         System.out.println("═══════════════════════════════════════════════════\n");
         
         PartDAO dao = new PartDAO();
@@ -267,11 +686,11 @@ public class DAOCRUDTest {
     }
     
     /**
-     * Test 3: Complete CRUD testing for MaintenanceDAO
+     * Test 7: Complete CRUD testing for MaintenanceDAO
      */
     private static void testMaintenanceDAO() {
         System.out.println("═══════════════════════════════════════════════════");
-        System.out.println("TEST 3: MaintenanceDAO - CRUD Operations");
+        System.out.println("TEST 7: MaintenanceDAO - CRUD Operations");
         System.out.println("═══════════════════════════════════════════════════\n");
         
         MaintenanceDAO mDao = new MaintenanceDAO();
@@ -297,8 +716,9 @@ public class DAOCRUDTest {
                 new Timestamp(System.currentTimeMillis() - 86400000L),   // 1 day ago
                 "Test maintenance - battery replacement",
                 testTechnicianId,
-                "ES-001"  // Must exist in vehicles table
+                "ES-001"  // Must exist in vehicles table (vehicleType: E-Scooter)
             );
+            // Note: totalCost is calculated automatically (defaults to 0, updated on completion)
             
             boolean insertSuccess = mDao.insertMaintenance(maintenance);
             System.out.println(insertSuccess ? 
@@ -315,6 +735,7 @@ public class DAOCRUDTest {
                 System.out.println("  Technician: " + retrieved.getTechnicianID());
                 System.out.println("  Start DateTime: " + retrieved.getStartDateTime());
                 System.out.println("  End DateTime: " + retrieved.getEndDateTime());
+                System.out.println("  Total Cost: Php" + retrieved.getTotalCost());
                 System.out.println("  Notes: " + retrieved.getNotes());
             } else {
                 System.out.println(":( SELECT by ID failed - Record not found");
@@ -347,6 +768,7 @@ public class DAOCRUDTest {
             System.out.println("\n─── 3.6 UPDATE: Modifying Maintenance Record ───");
             if (retrieved != null) {
                 retrieved.setEndDateTime(new Timestamp(System.currentTimeMillis()));
+                retrieved.setTotalCost(new BigDecimal("3500.50"));  // Update total cost
                 retrieved.setNotes("Updated test maintenance - completed successfully");
                 
                 boolean updateSuccess = mDao.updateMaintenance(retrieved);
@@ -359,6 +781,7 @@ public class DAOCRUDTest {
                 if (updated != null) {
                     System.out.println("  New Notes: " + updated.getNotes());
                     System.out.println("  New End DateTime: " + updated.getEndDateTime());
+                    System.out.println("  New Total Cost: Php" + updated.getTotalCost());
                 }
             }
             
@@ -395,11 +818,11 @@ public class DAOCRUDTest {
     }
     
     /**
-     * Test 4: Complete CRUD testing for MaintenanceChequeDAO
+     * Test 8: Complete CRUD testing for MaintenanceChequeDAO
      */
     private static void testMaintenanceChequeDAO() {
         System.out.println("═══════════════════════════════════════════════════");
-        System.out.println("TEST 4: MaintenanceChequeDAO - CRUD Operations");
+        System.out.println("TEST 8: MaintenanceChequeDAO - CRUD Operations");
         System.out.println("═══════════════════════════════════════════════════\n");
         
         MaintenanceDAO mDao = new MaintenanceDAO();
@@ -547,11 +970,11 @@ public class DAOCRUDTest {
     }
     
     /**
-     * Test 5: Complete CRUD testing for PaymentDAO
+     * Test 9: Complete CRUD testing for PaymentDAO
      */
     private static void testPaymentDAO() {
         System.out.println("═══════════════════════════════════════════════════");
-        System.out.println("TEST 5: PaymentDAO - CRUD Operations");
+        System.out.println("TEST 9: PaymentDAO - CRUD Operations");
         System.out.println("═══════════════════════════════════════════════════\n");
         
         PaymentDAO pDao = new PaymentDAO();
@@ -690,11 +1113,11 @@ public class DAOCRUDTest {
     }
     
     /**
-     * Test 6: Complete CRUD testing for PenaltyDAO
+     * Test 10: Complete CRUD testing for PenaltyDAO
      */
     private static void testPenaltyDAO() {
         System.out.println("═══════════════════════════════════════════════════");
-        System.out.println("TEST 6: PenaltyDAO - CRUD Operations");
+        System.out.println("TEST 10: PenaltyDAO - CRUD Operations");
         System.out.println("═══════════════════════════════════════════════════\n");
         
         PenaltyDAO penDao = new PenaltyDAO();
