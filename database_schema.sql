@@ -74,7 +74,6 @@ CREATE TABLE customers (
 CREATE TABLE vehicles (
     plateID VARCHAR(11) PRIMARY KEY,
     vehicleType VARCHAR(25) NOT NULL, 
-    vehicleModel VARCHAR(30) NOT NULL, 
     status VARCHAR(15) NOT NULL DEFAULT 'Available',
     rentalPrice DECIMAL (10, 2) NOT NULL,
 

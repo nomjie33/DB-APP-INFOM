@@ -14,14 +14,13 @@ import java.util.*;
  * reliability and maintenance patterns.
  * 
  * DATA SOURCES:
- * - Vehicle Records (plateID, vehicleType, status, model)
+ * - Vehicle Records (plateID, vehicleType, status)
  * - Rental Records (plateID, startDateTime, endDateTime)
  * - Maintenance Transaction Records (plateID, startDateTime, endDateTime, notes)
  * 
  * REPORT OUTPUT:
  * - Plate ID
  * - Vehicle Type
- * - Model
  * - Current Status (Defective/Under Maintenance)
  * - Date Marked Defective (first maintenance record or status change)
  * - Number of Rentals Before Defect (count of rentals before that date)
@@ -51,17 +50,16 @@ import java.util.*;
  * BUSINESS INSIGHTS:
  * - High rental count before defect = heavy usage wear and tear
  * - Low rental count before defect = potential manufacturing defect
- * - Helps identify which vehicle models are most reliable
  * - Informs purchasing decisions for future fleet expansion
  * 
  * EXAMPLE OUTPUT:
  * ================================================================
  * DEFECTIVE VEHICLES REPORT - October 2024
  * ================================================================
- * Plate ID | Type      | Model      | Status      | Marked Date | Rentals | Last Rental
+ * Plate ID | Type      |  Status      | Marked Date | Rentals | Last Rental
  * ---------------------------------------------------------------------------------
- * ES-004   | E-Scooter | Ninebot S  | Defective   | 2024-10-15  | 87      | 2024-10-14
- * EB-003   | E-Bike    | Xiaomi Pro | Maintenance | 2024-10-20  | 45      | 2024-10-19
+ * ES-004   | E-Scooter |Defective   | 2024-10-15  | 87      | 2024-10-14
+ * EB-003   | E-Bike    |Maintenance | 2024-10-20  | 45      | 2024-10-19
  * ---------------------------------------------------------------------------------
  * Total Defective Vehicles: 2
  * Average Rentals Before Defect: 66
@@ -88,7 +86,6 @@ public class DefectiveVehiclesReport {
     public static class DefectiveVehicleData {
         private String plateID;
         private String vehicleType;
-        private String vehicleModel;
         private int timesMaintained;
         private double totalMaintenanceCost;
         private double totalDaysInMaintenance;
@@ -103,14 +100,13 @@ public class DefectiveVehiclesReport {
         public DefectiveVehicleData() {}
         
         // Full constructor
-        public DefectiveVehicleData(String plateID, String vehicleType, String vehicleModel,
+        public DefectiveVehicleData(String plateID, String vehicleType,
                                    int timesMaintained, double totalMaintenanceCost,
                                    int totalDaysInMaintenance, Timestamp lastMaintenanceDate,
                                    int rentalsInPeriod, int totalRentalsLifetime, double totalRevenue,
                                    double costToRevenueRatio, double avgMaintenanceCost) {
             this.plateID = plateID;
             this.vehicleType = vehicleType;
-            this.vehicleModel = vehicleModel;
             this.timesMaintained = timesMaintained;
             this.totalMaintenanceCost = totalMaintenanceCost;
             this.totalDaysInMaintenance = totalDaysInMaintenance;
@@ -128,9 +124,6 @@ public class DefectiveVehiclesReport {
         
         public String getVehicleType() { return vehicleType; }
         public void setVehicleType(String vehicleType) { this.vehicleType = vehicleType; }
-        
-        public String getVehicleModel() { return vehicleModel; }
-        public void setVehicleModel(String vehicleModel) { this.vehicleModel = vehicleModel; }
         
         public int getTimesMaintained() { return timesMaintained; }
         public void setTimesMaintained(int timesMaintained) { this.timesMaintained = timesMaintained; }
@@ -175,10 +168,10 @@ public class DefectiveVehiclesReport {
         
         @Override
         public String toString() {
-            return String.format("DefectiveVehicleData{plateID='%s', type='%s', model='%s', " +
+            return String.format("DefectiveVehicleData{plateID='%s', type='%s', " +
                     "timesMaintained=%d, totalCost=%.2f, days=%d, lastMaintenance=%s, " +
                     "rentalsInPeriod=%d, totalRentals=%d, revenue=%.2f, ratio=%.3f, avgCost=%.2f}",
-                    plateID, vehicleType, vehicleModel, timesMaintained, totalMaintenanceCost,
+                    plateID, vehicleType, timesMaintained, totalMaintenanceCost,
                     totalDaysInMaintenance, lastMaintenanceDate, rentalsInPeriod,
                     totalRentalsLifetime, totalRevenue, costToRevenueRatio, avgMaintenanceCost);
         }
@@ -202,7 +195,6 @@ public class DefectiveVehiclesReport {
             "SELECT " +
             "    v.plateID, " +
             "    v.vehicleType, " +
-            "    v.vehicleModel, " +
             "    v.status AS current_status, " +
             "    COUNT(DISTINCT m.maintenanceID) AS times_maintained, " +
             "    COALESCE(SUM(m.totalCost), 0) AS total_maintenance_cost, " +
@@ -232,7 +224,7 @@ public class DefectiveVehiclesReport {
             "WHERE m.status = 'Active' " +
             "    AND YEAR(m.startDateTime) = ? " +
             "    AND MONTH(m.startDateTime) = ? " +
-            "GROUP BY v.plateID, v.vehicleType, v.vehicleModel, v.status " +
+            "GROUP BY v.plateID, v.vehicleType, v.status " +
             "HAVING times_maintained > 0 " +
             "ORDER BY " +
             "    CASE WHEN total_revenue > 0 " +
@@ -256,7 +248,6 @@ public class DefectiveVehiclesReport {
                 DefectiveVehicleData data = new DefectiveVehicleData();
                 data.setPlateID(rs.getString("plateID"));
                 data.setVehicleType(rs.getString("vehicleType"));
-                data.setVehicleModel(rs.getString("vehicleModel"));
                 data.setTimesMaintained(rs.getInt("times_maintained"));
                 data.setTotalMaintenanceCost(rs.getDouble("total_maintenance_cost"));
                 data.setTotalDaysInMaintenance(rs.getInt("total_days_in_maintenance"));
@@ -305,7 +296,6 @@ public class DefectiveVehiclesReport {
             "SELECT " +
             "    v.plateID, " +
             "    v.vehicleType, " +
-            "    v.vehicleModel, " +
             "    v.status AS current_status, " +
             "    COUNT(DISTINCT m.maintenanceID) AS times_maintained, " +
             "    COALESCE(SUM(m.totalCost), 0) AS total_maintenance_cost, " +
@@ -333,7 +323,7 @@ public class DefectiveVehiclesReport {
             "INNER JOIN vehicles v ON m.plateID = v.plateID " +
             "WHERE m.status = 'Active' " +
             "    AND YEAR(m.startDateTime) = ? " +
-            "GROUP BY v.plateID, v.vehicleType, v.vehicleModel, v.status " +
+            "GROUP BY v.plateID, v.vehicleType, v.status " +
             "HAVING times_maintained > 0 " +
             "ORDER BY " +
             "    CASE WHEN total_revenue > 0 " +
@@ -354,7 +344,6 @@ public class DefectiveVehiclesReport {
                 DefectiveVehicleData data = new DefectiveVehicleData();
                 data.setPlateID(rs.getString("plateID"));
                 data.setVehicleType(rs.getString("vehicleType"));
-                data.setVehicleModel(rs.getString("vehicleModel"));
                 data.setTimesMaintained(rs.getInt("times_maintained"));
                 data.setTotalMaintenanceCost(rs.getDouble("total_maintenance_cost"));
                 data.setTotalDaysInMaintenance(rs.getInt("total_days_in_maintenance"));
@@ -415,12 +404,12 @@ public class DefectiveVehiclesReport {
         }
         
         // Table header
-        System.out.printf("%-12s %-15s %-20s %-8s %-8s %-15s %-10s %-20s %-10s %-10s %-15s %-10s %-15s\n",
-            "Plate ID", "Type", "Model", "Maint.", "Rentals", "Total Cost", "Days in", "Last Maint.", 
+        System.out.printf("%-12s %-15s %-8s %-8s %-15s %-10s %-20s %-10s %-10s %-15s %-10s %-15s\n",
+            "Plate ID", "Type", "Maint.", "Rentals", "Total Cost", "Days in", "Last Maint.", 
             "Total", "Avg Revenue", "Total Revenue", "C/R Ratio", "Avg Cost");
-        System.out.printf("%-12s %-15s %-20s %-8s %-8s %-15s %-10s %-20s %-10s %-10s %-15s %-10s %-15s\n",
-            "", "", "", "Period", "Period", "(PHP)", "Maint.", "Date", "Rentals", "(PHP)", "(PHP)", "", "per Maint.");
-        System.out.println("-".repeat(150));
+        System.out.printf("%-12s %-15s %-8s %-8s %-15s %-10s %-20s %-10s %-10s %-15s %-10s %-15s\n",
+            "", "", "Period", "Period", "(PHP)", "Maint.", "Date", "Rentals", "(PHP)", "(PHP)", "", "per Maint.");
+        System.out.println("-".repeat(140));
         
         // Calculate summary statistics
         double totalCost = 0;
@@ -446,10 +435,9 @@ public class DefectiveVehiclesReport {
                 moderateRiskCount++;
             }
             
-            System.out.printf("%-12s %-15s %-20s %-8d %-8d %,15.2f %-10.1f %-20s %-10d %,10.2f %,15.2f %10.3f %,15.2f%s\n",
+            System.out.printf("%-12s %-15s %-8d %-8d %,15.2f %-10.1f %-20s %-10d %,10.2f %,15.2f %10.3f %,15.2f%s\n",
                 vehicle.getPlateID(),
                 vehicle.getVehicleType(),
-                vehicle.getVehicleModel(),
                 vehicle.getTimesMaintained(),
                 vehicle.getRentalsInPeriod(),
                 vehicle.getTotalMaintenanceCost(),

@@ -17,17 +17,16 @@ public class VehicleDAO {
     private static final String STATUS_INACTIVE = "Inactive";
     
     public boolean insertVehicle(Vehicle vehicle) {
-        String sql = "INSERT INTO vehicles (plateID, vehicleType, vehicleModel, status, rentalPrice) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO vehicles (plateID, vehicleType, status, rentalPrice) " +
+                "VALUES (?, ?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, vehicle.getPlateID());
             stmt.setString(2, vehicle.getVehicleType());
-            stmt.setString(3, vehicle.getVehicleModel());
-            stmt.setString(4, vehicle.getStatus());
-            stmt.setDouble(5, vehicle.getRentalPrice());
+            stmt.setString(3, vehicle.getStatus());
+            stmt.setDouble(4, vehicle.getRentalPrice());
             
             int rowsAffected = stmt.executeUpdate();
             
@@ -45,17 +44,16 @@ public class VehicleDAO {
     }
 
     public boolean updateVehicle(Vehicle vehicle) {
-        String sql = "UPDATE vehicles SET vehicleType = ?, vehicleModel = ?, " +
+        String sql = "UPDATE vehicles SET vehicleType = ?, " +
                     "status = ?, rentalPrice = ? WHERE plateID = ?";
         
         try (Connection conn = DBConnection.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, vehicle.getVehicleType());
-            stmt.setString(2, vehicle.getVehicleModel());
-            stmt.setString(3, vehicle.getStatus());
-            stmt.setDouble(4, vehicle.getRentalPrice());
-            stmt.setString(5, vehicle.getPlateID());
+            stmt.setString(2, vehicle.getStatus());
+            stmt.setDouble(3, vehicle.getRentalPrice());
+            stmt.setString(4, vehicle.getPlateID());
             
             int rowsAffected = stmt.executeUpdate();
             
@@ -280,7 +278,7 @@ public class VehicleDAO {
     
     public List<Vehicle> getVehiclesByStatus(String status) {
         List<Vehicle> vehicles = new ArrayList<>();
-        String sql = "SELECT * FROM vehicles WHERE status = ? ORDER BY vehicleType, vehicleModel";
+        String sql = "SELECT * FROM vehicles WHERE status = ? ORDER BY vehicleType, plateID";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -302,7 +300,7 @@ public class VehicleDAO {
 
     public List<Vehicle> getVehiclesByType(String vehicleType) {
         List<Vehicle> vehicles = new ArrayList<>();
-        String sql = "SELECT * FROM vehicles WHERE vehicleType = ? AND status != 'Inactive' ORDER BY vehicleModel";
+        String sql = "SELECT * FROM vehicles WHERE vehicleType = ? AND status != 'Inactive' ORDER BY plateID";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -329,7 +327,6 @@ public class VehicleDAO {
         Vehicle vehicle = new Vehicle();
         vehicle.setPlateID(rs.getString("plateID"));
         vehicle.setVehicleType(rs.getString("vehicleType"));
-        vehicle.setVehicleModel(rs.getString("vehicleModel"));
         vehicle.setStatus(rs.getString("status"));
         vehicle.setRentalPrice(rs.getDouble("rentalPrice"));
         return vehicle;

@@ -77,8 +77,8 @@ public class RentalService {
             return null;
         }
         
-        System.out.println("Vehicle found: " + vehicle.getVehicleModel());
-        System.out.println("   Type: " + vehicle.getVehicleType());
+        System.out.println("Vehicle found: " + vehicle.getVehicleType());
+        System.out.println("   Plate ID: " + vehicle.getPlateID());
         System.out.println("   Price: ₱" + vehicle.getRentalPrice() + "/hour");
         System.out.println("   Current Status: " + vehicle.getStatus());
 
@@ -167,7 +167,7 @@ public class RentalService {
         System.out.println("   Rental ID: " + rentalID);
         System.out.println("   Payment ID: " + paymentID);
         System.out.println("   Customer: " + customer.getFullName());
-        System.out.println("   Vehicle: " + vehicle.getVehicleModel() + " (" + vehicle.getPlateID() + ")");
+        System.out.println("   Vehicle: " + vehicle.getVehicleType() + " (" + vehicle.getPlateID() + ")");
         System.out.println("   Location: " + location.getName());
         System.out.println("   Pickup Time: " + pickUpDateTime);
         System.out.println("   Rate: ₱" + vehicle.getRentalPrice() + "/hour");
@@ -273,7 +273,7 @@ public class RentalService {
         System.out.println("RENTAL STARTED!");
         System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         System.out.println("   Rental ID: " + rentalID);
-        System.out.println("   Vehicle: " + vehicle.getVehicleModel() + " (" + rental.getPlateID() + ")");
+        System.out.println("   Vehicle: " + vehicle.getVehicleType() + " (" + rental.getPlateID() + ")");
         System.out.println("   Scheduled: " + rental.getPickUpDateTime());
         System.out.println("   Actual Start: " + startDateTime);
         System.out.println("   Status: In progress (cannot be cancelled)");

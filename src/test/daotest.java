@@ -127,14 +127,13 @@ public class daotest {
             return;
         }
         
-        System.out.printf("%-12s %-15s %-25s %-12s %s%n", 
-            "PLATE ID", "TYPE", "MODEL", "STATUS", "PRICE");
-        System.out.println("─".repeat(80));
+        System.out.printf("%-12s %-15s %-12s %s%n", 
+            "PLATE ID", "TYPE", "STATUS", "PRICE");
+        System.out.println("─".repeat(60));
         for (Vehicle v : vehicles) {
-            System.out.printf("%-12s %-15s %-25s %-12s ₱%.2f%n",
+            System.out.printf("%-12s %-15s %-12s ₱%.2f%n",
                 v.getPlateID(),
                 v.getVehicleType(),
-                v.getVehicleModel(),
                 v.getStatus(),
                 v.getRentalPrice()
             );
@@ -146,9 +145,9 @@ public class daotest {
         List<Vehicle> available = vehicleDAO.getAvailableVehicles();
         System.out.println("Available for rent: " + available.size() + " vehicles");
         for (Vehicle v : available) {
-            System.out.printf("  • %-12s %-25s ₱%.2f/hr%n", 
+            System.out.printf("  • %-12s %-15s ₱%.2f/hr%n", 
                 v.getPlateID(), 
-                v.getVehicleModel(), 
+                v.getVehicleType(), 
                 v.getRentalPrice()
             );
         }
@@ -159,7 +158,7 @@ public class daotest {
         List<Vehicle> scooters = vehicleDAO.getVehiclesByType("E-Scooter");
         System.out.println("E-Scooters: " + scooters.size());
         for (Vehicle v : scooters) {
-            System.out.println("  • " + v.getPlateID() + " - " + v.getVehicleModel() + 
+            System.out.println("  • " + v.getPlateID() + " - " + v.getVehicleType() + 
                              " (" + v.getStatus() + ")");
         }
         System.out.println();
@@ -169,7 +168,7 @@ public class daotest {
         List<Vehicle> inUse = vehicleDAO.getVehiclesByStatus("In Use");
         System.out.println("Currently In Use: " + inUse.size());
         for (Vehicle v : inUse) {
-            System.out.println("  • " + v.getPlateID() + " - " + v.getVehicleModel());
+            System.out.println("  • " + v.getPlateID() + " - " + v.getVehicleType());
         }
         System.out.println();
         
@@ -179,7 +178,6 @@ public class daotest {
         if (vehicle != null) {
             System.out.println("✅ Found: " + vehicle.getPlateID());
             System.out.println("   Type: " + vehicle.getVehicleType());
-            System.out.println("   Model: " + vehicle.getVehicleModel());
             System.out.println("   Status: " + vehicle.getStatus());
             System.out.println("   Price: ₱" + vehicle.getRentalPrice() + "/hr");
             

@@ -27,7 +27,7 @@ public class Client_deploymentController {
 
         rentalIdLabel.setText(rental.getRentalID());
         deploymentIdLabel.setText(deploymentID);
-        plateNumberLabel.setText(vehicle.getPlateID() + " (" + vehicle.getVehicleModel() + ")");
+        plateNumberLabel.setText(vehicle.getPlateID() + " (" + vehicle.getVehicleType() + ")");
         locationIdLabel.setText(rental.getLocationID());
 
         Timestamp startTS = rental.getStartDateTime();

@@ -58,30 +58,30 @@ SELECT * FROM locations;
 -- E-BIKES (₱70-90/hour)
 -- E-TRIKES (₱95-120/hour, for couples/families)
 
-INSERT INTO vehicles (plateID, vehicleType, vehicleModel, status, rentalPrice) VALUES
-('ES-001', 'E-Scooter', 'Xiaomi M365 Pro', 'Available', 50.00),
-('ES-002', 'E-Scooter', 'Segway Ninebot Max', 'Available', 55.00),
-('ES-003', 'E-Scooter', 'Xiaomi Pro 2', 'In Use', 50.00),
-('ES-004', 'E-Scooter', 'Segway ES2', 'Available', 45.00),
-('ES-005', 'E-Scooter', 'Xiaomi M365', 'Maintenance', 48.00),
-('ES-006', 'E-Scooter', 'Ninebot ES4', 'Available', 52.00),
-('ES-007', 'E-Scooter', 'Xiaomi Essential', 'Available', 45.00),
-('ES-008', 'E-Scooter', 'Segway Max G30', 'In Use', 60.00),
-('ES-009', 'E-Scooter', 'Xiaomi Pro 3', 'Available', 58.00),
-('ES-010', 'E-Scooter', 'Ninebot F40', 'Available', 50.00),
-('EB-001', 'E-Bike', 'Fiido D11', 'Available', 80.00),
-('EB-002', 'E-Bike', 'Xiaomi Himo C20', 'Available', 75.00),
-('EB-003', 'E-Bike', 'Fiido D4S', 'In Use', 70.00),
-('EB-004', 'E-Bike', 'Xiaomi Qicycle', 'Available', 78.00),
-('EB-005', 'E-Bike', 'Fiido M1', 'Available', 85.00),
-('EB-006', 'E-Bike', 'Himo Z20', 'Maintenance', 82.00),
-('EB-007', 'E-Bike', 'Fiido D3S', 'Available', 72.00),
-('EB-008', 'E-Bike', 'Xiaomi C26', 'Available', 90.00),
-('ET-001', 'E-Trike', 'Passenger Trike Standard', 'Available', 100.00),
-('ET-002', 'E-Trike', 'Cargo E-Trike', 'Available', 95.00),
-('ET-003', 'E-Trike', 'Family Trike', 'In Use', 105.00),
-('ET-004', 'E-Trike', 'Deluxe Passenger Trike', 'Available', 120.00),
-('ET-005', 'E-Trike', 'Eco Trike', 'Available', 98.00);
+INSERT INTO vehicles (plateID, vehicleType, status, rentalPrice) VALUES
+('ES-001', 'E-Scooter', 'Available', 50.00),
+('ES-002', 'E-Scooter', 'Available', 55.00),
+('ES-003', 'E-Scooter', 'In Use', 50.00),
+('ES-004', 'E-Scooter', 'Available', 45.00),
+('ES-005', 'E-Scooter', 'Maintenance', 48.00),
+('ES-006', 'E-Scooter', 'Available', 52.00),
+('ES-007', 'E-Scooter', 'Available', 45.00),
+('ES-008', 'E-Scooter', 'In Use', 60.00),
+('ES-009', 'E-Scooter', 'Available', 58.00),
+('ES-010', 'E-Scooter', 'Available', 50.00),
+('EB-001', 'E-Bike', 'Available', 80.00),
+('EB-002', 'E-Bike', 'Available', 75.00),
+('EB-003', 'E-Bike', 'In Use', 70.00),
+('EB-004', 'E-Bike', 'Available', 78.00),
+('EB-005', 'E-Bike', 'Available', 85.00),
+('EB-006', 'E-Bike', 'Maintenance', 82.00),
+('EB-007', 'E-Bike', 'Available', 72.00),
+('EB-008', 'E-Bike', 'Available', 90.00),
+('ET-001', 'E-Trike', 'Available', 100.00),
+('ET-002', 'E-Trike', 'Available', 95.00),
+('ET-003', 'E-Trike', 'In Use', 105.00),
+('ET-004', 'E-Trike', 'Available', 120.00),
+('ET-005', 'E-Trike', 'Available', 98.00);
 
 -- =====================================================
 -- 3. CUSTOMERS TABLE
