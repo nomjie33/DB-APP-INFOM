@@ -7,9 +7,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 
 import java.net.URL;
 import java.util.Map;
@@ -22,6 +25,11 @@ public class Admin_homeController implements Initializable {
     @FXML private TableColumn<RecordSummary, String> infoColumn;
     @FXML private TableColumn<RecordSummary, Number> countColumn;
     @FXML private TableColumn<RecordSummary, String> categoryColumn;
+
+    @FXML private Pane reportRentalRevenue;
+    @FXML private Pane reportDefectiveVehicles;
+    @FXML private Pane reportLocationFrequency;
+    @FXML private Pane reportCustomerRental;
 
     private Admin_dashboardController mainController;
     private DashboardDAO dashboardDAO = new DashboardDAO();
@@ -107,6 +115,36 @@ public class Admin_homeController implements Initializable {
         } else {
             System.out.println("Link not found for: " + recordName);
         }
+    }
+
+    @FXML private void handleReportRentalRevenue(MouseEvent e){
+        System.out.println("Rental Revenue report clicked");
+        mainController.loadPage("Admin-revenueSelect.fxml");
+    }
+
+    @FXML private void handleReportDefectiveVehicles(MouseEvent event) {
+        System.out.println("Defective Vehicles report clicked");
+        mainController.loadPage("Admin_defectiveVehicleSelect.fxml");
+    }
+
+    @FXML private void handleReportLocationFrequency(MouseEvent e){
+        System.out.println("Location Frequency report clicked");
+        // mainController.loadPage("Admin-locationFrequencyReportSelect.fxml"); // TODO
+        showAlert("Coming Soon", "Location Frequency report is not yet implemented.");
+    }
+
+    @FXML private void handleReportCustomerRental(MouseEvent event) {
+        System.out.println("Customer Rental report clicked");
+        // This is the one we built
+        mainController.loadPage("Admin-customerRentalReportSelect.fxml");
+    }
+
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     public static class RecordSummary {

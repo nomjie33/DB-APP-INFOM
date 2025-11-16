@@ -20,28 +20,28 @@
         <HBox alignment="CENTER_LEFT" layoutX="38.0" layoutY="150.0" prefWidth="747.0" spacing="20.0">
             <children>
 
-                <Pane prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
+                <Pane fx:id="reportRentalRevenue" onMouseClicked="#handleReportRentalRevenue" prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
                     <children>
                         <Label layoutX="14.0" layoutY="14.0" styleClass="report-label" text="Involves:" />
                         <Label layoutX="14.0" layoutY="70.0" styleClass="report-label" text="Rental Revenue" />
                     </children>
                 </Pane>
 
-                <Pane prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
+                <Pane fx:id="reportDefectiveVehicles" onMouseClicked="#handleReportDefectiveVehicles" prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
                     <children>
                         <Label layoutX="14.0" layoutY="14.0" styleClass="report-label" text="Involves:" />
                         <Label layoutX="14.0" layoutY="70.0" styleClass="report-label" text="Defective Vehicles" />
                     </children>
                 </Pane>
 
-                <Pane prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
+                <Pane fx:id="reportLocationFrequency" onMouseClicked="#handleReportLocationFrequency" prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
                     <children>
                         <Label layoutX="14.0" layoutY="14.0" styleClass="report-label" text="Involves:" />
                         <Label layoutX="14.0" layoutY="70.0" styleClass="report-label" text="Location Frequency" wrapText="true" />
                     </children>
                 </Pane>
 
-                <Pane prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
+                <Pane fx:id="reportCustomerRental" onMouseClicked="#handleReportCustomerRental" prefHeight="100.0" prefWidth="170.0" styleClass="report-pane-folder">
                     <children>
                         <Label layoutX="14.0" layoutY="14.0" styleClass="report-label" text="Involves:" />
                         <Label layoutX="14.0" layoutY="70.0" styleClass="report-label" text="Customer Rental" />
