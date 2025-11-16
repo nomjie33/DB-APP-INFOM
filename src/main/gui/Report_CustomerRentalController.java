@@ -12,6 +12,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import reports.CustomerRentalReport;
 import reports.CustomerRentalReport.CustomerRentalData;
+// Import the missing data types
+import reports.CustomerRentalReport.CustomerDemographicsData; // <-- ADDED
+import reports.CustomerRentalReport.CustomerPenaltyRiskData; // <-- ADDED
+import reports.CustomerRentalReport.SummaryStatistics;       // <-- ADDED
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -36,7 +40,11 @@ public class Report_CustomerRentalController implements Initializable{
 
     private Admin_dashboardController mainController;
 
+    // Add fields to store the new data
     private List<CustomerRentalData> currentReportData;
+    private List<CustomerDemographicsData> currentDemographicsData; // <-- ADDED
+    private List<CustomerPenaltyRiskData> currentPenaltyRiskData;   // <-- ADDED
+    private SummaryStatistics currentSummaryStats;                // <-- ADDED
     private int reportYear;
     private int reportMonth;
 
@@ -55,9 +63,17 @@ public class Report_CustomerRentalController implements Initializable{
         colLastRental.setCellValueFactory(new PropertyValueFactory<>("mostRecentRentalDate"));
     }
 
-    public void setData(List<CustomerRentalData> data, int year, int month){
+    // Update the setData method to accept all required data
+    public void setData(List<CustomerRentalData> rentalData,
+                        List<CustomerDemographicsData> demographicsData,
+                        List<CustomerPenaltyRiskData> penaltyRiskData,
+                        SummaryStatistics summaryStats,
+                        int year, int month) {
 
-        this.currentReportData = data;
+        this.currentReportData = rentalData;
+        this.currentDemographicsData = demographicsData;
+        this.currentPenaltyRiskData = penaltyRiskData;
+        this.currentSummaryStats = summaryStats;
         this.reportYear = year;
         this.reportMonth = month; //0 = yearly
 
@@ -70,7 +86,7 @@ public class Report_CustomerRentalController implements Initializable{
             subHeaderLabel.setText("Report for Year " + year);
         }
 
-        ObservableList<CustomerRentalData> observableData = FXCollections.observableArrayList(data);
+        ObservableList<CustomerRentalData> observableData = FXCollections.observableArrayList(rentalData);
         reportTable.setItems(observableData);
     }
 
@@ -89,7 +105,16 @@ public class Report_CustomerRentalController implements Initializable{
                 fileName = String.format("Customer_Report_%d_Yearly.pdf", reportYear);
             }
 
-            report.exportToPDF(currentReportData, fileName, reportYear, reportMonth, "Revenue");
+            report.exportToPDF(
+                    currentReportData,
+                    currentDemographicsData,
+                    currentPenaltyRiskData,
+                    currentSummaryStats,
+                    fileName,
+                    reportYear,
+                    reportMonth,
+                    "Revenue"
+            );
 
             showAlert(Alert.AlertType.INFORMATION, "Export Successful",
                     "Report has been saved to the 'reports_output' folder as " + fileName);

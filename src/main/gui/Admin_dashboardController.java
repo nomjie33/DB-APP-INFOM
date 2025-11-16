@@ -16,6 +16,10 @@ import model.*;
 import reports.CustomerRentalReport;
 import reports.DefectiveVehiclesReport;
 import reports.RentalRevenueReport;
+import reports.CustomerRentalReport.CustomerDemographicsData;
+import reports.CustomerRentalReport.CustomerPenaltyRiskData;
+import reports.CustomerRentalReport.SummaryStatistics;
+import reports.DefectiveVehiclesReport;
 
 import java.io.IOException;
 import java.net.URL;
@@ -339,7 +343,13 @@ public class Admin_dashboardController implements Initializable {
         }
     }
 
-    public void loadCustomerReportDisplay(List<CustomerRentalReport.CustomerRentalData> data, int year, int month){
+    public void loadCustomerReportDisplay(
+            List<CustomerRentalReport.CustomerRentalData> rentalData,
+            List<CustomerRentalReport.CustomerDemographicsData> demographicsData,
+            List<CustomerRentalReport.CustomerPenaltyRiskData> penaltyRiskData,
+            CustomerRentalReport.SummaryStatistics summaryStats,
+            int year,
+            int month) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Report-CustomerRentalDisplay.fxml"));
             Parent page = loader.load();
@@ -347,7 +357,15 @@ public class Admin_dashboardController implements Initializable {
             Report_CustomerRentalController controller = loader.getController();
             controller.setMainController(this);
 
-            controller.setData(data, year, month);
+            // Now pass all 6 arguments forward
+            controller.setData(
+                    rentalData,
+                    demographicsData,
+                    penaltyRiskData,
+                    summaryStats,
+                    year,
+                    month
+            );
 
             loadPageFromSub(page);
         } catch (Exception e){
@@ -358,7 +376,6 @@ public class Admin_dashboardController implements Initializable {
 
     public void loadDefectiveReportDisplay(List<DefectiveVehiclesReport.DefectiveVehicleData> data, int year, int month) {
         try {
-
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Report_defectiveVehicleDisplay.fxml"));
             Parent page = loader.load();
 
@@ -369,12 +386,11 @@ public class Admin_dashboardController implements Initializable {
 
             loadPageFromSub(page);
 
-        } catch (IOException e){
+        } catch (IOException e) {
             System.err.println("Failed to load page: Report_defectiveVehicleDisplay.fxml");
             e.printStackTrace();
         }
     }
-
     public void loadRevenueReportDisplay(List<RentalRevenueReport.RevenueData> data, String reportTypeTitle, String vehicleType) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Report-RevenueDisplay.fxml"));

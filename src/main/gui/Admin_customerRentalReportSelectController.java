@@ -7,6 +7,10 @@ import javafx.scene.control.ComboBox;
 import reports.CustomerRentalReport;
 import reports.CustomerRentalReport.CustomerRentalData;
 
+import reports.CustomerRentalReport.CustomerDemographicsData;
+import reports.CustomerRentalReport.CustomerPenaltyRiskData;
+import reports.CustomerRentalReport.SummaryStatistics;
+
 import java.net.URL;
 import java.time.Month;
 import java.time.Year;
@@ -31,12 +35,15 @@ public class Admin_customerRentalReportSelectController implements Initializable
         for (int i = currentYear; i >= 2020; i--) {
             yearComboBox.getItems().add(i);
         }
+        yearComboBox.setValue(currentYear);
 
+        monthComboBox.getItems().add("Yearly (All Months)");
         for (Month month : Month.values()) {
             String monthName = month.toString();
             String formattedName = monthName.substring(0, 1).toUpperCase() + monthName.substring(1).toLowerCase();
             monthComboBox.getItems().add(formattedName);
         }
+        monthComboBox.setValue("Yearly (All Months)");
     }
 
     @FXML private void handleGenerateReport() {
@@ -49,25 +56,56 @@ public class Admin_customerRentalReportSelectController implements Initializable
         }
 
         CustomerRentalReport report = new CustomerRentalReport();
-        List<CustomerRentalData> reportData;
-        int monthInt = 0; // 0 for yearly
 
-        if (monthName == null || monthName.isEmpty()) {
+        List<CustomerRentalData> rentalData;
+        List<CustomerDemographicsData> demographicsData;
+        List<CustomerPenaltyRiskData> penaltyRiskData;
+        SummaryStatistics summaryStats;
+
+        int monthInt = 0;
+
+        if (monthName == null || monthName.isEmpty() || monthName.equals("Yearly (All Months)")) {
 
             System.out.println("Generating Yearly Report for " + year + "...");
-            reportData = report.generateYearlyReport(year, "Revenue");
+
+            // --- Generate all 4 data components for the YEAR ---
+            // 1. Rental Summary
+            rentalData = report.generateYearlySummary(year, "Revenue"); // <-- Corrected method name
+            // 2. Demographics (not time-based)
+            demographicsData = report.generateDemographics();
+            // 3. Penalty Risk
+            penaltyRiskData = report.generateYearlyPenaltyRiskAnalysis(year);
+            // 4. Summary Statistics
+            summaryStats = report.generateSummaryStatistics(rentalData, penaltyRiskData);
 
         } else {
 
             monthInt = Month.valueOf(monthName.toUpperCase()).getValue();
             System.out.println("Generating Monthly Report for " + monthName + " " + year + "...");
-            reportData = report.generateMonthlyReport(year, monthInt, "Revenue");
+
+            // --- Generate all 4 data components for the MONTH ---
+            // 1. Rental Summary
+            rentalData = report.generateRentalSummary(year, monthInt, "Revenue"); // <-- Corrected method name
+            // 2. Demographics (not time-based)
+            demographicsData = report.generateDemographics();
+            // 3. Penalty Risk
+            penaltyRiskData = report.generatePenaltyRiskAnalysis(year, monthInt);
+            // 4. Summary Statistics
+            summaryStats = report.generateSummaryStatistics(rentalData, penaltyRiskData);
         }
 
-        if (reportData.isEmpty()) {
+        if (rentalData.isEmpty()) {
             showAlert(Alert.AlertType.INFORMATION, "No Data", "No customer rental data found for the specified period.");
         } else {
-            mainController.loadCustomerReportDisplay(reportData, year, monthInt);
+            // --- Pass all 6 arguments to the display controller ---
+            mainController.loadCustomerReportDisplay(
+                    rentalData,
+                    demographicsData,
+                    penaltyRiskData,
+                    summaryStats,
+                    year,
+                    monthInt
+            );
         }
     }
 
