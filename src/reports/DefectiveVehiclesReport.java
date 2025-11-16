@@ -79,6 +79,7 @@ public class DefectiveVehiclesReport {
     private VehicleDAO vehicleDAO;
     private RentalDAO rentalDAO;
     private MaintenanceDAO maintenanceDAO;
+    private PartDAO partDAO;
 
     /**
      * Constructor - Initialize required DAOs
@@ -87,6 +88,7 @@ public class DefectiveVehiclesReport {
         this.vehicleDAO = new VehicleDAO();
         this.rentalDAO = new RentalDAO();
         this.maintenanceDAO = new MaintenanceDAO();
+        this.partDAO = new PartDAO();
     }
 
     /**
@@ -183,6 +185,33 @@ public class DefectiveVehiclesReport {
                     plateID, vehicleType, timesMaintained, totalMaintenanceCost,
                     totalDaysInMaintenance, lastMaintenanceDate, rentalsInPeriod,
                     totalRentalsLifetime, totalRevenue, costToRevenueRatio, avgMaintenanceCost);
+        }
+    }
+
+    /**
+     * Inner class to hold parts inventory data
+     */
+    public static class PartsInventoryData {
+        private String partName;
+        private int currentQuantity;
+
+        public PartsInventoryData() {}
+
+        public PartsInventoryData(String partName, int currentQuantity) {
+            this.partName = partName;
+            this.currentQuantity = currentQuantity;
+        }
+
+        // Getters and Setters
+        public String getPartName() { return partName; }
+        public void setPartName(String partName) { this.partName = partName; }
+        public int getCurrentQuantity() { return currentQuantity; }
+        public void setCurrentQuantity(int currentQuantity) { this.currentQuantity = currentQuantity; }
+
+        @Override
+        public String toString() {
+            return String.format("PartsInventoryData{partName='%s', quantity=%d}",
+                    partName, currentQuantity);
         }
     }
 
@@ -385,16 +414,55 @@ public class DefectiveVehiclesReport {
     }
 
     /**
+     * Generate parts inventory listing.
+     *
+     * Retrieves all active parts with their current quantities,
+     * sorted by quantity (lowest first) then alphabetically by name.
+     *
+     * @return List of PartsInventoryData sorted by quantity ASC, name ASC
+     */
+    public List<PartsInventoryData> generatePartsInventory() {
+        List<PartsInventoryData> inventoryData = new ArrayList<>();
+
+        String sql =
+            "SELECT " +
+            "    part_name, " +
+            "    quantity " +
+            "FROM parts " +
+            "WHERE status = 'Active' " +
+            "ORDER BY quantity ASC, part_name ASC";
+
+        try (Connection conn = util.DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                PartsInventoryData data = new PartsInventoryData();
+                data.setPartName(rs.getString("part_name"));
+                data.setCurrentQuantity(rs.getInt("quantity"));
+                inventoryData.add(data);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error generating parts inventory: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return inventoryData;
+    }
+
+    /**
      * Print formatted report to console.
      *
      * Displays the defective vehicles report in a readable table format
-     * with summary statistics and recommendations.
+     * with summary statistics, recommendations, and parts inventory.
      *
      * @param data List of DefectiveVehicleData to display
+     * @param partsInventory List of PartsInventoryData to display
      * @param year Year of report
      * @param month Month of report (0 for yearly report)
      */
-    public void printReport(List<DefectiveVehicleData> data, int year, int month) {
+    public void printReport(List<DefectiveVehicleData> data, List<PartsInventoryData> partsInventory, int year, int month) {
         System.out.println("\n" + "=".repeat(150));
         if (month > 0) {
             String[] months = {"", "January", "February", "March", "April", "May", "June",
@@ -503,6 +571,41 @@ public class DefectiveVehiclesReport {
             System.out.println("   Review fleet replacement strategy to improve profitability.");
         }
 
+        // Parts Inventory Section
+        System.out.println("\n" + "=".repeat(150));
+        System.out.println("PARTS INVENTORY");
+        System.out.println("Current stock levels for all active parts (sorted by quantity - lowest first)");
+        System.out.println("=".repeat(150));
+
+        if (partsInventory == null || partsInventory.isEmpty()) {
+            System.out.println("No parts inventory data available.");
+        } else {
+            System.out.printf("%-50s %15s\n", "Part Name", "Current Quantity");
+            System.out.println("-".repeat(70));
+
+            int lowStockCount = 0;
+            for (PartsInventoryData part : partsInventory) {
+                String stockWarning = "";
+                if (part.getCurrentQuantity() <= 5) {
+                    stockWarning = " [LOW STOCK - REORDER SOON]";
+                    lowStockCount++;
+                } else if (part.getCurrentQuantity() <= 10) {
+                    stockWarning = " [MONITOR STOCK]";
+                }
+
+                System.out.printf("%-50s %,15d%s\n",
+                        part.getPartName(),
+                        part.getCurrentQuantity(),
+                        stockWarning);
+            }
+
+            System.out.println("-".repeat(70));
+            System.out.printf("Total Parts Tracked: %d\n", partsInventory.size());
+            if (lowStockCount > 0) {
+                System.out.printf("[!] URGENT: %d part(s) with critically low stock (≤5 units) - REORDER IMMEDIATELY\n", lowStockCount);
+            }
+        }
+
         System.out.println("=".repeat(150) + "\n");
     }
 
@@ -518,9 +621,9 @@ public class DefectiveVehiclesReport {
         return outputDir + File.separator + filename;
     }
     /**
-     * Export report to branded PDF
+     * Export report to branded PDF including parts inventory
      */
-    public void exportToPDF(List<DefectiveVehicleData> data, String filename, int year, int month) {
+    public void exportToPDF(List<DefectiveVehicleData> data, List<PartsInventoryData> partsInventory, String filename, int year, int month) {
         Document document = new Document(PageSize.A4.rotate());
 
         try {
@@ -630,6 +733,68 @@ public class DefectiveVehiclesReport {
 
             document.add(summaryTable);
 
+            // Parts Inventory Section
+            if (partsInventory != null && !partsInventory.isEmpty()) {
+                Paragraph inventoryTitle = new Paragraph("\nParts Inventory",
+                        new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, PDFBrandingHelper.BRAND_GREEN));
+                inventoryTitle.setSpacingBefore(20);
+                inventoryTitle.setSpacingAfter(10);
+                document.add(inventoryTitle);
+
+                Paragraph inventorySubtitle = new Paragraph("Current stock levels (sorted by quantity - lowest first)",
+                        new Font(Font.FontFamily.HELVETICA, 9, Font.ITALIC));
+                inventorySubtitle.setSpacingAfter(10);
+                document.add(inventorySubtitle);
+
+                PdfPTable inventoryTable = new PdfPTable(2);
+                inventoryTable.setWidthPercentage(60);
+                inventoryTable.setWidths(new float[]{3f, 1f});
+
+                // Headers
+                inventoryTable.addCell(PDFBrandingHelper.createHeaderCell("Part Name"));
+                inventoryTable.addCell(PDFBrandingHelper.createHeaderCell("Quantity"));
+
+                // Data with color coding for low stock
+                int lowStockCount = 0;
+                for (int i = 0; i < partsInventory.size(); i++) {
+                    PartsInventoryData part = partsInventory.get(i);
+
+                    // Part name cell
+                    PdfPCell nameCell = PDFBrandingHelper.createDataCell(part.getPartName(), i);
+                    if (part.getCurrentQuantity() <= 5) {
+                        nameCell.setBackgroundColor(new BaseColor(255, 200, 200)); // Light red
+                        lowStockCount++;
+                    } else if (part.getCurrentQuantity() <= 10) {
+                        nameCell.setBackgroundColor(new BaseColor(255, 240, 200)); // Light yellow
+                    }
+                    inventoryTable.addCell(nameCell);
+
+                    // Quantity cell
+                    PdfPCell qtyCell = PDFBrandingHelper.createDataCell(
+                            String.valueOf(part.getCurrentQuantity()), i, Element.ALIGN_CENTER);
+                    if (part.getCurrentQuantity() <= 5) {
+                        qtyCell.setBackgroundColor(new BaseColor(255, 200, 200)); // Light red
+                        Font boldFont = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD, BaseColor.RED);
+                        qtyCell.setPhrase(new Phrase(String.valueOf(part.getCurrentQuantity()), boldFont));
+                    } else if (part.getCurrentQuantity() <= 10) {
+                        qtyCell.setBackgroundColor(new BaseColor(255, 240, 200)); // Light yellow
+                    }
+                    inventoryTable.addCell(qtyCell);
+                }
+
+                document.add(inventoryTable);
+
+                // Inventory summary
+                if (lowStockCount > 0) {
+                    Paragraph warning = new Paragraph(
+                            String.format("\n⚠ URGENT: %d part(s) with critically low stock (≤5 units) - REORDER IMMEDIATELY",
+                                    lowStockCount),
+                            new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD, BaseColor.RED));
+                    warning.setSpacingBefore(10);
+                    document.add(warning);
+                }
+            }
+
             // Footer
             PDFBrandingHelper.addFooter(document,
                     new SimpleDateFormat("MMMM dd, yyyy 'at' hh:mm a").format(new java.util.Date()));
@@ -652,21 +817,24 @@ public class DefectiveVehiclesReport {
 
         System.out.println("=== DEFECTIVE VEHICLES REPORT TEST ===\n");
 
+        // Generate parts inventory (same for all reports)
+        List<PartsInventoryData> partsInventory = report.generatePartsInventory();
+
         // Test monthly report
         System.out.println("Testing Monthly Report for October 2024...");
         List<DefectiveVehicleData> monthlyData = report.generateMonthlyReport(2024, 10);
-        report.printReport(monthlyData, 2024, 10);
+        report.printReport(monthlyData, partsInventory, 2024, 10);
 
         // Generate PDF for monthly report
-        report.exportToPDF(monthlyData, "Defective_Vehicles_Report_Oct2024.pdf", 2024, 10);
+        report.exportToPDF(monthlyData, partsInventory, "Defective_Vehicles_Report_Oct2024.pdf", 2024, 10);
 
         // Test yearly report
         System.out.println("\nTesting Yearly Report for 2024...");
         List<DefectiveVehicleData> yearlyData = report.generateYearlyReport(2024);
-        report.printReport(yearlyData, 2024, 0);
+        report.printReport(yearlyData, partsInventory, 2024, 0);
 
         // Generate PDF for yearly report
-        report.exportToPDF(yearlyData, "Defective_Vehicles_Report_2024.pdf", 2024, 0);
+        report.exportToPDF(yearlyData, partsInventory, "Defective_Vehicles_Report_2024.pdf", 2024, 0);
 
         System.out.println("=== TEST COMPLETE ===");
     }
