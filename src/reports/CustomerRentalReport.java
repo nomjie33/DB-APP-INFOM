@@ -453,7 +453,7 @@ public class CustomerRentalReport {
                 data.setCityName(rs.getString("city_name"));
                 data.setBarangayName(rs.getString("barangay_name"));
                 data.setCustomerCount(rs.getInt("customer_count"));
-                
+
                 String names = rs.getString("customer_names");
                 if (names != null && !names.isEmpty()) {
                     for (String name : names.split(", ")) {
@@ -597,7 +597,7 @@ public class CustomerRentalReport {
     /**
      * Generate SECTION 4: Summary Statistics (filtered by month)
      */
-    public SummaryStatistics generateSummaryStatistics(List<CustomerRentalData> rentalData, 
+    public SummaryStatistics generateSummaryStatistics(List<CustomerRentalData> rentalData,
                                                        List<CustomerPenaltyRiskData> riskData) {
         SummaryStatistics stats = new SummaryStatistics();
 
@@ -638,18 +638,18 @@ public class CustomerRentalReport {
     /**
      * Print comprehensive report to console
      */
-    public void printReport(List<CustomerRentalData> rentalData, 
-                           List<CustomerDemographicsData> demographicsData,
-                           List<CustomerPenaltyRiskData> riskData,
-                           SummaryStatistics summary,
-                           int year, int month, String sortBy) {
-        
+    public void printReport(List<CustomerRentalData> rentalData,
+                            List<CustomerDemographicsData> demographicsData,
+                            List<CustomerPenaltyRiskData> riskData,
+                            SummaryStatistics summary,
+                            int year, int month, String sortBy) {
+
         String[] months = {"", "January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"};
 
         System.out.println("\n" + repeatChar("=", 150));
-        System.out.printf("CUSTOMER RENTAL + DEMOGRAPHICS + PENALTY RISK REPORT - %s %d", 
-                         months[month], year);
+        System.out.printf("CUSTOMER RENTAL + DEMOGRAPHICS + PENALTY RISK REPORT - %s %d",
+                months[month], year);
         System.out.println();
         System.out.println(repeatChar("=", 150));
 
@@ -662,7 +662,7 @@ public class CustomerRentalReport {
             System.out.println("No rental data found for the specified period.");
         } else {
             System.out.printf("%-12s %-25s %-8s %-15s %-12s %-12s %-12s %-15s\n",
-                    "Customer ID", "Name", "Rentals", "Total Cost", "Avg Cost", 
+                    "Customer ID", "Name", "Rentals", "Total Cost", "Avg Cost",
                     "Total Hrs", "Avg Hrs", "Last Rental");
             System.out.println(repeatChar("-", 150));
 
@@ -701,8 +701,8 @@ public class CustomerRentalReport {
             for (CustomerDemographicsData data : demographicsData) {
                 if (!data.getCityName().equals(currentCity)) {
                     if (!currentCity.isEmpty()) {
-                        System.out.printf("%-25s %-30s %-15d\n", 
-                                        currentCity + " SUBTOTAL:", "", cityTotal);
+                        System.out.printf("%-25s %-30s %-15d\n",
+                                currentCity + " SUBTOTAL:", "", cityTotal);
                         System.out.println(repeatChar("-", 70));
                     }
                     currentCity = data.getCityName();
@@ -719,8 +719,8 @@ public class CustomerRentalReport {
             }
 
             if (!currentCity.isEmpty()) {
-                System.out.printf("%-25s %-30s %-15d\n", 
-                                currentCity + " SUBTOTAL:", "", cityTotal);
+                System.out.printf("%-25s %-30s %-15d\n",
+                        currentCity + " SUBTOTAL:", "", cityTotal);
             }
 
             System.out.println(repeatChar("=", 70));
@@ -736,7 +736,7 @@ public class CustomerRentalReport {
             System.out.println("No penalty risk data found for the specified period.");
         } else {
             System.out.printf("%-12s %-25s %-8s %-15s %-15s %-10s %-15s %-15s\n",
-                    "Customer ID", "Name", "Rentals", "Rental Pay (₱)", 
+                    "Customer ID", "Name", "Rentals", "Rental Pay (₱)",
                     "Penalty Pay (₱)", "Penalties", "Risk Score %", "Risk Level");
             System.out.println(repeatChar("-", 150));
 
@@ -772,9 +772,9 @@ public class CustomerRentalReport {
         System.out.printf("Total Rentals: %d\n", summary.getTotalRentals());
         System.out.printf("Total Rental Revenue: ₱%,.2f\n", summary.getTotalRentalRevenue());
         System.out.printf("Total Penalty Payments: ₱%,.2f\n", summary.getTotalPenaltyPayments());
-        System.out.printf("Customers with ≥1 Penalty: %d (%.1f%%)\n", 
-                         summary.getCustomersWithPenalties(), 
-                         summary.getPercentageWithPenalties());
+        System.out.printf("Customers with ≥1 Penalty: %d (%.1f%%)\n",
+                summary.getCustomersWithPenalties(),
+                summary.getPercentageWithPenalties());
         System.out.printf("High-Risk Customers: %d\n", summary.getHighRiskCustomers());
 
         System.out.println("\n" + repeatChar("=", 150) + "\n");
@@ -783,12 +783,12 @@ public class CustomerRentalReport {
     /**
      * Print comprehensive yearly report to console
      */
-    public void printYearlyReport(List<CustomerRentalData> rentalData, 
-                                 List<CustomerDemographicsData> demographicsData,
-                                 List<CustomerPenaltyRiskData> riskData,
-                                 SummaryStatistics summary,
-                                 int year, String sortBy) {
-        
+    public void printYearlyReport(List<CustomerRentalData> rentalData,
+                                  List<CustomerDemographicsData> demographicsData,
+                                  List<CustomerPenaltyRiskData> riskData,
+                                  SummaryStatistics summary,
+                                  int year, String sortBy) {
+
         System.out.println("\n" + repeatChar("=", 150));
         System.out.printf("CUSTOMER RENTAL + DEMOGRAPHICS + PENALTY RISK REPORT - Year %d", year);
         System.out.println();
@@ -803,7 +803,7 @@ public class CustomerRentalReport {
             System.out.println("No rental data found for the specified period.");
         } else {
             System.out.printf("%-12s %-25s %-8s %-15s %-12s %-12s %-12s %-15s\n",
-                    "Customer ID", "Name", "Rentals", "Total Cost", "Avg Cost", 
+                    "Customer ID", "Name", "Rentals", "Total Cost", "Avg Cost",
                     "Total Hrs", "Avg Hrs", "Last Rental");
             System.out.println(repeatChar("-", 150));
 
@@ -842,8 +842,8 @@ public class CustomerRentalReport {
             for (CustomerDemographicsData data : demographicsData) {
                 if (!data.getCityName().equals(currentCity)) {
                     if (!currentCity.isEmpty()) {
-                        System.out.printf("%-25s %-30s %-15d\n", 
-                                        currentCity + " SUBTOTAL:", "", cityTotal);
+                        System.out.printf("%-25s %-30s %-15d\n",
+                                currentCity + " SUBTOTAL:", "", cityTotal);
                         System.out.println(repeatChar("-", 70));
                     }
                     currentCity = data.getCityName();
@@ -860,8 +860,8 @@ public class CustomerRentalReport {
             }
 
             if (!currentCity.isEmpty()) {
-                System.out.printf("%-25s %-30s %-15d\n", 
-                                currentCity + " SUBTOTAL:", "", cityTotal);
+                System.out.printf("%-25s %-30s %-15d\n",
+                        currentCity + " SUBTOTAL:", "", cityTotal);
             }
 
             System.out.println(repeatChar("=", 70));
@@ -877,7 +877,7 @@ public class CustomerRentalReport {
             System.out.println("No penalty risk data found for the specified period.");
         } else {
             System.out.printf("%-12s %-25s %-8s %-15s %-15s %-10s %-15s %-15s\n",
-                    "Customer ID", "Name", "Rentals", "Rental Pay (₱)", 
+                    "Customer ID", "Name", "Rentals", "Rental Pay (₱)",
                     "Penalty Pay (₱)", "Penalties", "Risk Score %", "Risk Level");
             System.out.println(repeatChar("-", 150));
 
@@ -913,9 +913,9 @@ public class CustomerRentalReport {
         System.out.printf("Total Rentals: %d\n", summary.getTotalRentals());
         System.out.printf("Total Rental Revenue: ₱%,.2f\n", summary.getTotalRentalRevenue());
         System.out.printf("Total Penalty Payments: ₱%,.2f\n", summary.getTotalPenaltyPayments());
-        System.out.printf("Customers with ≥1 Penalty: %d (%.1f%%)\n", 
-                         summary.getCustomersWithPenalties(), 
-                         summary.getPercentageWithPenalties());
+        System.out.printf("Customers with ≥1 Penalty: %d (%.1f%%)\n",
+                summary.getCustomersWithPenalties(),
+                summary.getPercentageWithPenalties());
         System.out.printf("High-Risk Customers: %d\n", summary.getHighRiskCustomers());
 
         System.out.println("\n" + repeatChar("=", 150) + "\n");
@@ -925,11 +925,11 @@ public class CustomerRentalReport {
      * Export comprehensive report to PDF
      */
     public void exportToPDF(List<CustomerRentalData> rentalData,
-                           List<CustomerDemographicsData> demographicsData,
-                           List<CustomerPenaltyRiskData> riskData,
-                           SummaryStatistics summary,
-                           String filename, int year, int month, String sortBy) {
-        
+                            List<CustomerDemographicsData> demographicsData,
+                            List<CustomerPenaltyRiskData> riskData,
+                            SummaryStatistics summary,
+                            String filename, int year, int month, String sortBy) {
+
         Document document = new Document(PageSize.A4.rotate());
 
         try {
@@ -939,7 +939,7 @@ public class CustomerRentalReport {
 
             String[] months = {"", "January", "February", "March", "April", "May", "June",
                     "July", "August", "September", "October", "November", "December"};
-            
+
             String title = "Customer Rental + Demographics + Penalty Risk Report";
             String subtitle = months[month] + " " + year;
 
@@ -1031,7 +1031,7 @@ public class CustomerRentalReport {
                     table3.addCell(PDFBrandingHelper.createDataCell(String.format("%.2f", data.getPenaltyRiskScore()), i, Element.ALIGN_RIGHT));
 
                     // Color-coded risk level cell
-                    PdfPCell riskCell = new PdfPCell(new Phrase(data.getRiskLevel(), 
+                    PdfPCell riskCell = new PdfPCell(new Phrase(data.getRiskLevel(),
                             new Font(Font.FontFamily.HELVETICA, 8, Font.BOLD)));
                     riskCell.setHorizontalAlignment(Element.ALIGN_CENTER);
                     riskCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -1062,7 +1062,7 @@ public class CustomerRentalReport {
             PDFBrandingHelper.addSummaryRow(summaryTable, "Total Rentals:", String.valueOf(summary.getTotalRentals()));
             PDFBrandingHelper.addSummaryRow(summaryTable, "Total Rental Revenue:", String.format("₱%,.2f", summary.getTotalRentalRevenue()));
             PDFBrandingHelper.addSummaryRow(summaryTable, "Total Penalty Payments:", String.format("₱%,.2f", summary.getTotalPenaltyPayments()));
-            PDFBrandingHelper.addSummaryRow(summaryTable, "Customers with ≥1 Penalty:", 
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Customers with ≥1 Penalty:",
                     String.format("%d (%.1f%%)", summary.getCustomersWithPenalties(), summary.getPercentageWithPenalties()));
             PDFBrandingHelper.addSummaryRow(summaryTable, "High-Risk Customers:", String.valueOf(summary.getHighRiskCustomers()));
 
@@ -1086,11 +1086,11 @@ public class CustomerRentalReport {
      * Export comprehensive yearly report to PDF
      */
     public void exportYearlyToPDF(List<CustomerRentalData> rentalData,
-                                 List<CustomerDemographicsData> demographicsData,
-                                 List<CustomerPenaltyRiskData> riskData,
-                                 SummaryStatistics summary,
-                                 String filename, int year, String sortBy) {
-        
+                                  List<CustomerDemographicsData> demographicsData,
+                                  List<CustomerPenaltyRiskData> riskData,
+                                  SummaryStatistics summary,
+                                  String filename, int year, String sortBy) {
+
         Document document = new Document(PageSize.A4.rotate());
 
         try {
@@ -1189,7 +1189,7 @@ public class CustomerRentalReport {
                     table3.addCell(PDFBrandingHelper.createDataCell(String.format("%.2f", data.getPenaltyRiskScore()), i, Element.ALIGN_RIGHT));
 
                     // Color-coded risk level cell
-                    PdfPCell riskCell = new PdfPCell(new Phrase(data.getRiskLevel(), 
+                    PdfPCell riskCell = new PdfPCell(new Phrase(data.getRiskLevel(),
                             new Font(Font.FontFamily.HELVETICA, 8, Font.BOLD)));
                     riskCell.setHorizontalAlignment(Element.ALIGN_CENTER);
                     riskCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -1220,7 +1220,7 @@ public class CustomerRentalReport {
             PDFBrandingHelper.addSummaryRow(summaryTable, "Total Rentals:", String.valueOf(summary.getTotalRentals()));
             PDFBrandingHelper.addSummaryRow(summaryTable, "Total Rental Revenue:", String.format("₱%,.2f", summary.getTotalRentalRevenue()));
             PDFBrandingHelper.addSummaryRow(summaryTable, "Total Penalty Payments:", String.format("₱%,.2f", summary.getTotalPenaltyPayments()));
-            PDFBrandingHelper.addSummaryRow(summaryTable, "Customers with ≥1 Penalty:", 
+            PDFBrandingHelper.addSummaryRow(summaryTable, "Customers with ≥1 Penalty:",
                     String.format("%d (%.1f%%)", summary.getCustomersWithPenalties(), summary.getPercentageWithPenalties()));
             PDFBrandingHelper.addSummaryRow(summaryTable, "High-Risk Customers:", String.valueOf(summary.getHighRiskCustomers()));
 
@@ -1261,7 +1261,7 @@ public class CustomerRentalReport {
 
         // Test comprehensive report for October 2024
         System.out.println("Testing Comprehensive Report for October 2024...");
-        
+
         List<CustomerRentalData> rentalData = report.generateRentalSummary(2024, 10, "Revenue");
         List<CustomerDemographicsData> demographicsData = report.generateDemographics();
         List<CustomerPenaltyRiskData> riskData = report.generatePenaltyRiskAnalysis(2024, 10);
@@ -1269,11 +1269,11 @@ public class CustomerRentalReport {
 
         report.printReport(rentalData, demographicsData, riskData, summary, 2024, 10, "Revenue");
         report.exportToPDF(rentalData, demographicsData, riskData, summary,
-                          "Customer_Comprehensive_Report_Oct2024.pdf", 2024, 10, "Revenue");
+                "Customer_Comprehensive_Report_Oct2024.pdf", 2024, 10, "Revenue");
 
         // Test yearly report for 2024
         System.out.println("\nTesting Yearly Report for 2024...");
-        
+
         List<CustomerRentalData> yearlyRentalData = report.generateYearlySummary(2024, "Revenue");
         List<CustomerDemographicsData> yearlyDemographicsData = report.generateDemographics();
         List<CustomerPenaltyRiskData> yearlyRiskData = report.generateYearlyPenaltyRiskAnalysis(2024);
@@ -1281,7 +1281,7 @@ public class CustomerRentalReport {
 
         report.printYearlyReport(yearlyRentalData, yearlyDemographicsData, yearlyRiskData, yearlySummary, 2024, "Revenue");
         report.exportYearlyToPDF(yearlyRentalData, yearlyDemographicsData, yearlyRiskData, yearlySummary,
-                                "Customer_Comprehensive_Report_2024.pdf", 2024, "Revenue");
+                "Customer_Comprehensive_Report_2024.pdf", 2024, "Revenue");
 
         System.out.println("=== TEST COMPLETE ===");
     }

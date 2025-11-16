@@ -16,6 +16,10 @@ import model.*;
 import reports.CustomerRentalReport;
 import reports.DefectiveVehiclesReport;
 import reports.RentalRevenueReport;
+import reports.CustomerRentalReport.CustomerDemographicsData;
+import reports.CustomerRentalReport.CustomerPenaltyRiskData;
+import reports.CustomerRentalReport.SummaryStatistics;
+import reports.DefectiveVehiclesReport;
 
 import java.io.IOException;
 import java.net.URL;
@@ -214,18 +218,18 @@ public class Admin_dashboardController implements Initializable {
                 ((Admin_vehicleRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_locationRecordsController){
                 ((Admin_locationRecordsController) controller).setMainController(this);
-                ((Admin_locationRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_technicianRecordsController) {
                 ((Admin_technicianRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_partRecordsController){
                 ((Admin_partRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_customerRentalReportSelectController) {
                 ((Admin_customerRentalReportSelectController) controller).setMainController(this);
-            } else if (controller instanceof Admin_revenueSelectController) {
-                ((Admin_revenueSelectController) controller).setMainController(this);
             } else if (controller instanceof Admin_defectiveVehicleSelectController) {
                 ((Admin_defectiveVehicleSelectController) controller).setMainController(this);
+            } else if (controller instanceof Admin_revenueSelectController) {
+                ((Admin_revenueSelectController) controller).setMainController(this);
             }
+
 
             loadPageFromSub(page);
 
@@ -341,11 +345,11 @@ public class Admin_dashboardController implements Initializable {
 
     public void loadCustomerReportDisplay(
             List<CustomerRentalReport.CustomerRentalData> rentalData,
-            List<CustomerRentalReport.CustomerDemographicsData> demoData,
-            List<CustomerRentalReport.CustomerPenaltyRiskData> penaltyData,
-            CustomerRentalReport.SummaryStatistics stats,
-            int year, int month) {
-
+            List<CustomerRentalReport.CustomerDemographicsData> demographicsData,
+            List<CustomerRentalReport.CustomerPenaltyRiskData> penaltyRiskData,
+            CustomerRentalReport.SummaryStatistics summaryStats,
+            int year,
+            int month) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Report-CustomerRentalDisplay.fxml"));
             Parent page = loader.load();
@@ -353,8 +357,15 @@ public class Admin_dashboardController implements Initializable {
             Report_CustomerRentalController controller = loader.getController();
             controller.setMainController(this);
 
-            // Pass ALL the new data to the display controller
-            controller.setData(rentalData, demoData, penaltyData, stats, year, month);
+            // Now pass all 6 arguments forward
+            controller.setData(
+                    rentalData,
+                    demographicsData,
+                    penaltyRiskData,
+                    summaryStats,
+                    year,
+                    month
+            );
 
             loadPageFromSub(page);
         } catch (Exception e){
@@ -363,6 +374,23 @@ public class Admin_dashboardController implements Initializable {
         }
     }
 
+    public void loadDefectiveReportDisplay(List<DefectiveVehiclesReport.DefectiveVehicleData> data, int year, int month) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Report_defectiveVehicleDisplay.fxml"));
+            Parent page = loader.load();
+
+            Report_defectiveVehicleDisplayController controller = loader.getController();
+            controller.setMainController(this);
+
+            controller.setData(data, year, month);
+
+            loadPageFromSub(page);
+
+        } catch (IOException e) {
+            System.err.println("Failed to load page: Report_defectiveVehicleDisplay.fxml");
+            e.printStackTrace();
+        }
+    }
     public void loadRevenueReportDisplay(List<RentalRevenueReport.RevenueData> data, String reportTypeTitle, String vehicleType) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Report-RevenueDisplay.fxml"));
@@ -377,25 +405,6 @@ public class Admin_dashboardController implements Initializable {
 
         } catch (IOException e){
             System.err.println("Failed to load page: Report-RevenueDisplay.fxml");
-            e.printStackTrace();
-        }
-    }
-
-    public void loadDefectiveReportDisplay(List<DefectiveVehiclesReport.DefectiveVehicleData> data, int year, int month) {
-        try {
-
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Report_defectiveVehicleDisplay.fxml"));
-            Parent page = loader.load();
-
-            Report_defectiveVehicleDisplayController controller = loader.getController();
-            controller.setMainController(this);
-
-            controller.setData(data, year, month);
-
-            loadPageFromSub(page);
-
-        } catch (IOException e){
-            System.err.println("Failed to load page: Report_defectiveVehicleDisplay.fxml");
             e.printStackTrace();
         }
     }

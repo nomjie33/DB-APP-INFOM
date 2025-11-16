@@ -112,10 +112,10 @@ public class DefectiveVehiclesReport {
 
         // Full constructor
         public DefectiveVehicleData(String plateID, String vehicleType,
-                                   int timesMaintained, double totalMaintenanceCost,
-                                   int totalDaysInMaintenance, Timestamp lastMaintenanceDate,
-                                   int rentalsInPeriod, int totalRentalsLifetime, double totalRevenue,
-                                   double costToRevenueRatio, double avgMaintenanceCost) {
+                                    int timesMaintained, double totalMaintenanceCost,
+                                    int totalDaysInMaintenance, Timestamp lastMaintenanceDate,
+                                    int rentalsInPeriod, int totalRentalsLifetime, double totalRevenue,
+                                    double costToRevenueRatio, double avgMaintenanceCost) {
             this.plateID = plateID;
             this.vehicleType = vehicleType;
             this.timesMaintained = timesMaintained;
@@ -180,8 +180,8 @@ public class DefectiveVehiclesReport {
         @Override
         public String toString() {
             return String.format("DefectiveVehicleData{plateID='%s', type='%s', " +
-                    "timesMaintained=%d, totalCost=%.2f, days=%d, lastMaintenance=%s, " +
-                    "rentalsInPeriod=%d, totalRentals=%d, revenue=%.2f, ratio=%.3f, avgCost=%.2f}",
+                            "timesMaintained=%d, totalCost=%.2f, days=%d, lastMaintenance=%s, " +
+                            "rentalsInPeriod=%d, totalRentals=%d, revenue=%.2f, ratio=%.3f, avgCost=%.2f}",
                     plateID, vehicleType, timesMaintained, totalMaintenanceCost,
                     totalDaysInMaintenance, lastMaintenanceDate, rentalsInPeriod,
                     totalRentalsLifetime, totalRevenue, costToRevenueRatio, avgMaintenanceCost);
@@ -230,46 +230,46 @@ public class DefectiveVehiclesReport {
         List<DefectiveVehicleData> reportData = new ArrayList<>();
 
         String sql =
-            "SELECT " +
-            "    v.plateID, " +
-            "    v.vehicleType, " +
-            "    v.status AS current_status, " +
-            "    COUNT(DISTINCT m.maintenanceID) AS times_maintained, " +
-            "    COALESCE(SUM(m.totalCost), 0) AS total_maintenance_cost, " +
-            "    ROUND(COALESCE(SUM( " +
-            "        CASE WHEN m.endDateTime IS NOT NULL " +
-            "             THEN TIMESTAMPDIFF(HOUR, m.startDateTime, m.endDateTime) " +
-            "             ELSE 0 " +
-            "        END " +
-            "    ), 0) / 24.0, 1) AS total_days_in_maintenance, " +
-            "    MAX(m.startDateTime) AS last_maintenance_date, " +
-            "    (SELECT COUNT(*) FROM rentals r " +
-            "     WHERE r.plateID = v.plateID " +
-            "     AND r.status = 'Completed' " +
-            "     AND YEAR(r.endDateTime) = ? " +
-            "     AND MONTH(r.endDateTime) = ?) AS rentals_in_period, " +
-            "    (SELECT COUNT(*) FROM rentals r " +
-            "     WHERE r.plateID = v.plateID " +
-            "     AND r.status = 'Completed') AS total_rentals_lifetime, " +
-            "    COALESCE((SELECT SUM(p.amount) " +
-            "              FROM payments p " +
-            "              JOIN rentals r ON p.rentalID = r.rentalID " +
-            "              WHERE r.plateID = v.plateID " +
-            "              AND r.status = 'Completed' " +
-            "              AND p.status = 'Active'), 0) AS total_revenue " +
-            "FROM maintenance m " +
-            "INNER JOIN vehicles v ON m.plateID = v.plateID " +
-            "WHERE m.status = 'Active' " +
-            "    AND YEAR(m.startDateTime) = ? " +
-            "    AND MONTH(m.startDateTime) = ? " +
-            "GROUP BY v.plateID, v.vehicleType, v.status " +
-            "HAVING times_maintained > 0 " +
-            "ORDER BY " +
-            "    CASE WHEN total_revenue > 0 " +
-            "         THEN total_maintenance_cost / total_revenue " +
-            "         ELSE 999.999 " +
-            "    END DESC, " +
-            "    total_maintenance_cost DESC";
+                "SELECT " +
+                        "    v.plateID, " +
+                        "    v.vehicleType, " +
+                        "    v.status AS current_status, " +
+                        "    COUNT(DISTINCT m.maintenanceID) AS times_maintained, " +
+                        "    COALESCE(SUM(m.totalCost), 0) AS total_maintenance_cost, " +
+                        "    ROUND(COALESCE(SUM( " +
+                        "        CASE WHEN m.endDateTime IS NOT NULL " +
+                        "             THEN TIMESTAMPDIFF(HOUR, m.startDateTime, m.endDateTime) " +
+                        "             ELSE 0 " +
+                        "        END " +
+                        "    ), 0) / 24.0, 1) AS total_days_in_maintenance, " +
+                        "    MAX(m.startDateTime) AS last_maintenance_date, " +
+                        "    (SELECT COUNT(*) FROM rentals r " +
+                        "     WHERE r.plateID = v.plateID " +
+                        "     AND r.status = 'Completed' " +
+                        "     AND YEAR(r.endDateTime) = ? " +
+                        "     AND MONTH(r.endDateTime) = ?) AS rentals_in_period, " +
+                        "    (SELECT COUNT(*) FROM rentals r " +
+                        "     WHERE r.plateID = v.plateID " +
+                        "     AND r.status = 'Completed') AS total_rentals_lifetime, " +
+                        "    COALESCE((SELECT SUM(p.amount) " +
+                        "              FROM payments p " +
+                        "              JOIN rentals r ON p.rentalID = r.rentalID " +
+                        "              WHERE r.plateID = v.plateID " +
+                        "              AND r.status = 'Completed' " +
+                        "              AND p.status = 'Active'), 0) AS total_revenue " +
+                        "FROM maintenance m " +
+                        "INNER JOIN vehicles v ON m.plateID = v.plateID " +
+                        "WHERE m.status = 'Active' " +
+                        "    AND YEAR(m.startDateTime) = ? " +
+                        "    AND MONTH(m.startDateTime) = ? " +
+                        "GROUP BY v.plateID, v.vehicleType, v.status " +
+                        "HAVING times_maintained > 0 " +
+                        "ORDER BY " +
+                        "    CASE WHEN total_revenue > 0 " +
+                        "         THEN total_maintenance_cost / total_revenue " +
+                        "         ELSE 999.999 " +
+                        "    END DESC, " +
+                        "    total_maintenance_cost DESC";
 
         try (Connection conn = util.DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -302,8 +302,8 @@ public class DefectiveVehiclesReport {
 
                 // Calculate average maintenance cost
                 double avgCost = (data.getTimesMaintained() > 0)
-                    ? (cost / data.getTimesMaintained())
-                    : 0.0;
+                        ? (cost / data.getTimesMaintained())
+                        : 0.0;
                 data.setAvgMaintenanceCost(avgCost);
 
                 reportData.add(data);
@@ -331,44 +331,44 @@ public class DefectiveVehiclesReport {
         List<DefectiveVehicleData> reportData = new ArrayList<>();
 
         String sql =
-            "SELECT " +
-            "    v.plateID, " +
-            "    v.vehicleType, " +
-            "    v.status AS current_status, " +
-            "    COUNT(DISTINCT m.maintenanceID) AS times_maintained, " +
-            "    COALESCE(SUM(m.totalCost), 0) AS total_maintenance_cost, " +
-            "    ROUND(COALESCE(SUM( " +
-            "        CASE WHEN m.endDateTime IS NOT NULL " +
-            "             THEN TIMESTAMPDIFF(HOUR, m.startDateTime, m.endDateTime) " +
-            "             ELSE 0 " +
-            "        END " +
-            "    ), 0) / 24.0, 1) AS total_days_in_maintenance, " +
-            "    MAX(m.startDateTime) AS last_maintenance_date, " +
-            "    (SELECT COUNT(*) FROM rentals r " +
-            "     WHERE r.plateID = v.plateID " +
-            "     AND r.status = 'Completed' " +
-            "     AND YEAR(r.endDateTime) = ?) AS rentals_in_period, " +
-            "    (SELECT COUNT(*) FROM rentals r " +
-            "     WHERE r.plateID = v.plateID " +
-            "     AND r.status = 'Completed') AS total_rentals_lifetime, " +
-            "    COALESCE((SELECT SUM(p.amount) " +
-            "              FROM payments p " +
-            "              JOIN rentals r ON p.rentalID = r.rentalID " +
-            "              WHERE r.plateID = v.plateID " +
-            "              AND r.status = 'Completed' " +
-            "              AND p.status = 'Active'), 0) AS total_revenue " +
-            "FROM maintenance m " +
-            "INNER JOIN vehicles v ON m.plateID = v.plateID " +
-            "WHERE m.status = 'Active' " +
-            "    AND YEAR(m.startDateTime) = ? " +
-            "GROUP BY v.plateID, v.vehicleType, v.status " +
-            "HAVING times_maintained > 0 " +
-            "ORDER BY " +
-            "    CASE WHEN total_revenue > 0 " +
-            "         THEN total_maintenance_cost / total_revenue " +
-            "         ELSE 999.999 " +
-            "    END DESC, " +
-            "    total_maintenance_cost DESC";
+                "SELECT " +
+                        "    v.plateID, " +
+                        "    v.vehicleType, " +
+                        "    v.status AS current_status, " +
+                        "    COUNT(DISTINCT m.maintenanceID) AS times_maintained, " +
+                        "    COALESCE(SUM(m.totalCost), 0) AS total_maintenance_cost, " +
+                        "    ROUND(COALESCE(SUM( " +
+                        "        CASE WHEN m.endDateTime IS NOT NULL " +
+                        "             THEN TIMESTAMPDIFF(HOUR, m.startDateTime, m.endDateTime) " +
+                        "             ELSE 0 " +
+                        "        END " +
+                        "    ), 0) / 24.0, 1) AS total_days_in_maintenance, " +
+                        "    MAX(m.startDateTime) AS last_maintenance_date, " +
+                        "    (SELECT COUNT(*) FROM rentals r " +
+                        "     WHERE r.plateID = v.plateID " +
+                        "     AND r.status = 'Completed' " +
+                        "     AND YEAR(r.endDateTime) = ?) AS rentals_in_period, " +
+                        "    (SELECT COUNT(*) FROM rentals r " +
+                        "     WHERE r.plateID = v.plateID " +
+                        "     AND r.status = 'Completed') AS total_rentals_lifetime, " +
+                        "    COALESCE((SELECT SUM(p.amount) " +
+                        "              FROM payments p " +
+                        "              JOIN rentals r ON p.rentalID = r.rentalID " +
+                        "              WHERE r.plateID = v.plateID " +
+                        "              AND r.status = 'Completed' " +
+                        "              AND p.status = 'Active'), 0) AS total_revenue " +
+                        "FROM maintenance m " +
+                        "INNER JOIN vehicles v ON m.plateID = v.plateID " +
+                        "WHERE m.status = 'Active' " +
+                        "    AND YEAR(m.startDateTime) = ? " +
+                        "GROUP BY v.plateID, v.vehicleType, v.status " +
+                        "HAVING times_maintained > 0 " +
+                        "ORDER BY " +
+                        "    CASE WHEN total_revenue > 0 " +
+                        "         THEN total_maintenance_cost / total_revenue " +
+                        "         ELSE 999.999 " +
+                        "    END DESC, " +
+                        "    total_maintenance_cost DESC";
 
         try (Connection conn = util.DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -398,8 +398,8 @@ public class DefectiveVehiclesReport {
 
                 // Calculate average maintenance cost
                 double avgCost = (data.getTimesMaintained() > 0)
-                    ? (cost / data.getTimesMaintained())
-                    : 0.0;
+                        ? (cost / data.getTimesMaintained())
+                        : 0.0;
                 data.setAvgMaintenanceCost(avgCost);
 
                 reportData.add(data);
@@ -425,12 +425,12 @@ public class DefectiveVehiclesReport {
         List<PartsInventoryData> inventoryData = new ArrayList<>();
 
         String sql =
-            "SELECT " +
-            "    part_name, " +
-            "    quantity " +
-            "FROM parts " +
-            "WHERE status = 'Active' " +
-            "ORDER BY quantity ASC, part_name ASC";
+                "SELECT " +
+                        "    part_name, " +
+                        "    quantity " +
+                        "FROM parts " +
+                        "WHERE status = 'Active' " +
+                        "ORDER BY quantity ASC, part_name ASC";
 
         try (Connection conn = util.DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -466,7 +466,7 @@ public class DefectiveVehiclesReport {
         System.out.println("\n" + "=".repeat(150));
         if (month > 0) {
             String[] months = {"", "January", "February", "March", "April", "May", "June",
-                             "July", "August", "September", "October", "November", "December"};
+                    "July", "August", "September", "October", "November", "December"};
             System.out.printf("DEFECTIVE VEHICLES REPORT - %s %d\n", months[month], year);
         } else {
             System.out.printf("DEFECTIVE VEHICLES REPORT - Year %d\n", year);
@@ -482,10 +482,10 @@ public class DefectiveVehiclesReport {
 
         // Table header
         System.out.printf("%-12s %-15s %-8s %-8s %-15s %-10s %-20s %-10s %-10s %-15s %-10s %-15s\n",
-            "Plate ID", "Type", "Maint.", "Rentals", "Total Cost", "Days in", "Last Maint.",
-            "Total", "Avg Revenue", "Total Revenue", "C/R Ratio", "Avg Cost");
+                "Plate ID", "Type", "Maint.", "Rentals", "Total Cost", "Days in", "Last Maint.",
+                "Total", "Avg Revenue", "Total Revenue", "C/R Ratio", "Avg Cost");
         System.out.printf("%-12s %-15s %-8s %-8s %-15s %-10s %-20s %-10s %-10s %-15s %-10s %-15s\n",
-            "", "", "Period", "Period", "(PHP)", "Maint.", "Date", "Rentals", "(PHP)", "(PHP)", "", "per Maint.");
+                "", "", "Period", "Period", "(PHP)", "Maint.", "Date", "Rentals", "(PHP)", "(PHP)", "", "per Maint.");
         System.out.println("-".repeat(140));
 
         // Calculate summary statistics
@@ -499,8 +499,8 @@ public class DefectiveVehiclesReport {
         for (DefectiveVehicleData vehicle : data) {
             // Format last maintenance date
             String lastMaintDate = (vehicle.getLastMaintenanceDate() != null)
-                ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(vehicle.getLastMaintenanceDate())
-                : "N/A";
+                    ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(vehicle.getLastMaintenanceDate())
+                    : "N/A";
 
             // Determine status indicator
             String riskIndicator = "";
@@ -513,19 +513,19 @@ public class DefectiveVehiclesReport {
             }
 
             System.out.printf("%-12s %-15s %-8d %-8d %,15.2f %-10.1f %-20s %-10d %,10.2f %,15.2f %10.3f %,15.2f%s\n",
-                vehicle.getPlateID(),
-                vehicle.getVehicleType(),
-                vehicle.getTimesMaintained(),
-                vehicle.getRentalsInPeriod(),
-                vehicle.getTotalMaintenanceCost(),
-                vehicle.getTotalDaysInMaintenance(),
-                lastMaintDate,
-                vehicle.getTotalRentalsLifetime(),
-                vehicle.getTotalRevenue() / (vehicle.getTotalRentalsLifetime() > 0 ? vehicle.getTotalRentalsLifetime() : 1),
-                vehicle.getTotalRevenue(),
-                vehicle.getCostToRevenueRatio(),
-                vehicle.getAvgMaintenanceCost(),
-                riskIndicator);
+                    vehicle.getPlateID(),
+                    vehicle.getVehicleType(),
+                    vehicle.getTimesMaintained(),
+                    vehicle.getRentalsInPeriod(),
+                    vehicle.getTotalMaintenanceCost(),
+                    vehicle.getTotalDaysInMaintenance(),
+                    lastMaintDate,
+                    vehicle.getTotalRentalsLifetime(),
+                    vehicle.getTotalRevenue() / (vehicle.getTotalRentalsLifetime() > 0 ? vehicle.getTotalRentalsLifetime() : 1),
+                    vehicle.getTotalRevenue(),
+                    vehicle.getCostToRevenueRatio(),
+                    vehicle.getAvgMaintenanceCost(),
+                    riskIndicator);
 
             totalCost += vehicle.getTotalMaintenanceCost();
             totalRevenue += vehicle.getTotalRevenue();
@@ -554,7 +554,7 @@ public class DefectiveVehiclesReport {
         System.out.printf("HIGH RISK Vehicles (ratio > 0.5): %d vehicles - RECOMMEND REPLACEMENT\n", highRiskCount);
         System.out.printf("MODERATE RISK Vehicles (ratio 0.3-0.5): %d vehicles - MONITOR CLOSELY\n", moderateRiskCount);
         System.out.printf("LOW RISK Vehicles (ratio < 0.3): %d vehicles - CONTINUE MAINTENANCE\n",
-            data.size() - highRiskCount - moderateRiskCount);
+                data.size() - highRiskCount - moderateRiskCount);
 
         System.out.println("\nBUSINESS RECOMMENDATIONS:");
         if (highRiskCount > 0) {
@@ -567,7 +567,7 @@ public class DefectiveVehiclesReport {
         }
         if (overallRatio > 0.4) {
             System.out.println("[!] Fleet maintenance costs are consuming " +
-                String.format("%.1f%%", overallRatio * 100) + " of revenue.");
+                    String.format("%.1f%%", overallRatio * 100) + " of revenue.");
             System.out.println("   Review fleet replacement strategy to improve profitability.");
         }
 

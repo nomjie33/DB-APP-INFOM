@@ -11,11 +11,11 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import reports.CustomerRentalReport;
-
 import reports.CustomerRentalReport.CustomerRentalData;
-import reports.CustomerRentalReport.CustomerDemographicsData;
-import reports.CustomerRentalReport.CustomerPenaltyRiskData;
-import reports.CustomerRentalReport.SummaryStatistics;
+// Import the missing data types
+import reports.CustomerRentalReport.CustomerDemographicsData; // <-- ADDED
+import reports.CustomerRentalReport.CustomerPenaltyRiskData; // <-- ADDED
+import reports.CustomerRentalReport.SummaryStatistics;       // <-- ADDED
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -40,10 +40,11 @@ public class Report_CustomerRentalController implements Initializable{
 
     private Admin_dashboardController mainController;
 
+    // Add fields to store the new data
     private List<CustomerRentalData> currentReportData;
-    private List<CustomerDemographicsData> currentDemoData;
-    private List<CustomerPenaltyRiskData> currentPenaltyData;
-    private SummaryStatistics currentStats;
+    private List<CustomerDemographicsData> currentDemographicsData; // <-- ADDED
+    private List<CustomerPenaltyRiskData> currentPenaltyRiskData;   // <-- ADDED
+    private SummaryStatistics currentSummaryStats;                // <-- ADDED
     private int reportYear;
     private int reportMonth;
 
@@ -62,18 +63,17 @@ public class Report_CustomerRentalController implements Initializable{
         colLastRental.setCellValueFactory(new PropertyValueFactory<>("mostRecentRentalDate"));
     }
 
-    // --- 3. UPDATE SETDATA TO RECEIVE EVERYTHING ---
-    public void setData(
-            List<CustomerRentalData> rentalData,
-            List<CustomerDemographicsData> demoData,
-            List<CustomerPenaltyRiskData> penaltyData,
-            SummaryStatistics stats,
-            int year, int month){
+    // Update the setData method to accept all required data
+    public void setData(List<CustomerRentalData> rentalData,
+                        List<CustomerDemographicsData> demographicsData,
+                        List<CustomerPenaltyRiskData> penaltyRiskData,
+                        SummaryStatistics summaryStats,
+                        int year, int month) {
 
         this.currentReportData = rentalData;
-        this.currentDemoData = demoData;
-        this.currentPenaltyData = penaltyData;
-        this.currentStats = stats;
+        this.currentDemographicsData = demographicsData;
+        this.currentPenaltyRiskData = penaltyRiskData;
+        this.currentSummaryStats = summaryStats;
         this.reportYear = year;
         this.reportMonth = month; //0 = yearly
 
@@ -86,7 +86,6 @@ public class Report_CustomerRentalController implements Initializable{
             subHeaderLabel.setText("Report for Year " + year);
         }
 
-        // The table still only shows the main rental data
         ObservableList<CustomerRentalData> observableData = FXCollections.observableArrayList(rentalData);
         reportTable.setItems(observableData);
     }
@@ -96,35 +95,26 @@ public class Report_CustomerRentalController implements Initializable{
 
         try{
             CustomerRentalReport report = new CustomerRentalReport();
+
             String[] months = {"", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
             String fileName;
 
             if (reportMonth > 0) {
-
-                fileName = String.format("Customer_Comprehensive_Report_%d_%s.pdf", reportYear, months[reportMonth]);
-                report.exportToPDF(
-                        currentReportData,
-                        currentDemoData,
-                        currentPenaltyData,
-                        currentStats,
-                        fileName,
-                        reportYear,
-                        reportMonth,
-                        "Revenue" // sortBy
-                );
+                fileName = String.format("Customer_Report_%d_%s.pdf", reportYear, months[reportMonth]);
             } else {
-
-                fileName = String.format("Customer_Comprehensive_Report_%d.pdf", reportYear);
-                report.exportYearlyToPDF(
-                        currentReportData,
-                        currentDemoData,
-                        currentPenaltyData,
-                        currentStats,
-                        fileName,
-                        reportYear,
-                        "Revenue" // sortBy
-                );
+                fileName = String.format("Customer_Report_%d_Yearly.pdf", reportYear);
             }
+
+            report.exportToPDF(
+                    currentReportData,
+                    currentDemographicsData,
+                    currentPenaltyRiskData,
+                    currentSummaryStats,
+                    fileName,
+                    reportYear,
+                    reportMonth,
+                    "Revenue"
+            );
 
             showAlert(Alert.AlertType.INFORMATION, "Export Successful",
                     "Report has been saved to the 'reports_output' folder as " + fileName);
