@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_rentalRecordsController">
+    <children>
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 20px;" text="Section" />
+        <Label layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Rental List" />
+        <Label fx:id="rentalCountLabel" layoutX="38.0" layoutY="100.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="(0) RENTALS:" />
+
+        <Button fx:id="addButton" layoutX="690.0" layoutY="100.0" onAction="#handleAddRental" prefHeight="31.0" prefWidth="72.0" styleClass="add-button" text="+" />
+
+        <TableView fx:id="rentalTable" layoutX="38.0" layoutY="140.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
+            <columns>
+                <TableColumn fx:id="rentalIDColumn" text="Rental ID" />
+                <TableColumn fx:id="customerIDColumn" text="Customer ID" />
+                <TableColumn fx:id="plateIDColumn" text="Plate ID" />
+                <TableColumn fx:id="locationIDColumn" text="Location ID" />
+                <TableColumn fx:id="pickUpColumn" text="Pick-Up Date/Time" />
+                <TableColumn fx:id="startColumn" prefWidth="100.0" text="Start Date/Time" />
+                <TableColumn fx:id="endColumn" prefWidth="100.0" text="End Date/Time" />
+                <TableColumn fx:id="statusColumn" prefWidth="70.0" text="Status" />
+                <TableColumn fx:id="actionColumn" prefWidth="70.0" text="Action" />
+            </columns>
+        </TableView>
+
+    </children>
+</AnchorPane>

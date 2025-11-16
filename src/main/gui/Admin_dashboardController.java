@@ -228,8 +228,7 @@ public class Admin_dashboardController implements Initializable {
                 ((Admin_defectiveVehicleSelectController) controller).setMainController(this);
             } else if (controller instanceof Admin_revenueSelectController) {
                 ((Admin_revenueSelectController) controller).setMainController(this);
-            }
-            else if (controller instanceof Admin_maintenanceChequeFormController){
+            } else if (controller instanceof Admin_maintenanceChequeFormController){
                 ((Admin_maintenanceChequeFormController) controller).setMainController(this);
             } else if (controller instanceof Admin_maintenanceChequeRecordsController){
                 ((Admin_maintenanceChequeRecordsController) controller).setMainController(this);
@@ -249,6 +248,10 @@ public class Admin_dashboardController implements Initializable {
                 ((Admin_penaltyFormController) controller).setMainController(this);
             } else if (controller instanceof Admin_penaltyRecordsController) {
                 ((Admin_penaltyRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_rentalFormController){
+                ((Admin_rentalFormController) controller).setMainController(this);
+            } else if (controller instanceof Admin_rentalRecordsController) {
+                ((Admin_rentalRecordsController) controller).setMainController(this);
             }
 
             loadPageFromSub(page);
@@ -359,6 +362,31 @@ public class Admin_dashboardController implements Initializable {
 
         } catch (IOException e){
             System.err.println("Failed to load part form.");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadRentalForm(RentalTransaction rentalToEdit) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-rentalForm.fxml"));
+            AnchorPane root = loader.load();
+
+            Admin_rentalFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (rentalToEdit != null) {
+                controller.setRentalData(rentalToEdit);
+            }
+
+            centerContentPane.getChildren().setAll(root);
+
+            AnchorPane.setTopAnchor(root, 0.0);
+            AnchorPane.setBottomAnchor(root, 0.0);
+            AnchorPane.setLeftAnchor(root, 0.0);
+            AnchorPane.setRightAnchor(root, 0.0);
+
+        } catch (IOException e) {
+            System.err.println("Failed to load Rental Form FXML.");
             e.printStackTrace();
         }
     }
