@@ -131,31 +131,31 @@ public class Admin_dashboardController implements Initializable {
     @FXML void handleRentalTransactions(MouseEvent event) {
         setActiveNav(rentalTransactionsButton);
         System.out.println("Rental Transactions clicked");
-        loadPage("Admin-rentalTransactions.fxml");
+        loadPage("Admin-rentalRecords.fxml");
     }
 
     @FXML void handlePaymentTransactions(MouseEvent event) {
         setActiveNav(paymentTransactionsButton);
         System.out.println("Payment Transactions clicked");
-        loadPage("Admin-paymentTransactions.fxml");
+        loadPage("Admin-paymentRecords.fxml");
     }
 
     @FXML void handleDeploymentTransactions(MouseEvent event) {
         setActiveNav(deploymentTransactionsButton);
         System.out.println("Deployment Transactions clicked");
-        loadPage("Admin-deploymentTransactions.fxml");
+        loadPage("Admin-deploymentRecords.fxml");
     }
 
     @FXML void handleMaintenanceTransactions(MouseEvent event) {
         setActiveNav(maintenanceTransactionsButton);
         System.out.println("Maintenance Transactions clicked");
-        loadPage("Admin-maintenanceTransactions.fxml");
+        loadPage("Admin-maintenanceRecords.fxml");
     }
 
     @FXML void handleMaintenanceCheques(MouseEvent event) {
         setActiveNav(maintenanceChequesButton);
         System.out.println("Maintenance Cheques clicked");
-        loadPage("Admin-maintenanceCheques.fxml");
+        loadPage("Admin-maintenanceChequeRecords.fxml");
     }
 
     @FXML void handlePenaltyTransactions(MouseEvent event) {
@@ -229,7 +229,27 @@ public class Admin_dashboardController implements Initializable {
             } else if (controller instanceof Admin_revenueSelectController) {
                 ((Admin_revenueSelectController) controller).setMainController(this);
             }
-
+            else if (controller instanceof Admin_maintenanceChequeFormController){
+                ((Admin_maintenanceChequeFormController) controller).setMainController(this);
+            } else if (controller instanceof Admin_maintenanceChequeRecordsController){
+                ((Admin_maintenanceChequeRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_maintenanceFormController){
+                ((Admin_maintenanceFormController) controller).setMainController(this);
+            } else if (controller instanceof Admin_maintenanceRecordsController){
+                ((Admin_maintenanceRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_deploymentFormController){
+                ((Admin_deploymentFormController) controller).setMainController(this);
+            } else if (controller instanceof Admin_deploymentRecordsController){
+                ((Admin_deploymentRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_paymentFormController){
+                ((Admin_paymentFormController) controller).setMainController(this);
+            } else if (controller instanceof Admin_paymentRecordsController){
+                ((Admin_paymentRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_penaltyFormController){
+                ((Admin_penaltyFormController) controller).setMainController(this);
+            } else if (controller instanceof Admin_penaltyRecordsController) {
+                ((Admin_penaltyRecordsController) controller).setMainController(this);
+            }
 
             loadPageFromSub(page);
 
@@ -402,7 +422,7 @@ public class Admin_dashboardController implements Initializable {
 
     public void loadPaymentForm(PaymentTransaction payment) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/gui/Admin_paymentForm.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-paymentForm.fxml"));
             AnchorPane root = loader.load();
 
             Admin_paymentFormController controller = loader.getController();
@@ -422,7 +442,7 @@ public class Admin_dashboardController implements Initializable {
 
     public void loadPenaltyForm(PenaltyTransaction penalty) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin_penaltyForm.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-penaltyForm.fxml"));
             AnchorPane root = loader.load();
 
             Admin_penaltyFormController controller = loader.getController();
