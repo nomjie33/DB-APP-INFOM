@@ -376,7 +376,7 @@ public class Admin_dashboardController implements Initializable {
 
     public void loadDefectiveReportDisplay(List<DefectiveVehiclesReport.DefectiveVehicleData> data, int year, int month) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Report_defectiveVehicleDisplay.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Report-defectiveVehicleDisplay.fxml"));
             Parent page = loader.load();
 
             Report_defectiveVehicleDisplayController controller = loader.getController();
@@ -387,7 +387,7 @@ public class Admin_dashboardController implements Initializable {
             loadPageFromSub(page);
 
         } catch (IOException e) {
-            System.err.println("Failed to load page: Report_defectiveVehicleDisplay.fxml");
+            System.err.println("Failed to load page: Report-defectiveVehicleDisplay.fxml");
             e.printStackTrace();
         }
     }
