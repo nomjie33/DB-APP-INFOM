@@ -1,5 +1,11 @@
 package main.gui;
 
+import dao.CustomerDAO;
+import model.Customer;
+import javafx.collections.FXCollections;
+import javafx.util.StringConverter;
+import java.util.List;
+
 import dao.RentalDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,6 +28,7 @@ import javafx.beans.property.SimpleStringProperty;
 public class Admin_rentalRecordsController implements Initializable {
 
     @FXML private Label rentalCountLabel;
+
     @FXML private TableView<RentalTransaction> rentalTable;
     @FXML private TableColumn<RentalTransaction, String> rentalIDColumn;
     @FXML private TableColumn<RentalTransaction, String> customerIDColumn;

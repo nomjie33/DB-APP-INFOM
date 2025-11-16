@@ -7,41 +7,41 @@
     <children>
         <Label fx:id="formHeaderLabel" layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="New Rental" />
 
-        <AnchorPane layoutX="38.0" layoutY="120.0" prefHeight="500.0" prefWidth="600.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+        <AnchorPane layoutX="38.0" layoutY="120.0" prefHeight="600.0" prefWidth="600.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
             <children>
 
                 <Label layoutX="30.0" layoutY="30.0" styleClass="sidebar-title" text="Rental ID" />
                 <TextField fx:id="rentalIDField" layoutX="30.0" layoutY="55.0" prefWidth="250.0" promptText="RNT-XXXX" styleClass="form-text-field" />
 
-                <Label layoutX="300.0" layoutY="30.0" styleClass="sidebar-title" text="Customer ID" />
-                <TextField fx:id="customerIDField" layoutX="300.0" layoutY="55.0" prefWidth="250.0" promptText="CUST-XXXX" styleClass="form-text-field" />
+                <Label layoutX="30.0" layoutY="110.0" styleClass="sidebar-title" text="Customer" />
+                <ComboBox fx:id="customerComboBox" layoutX="30.0" layoutY="135.0" prefWidth="540.0" promptText="Select a Customer" styleClass="form-text-field" />
 
-                <Label layoutX="30.0" layoutY="110.0" styleClass="sidebar-title" text="Plate ID" />
-                <TextField fx:id="plateIDField" layoutX="30.0" layoutY="135.0" prefWidth="250.0" promptText="Plate ID" styleClass="form-text-field" />
+                <Label layoutX="30.0" layoutY="190.0" styleClass="sidebar-title" text="Vehicle (Plate ID)" />
+                <ComboBox fx:id="vehicleComboBox" layoutX="30.0" layoutY="215.0" prefWidth="250.0" promptText="Select a Vehicle" styleClass="form-text-field" />
 
-                <Label layoutX="300.0" layoutY="110.0" styleClass="sidebar-title" text="Location ID" />
-                <TextField fx:id="locationIDField" layoutX="300.0" layoutY="135.0" prefWidth="250.0" promptText="LOC-XXXX" styleClass="form-text-field" />
+                <Label layoutX="300.0" layoutY="190.0" styleClass="sidebar-title" text="Location" />
+                <ComboBox fx:id="locationComboBox" layoutX="300.0" layoutY="215.0" prefWidth="250.0" promptText="Select a Location" styleClass="form-text-field" />
 
-                <Label layoutX="30.0" layoutY="190.0" styleClass="sidebar-title" text="Pick Up Date" />
-                <DatePicker fx:id="pickUpDatePicker" layoutX="30.0" layoutY="215.0" prefWidth="250.0" promptText="Select Date" />
+                <Label layoutX="30.0" layoutY="270.0" styleClass="sidebar-title" text="Pick Up Date" />
+                <DatePicker fx:id="pickUpDatePicker" layoutX="30.0" layoutY="295.0" prefWidth="250.0" promptText="Select Date" />
 
-                <Label layoutX="300.0" layoutY="190.0" styleClass="sidebar-title" text="Pick Up Time" />
-                <TextField fx:id="pickUpTimeField" layoutX="300.0" layoutY="215.0" prefWidth="250.0" promptText="HH:MM (24-hr format)" styleClass="form-text-field" />
+                <Label layoutX="300.0" layoutY="270.0" styleClass="sidebar-title" text="Pick Up Time" />
+                <TextField fx:id="pickUpTimeField" layoutX="300.0" layoutY="295.0" prefWidth="250.0" promptText="HH:MM (24-hr format)" styleClass="form-text-field" />
 
-                <Label layoutX="30.0" layoutY="270.0" styleClass="sidebar-title" text="Start Date" />
-                <DatePicker fx:id="startDatePicker" layoutX="30.0" layoutY="295.0" prefWidth="250.0" promptText="Select Date" />
+                <Label layoutX="30.0" layoutY="350.0" styleClass="sidebar-title" text="Start Date" />
+                <DatePicker fx:id="startDatePicker" layoutX="30.0" layoutY="375.0" prefWidth="250.0" promptText="Select Date" />
 
-                <Label layoutX="300.0" layoutY="270.0" styleClass="sidebar-title" text="Start Time" />
-                <TextField fx:id="startTimeField" layoutX="300.0" layoutY="295.0" prefWidth="250.0" promptText="HH:MM (24-hr format)" styleClass="form-text-field" />
+                <Label layoutX="300.0" layoutY="350.0" styleClass="sidebar-title" text="Start Time" />
+                <TextField fx:id="startTimeField" layoutX="300.0" layoutY="375.0" prefWidth="250.0" promptText="HH:MM (24-hr format)" styleClass="form-text-field" />
 
-                <Label fx:id="endDateLabel" layoutX="30.0" layoutY="350.0" styleClass="sidebar-title" text="End Date" />
-                <DatePicker fx:id="endDatePicker" layoutX="30.0" layoutY="375.0" prefWidth="250.0" promptText="Select Date (Optional)" />
+                <Label fx:id="endDateLabel" layoutX="30.0" layoutY="430.0" styleClass="sidebar-title" text="End Date" />
+                <DatePicker fx:id="endDatePicker" layoutX="30.0" layoutY="455.0" prefWidth="250.0" promptText="Select Date (Optional)" />
 
-                <Label fx:id="endTimeLabel" layoutX="300.0" layoutY="350.0" styleClass="sidebar-title" text="End Time" />
-                <TextField fx:id="endTimeField" layoutX="300.0" layoutY="375.0" prefWidth="250.0" promptText="HH:MM (Optional)" styleClass="form-text-field" />
+                <Label fx:id="endTimeLabel" layoutX="300.0" layoutY="430.0" styleClass="sidebar-title" text="End Time" />
+                <TextField fx:id="endTimeField" layoutX="300.0" layoutY="455.0" prefWidth="250.0" promptText="HH:MM (Optional)" styleClass="form-text-field" />
 
-                <Button layoutX="430.0" layoutY="430.0" mnemonicParsing="false" onAction="#handleCancel" prefHeight="40.0" prefWidth="120.0" styleClass="cancel-button" text="Cancel" />
-                <Button layoutX="290.0" layoutY="430.0" mnemonicParsing="false" onAction="#handleSave" prefHeight="40.0" prefWidth="120.0" styleClass="confirm-button" text="Save Record" />
+                <Button layoutX="430.0" layoutY="520.0" mnemonicParsing="false" onAction="#handleCancel" prefHeight="40.0" prefWidth="120.0" styleClass="cancel-button" text="Cancel" />
+                <Button layoutX="290.0" layoutY="520.0" mnemonicParsing="false" onAction="#handleSave" prefHeight="40.0" prefWidth="120.0" styleClass="confirm-button" text="Save Record" />
 
             </children>
         </AnchorPane>

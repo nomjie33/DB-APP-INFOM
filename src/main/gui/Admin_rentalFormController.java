@@ -1,29 +1,41 @@
 package main.gui;
 
+import dao.CustomerDAO;
+import dao.LocationDAO;
+import dao.RentalDAO;
+import dao.VehicleDAO;
+import java.time.format.DateTimeFormatter;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import java.io.IOException;
-
-import dao.RentalDAO;
+import javafx.util.StringConverter;
+import model.Customer;
+import model.Location;
 import model.RentalTransaction;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.Alert.AlertType;
-
+import model.Vehicle; // <-- Make sure you have 'import model.Vehicle;'
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 public class Admin_rentalFormController {
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField rentalIDField;
-    @FXML private TextField customerIDField;
-    @FXML private TextField plateIDField;
-    @FXML private TextField locationIDField;
+
+    // --- ALL 3 ARE NOW COMBOBOXES ---
+    @FXML private ComboBox<Customer> customerComboBox;
+    @FXML private ComboBox<Vehicle> vehicleComboBox;
+    @FXML private ComboBox<Location> locationComboBox;
+
     @FXML private DatePicker pickUpDatePicker;
     @FXML private TextField pickUpTimeField;
     @FXML private DatePicker startDatePicker;
@@ -34,7 +46,12 @@ public class Admin_rentalFormController {
     @FXML private Label endTimeLabel;
 
     private Admin_dashboardController mainController;
+
+    // --- ALL 4 DAOs ARE NEEDED ---
     private RentalDAO rentalDAO = new RentalDAO();
+    private CustomerDAO customerDAO = new CustomerDAO();
+    private VehicleDAO vehicleDAO = new VehicleDAO();
+    private LocationDAO locationDAO = new LocationDAO();
 
     private boolean isUpdatingRecord = false;
     private RentalTransaction currentRental;
@@ -45,10 +62,16 @@ public class Admin_rentalFormController {
 
     public void setRentalData(RentalTransaction rental) {
 
+        // --- 1. LOAD ALL DROPDOWNS ---
+        loadCustomerComboBox();
+        loadVehicleComboBox();
+        loadLocationComboBox();
+
+        // --- 2. RESET ALL FIELDS ---
         rentalIDField.setDisable(false);
-        customerIDField.setDisable(false);
-        plateIDField.setDisable(false);
-        locationIDField.setDisable(false);
+        customerComboBox.setDisable(false);
+        vehicleComboBox.setDisable(false);
+        locationComboBox.setDisable(false);
         pickUpDatePicker.setDisable(false);
         pickUpTimeField.setDisable(false);
         startDatePicker.setDisable(false);
@@ -61,10 +84,11 @@ public class Admin_rentalFormController {
         endTimeField.setVisible(true);
         endTimeField.setDisable(false);
 
+        // --- 3. REMOVE ALL STYLES ---
         rentalIDField.getStyleClass().remove("form-text-field-disabled");
-        customerIDField.getStyleClass().remove("form-text-field-disabled");
-        plateIDField.getStyleClass().remove("form-text-field-disabled");
-        locationIDField.getStyleClass().remove("form-text-field-disabled");
+        customerComboBox.getStyleClass().remove("form-text-field-disabled");
+        vehicleComboBox.getStyleClass().remove("form-text-field-disabled");
+        locationComboBox.getStyleClass().remove("form-text-field-disabled");
         pickUpDatePicker.getStyleClass().remove("form-text-field-disabled");
         pickUpTimeField.getStyleClass().remove("form-text-field-disabled");
         startDatePicker.getStyleClass().remove("form-text-field-disabled");
@@ -72,18 +96,16 @@ public class Admin_rentalFormController {
         endDatePicker.getStyleClass().remove("form-text-field-disabled");
         endTimeField.getStyleClass().remove("form-text-field-disabled");
 
-
         if (rental != null) {
-
+            // --- 4. EDIT MODE LOGIC ---
             isUpdatingRecord = true;
             currentRental = rental;
             formHeaderLabel.setText("Update Rental");
 
-
             rentalIDField.setText(rental.getRentalID());
-            customerIDField.setText(rental.getCustomerID());
-            plateIDField.setText(rental.getPlateID());
-            locationIDField.setText(rental.getLocationID());
+            customerComboBox.setValue(findCustomerInList(rental.getCustomerID()));
+            vehicleComboBox.setValue(findVehicleInList(rental.getPlateID()));
+            locationComboBox.setValue(findLocationInList(rental.getLocationID()));
 
             if (rental.getPickUpDateTime() != null) {
                 pickUpDatePicker.setValue(rental.getPickUpDateTime().toLocalDateTime().toLocalDate());
@@ -98,19 +120,19 @@ public class Admin_rentalFormController {
                 endTimeField.setText(rental.getEndDateTime().toLocalDateTime().toLocalTime().toString());
             }
 
-
+            // --- DISABLE RENTAL ID ONLY ---
             rentalIDField.setDisable(true);
             rentalIDField.getStyleClass().add("form-text-field-disabled");
 
         } else {
-
+            // --- 5. NEW RENTAL MODE LOGIC ---
             isUpdatingRecord = false;
             formHeaderLabel.setText("New Rental");
 
             rentalIDField.clear();
-            customerIDField.clear();
-            plateIDField.clear();
-            locationIDField.clear();
+            customerComboBox.setValue(null);
+            vehicleComboBox.setValue(null);
+            locationComboBox.setValue(null);
             pickUpDatePicker.setValue(null);
             pickUpTimeField.clear();
             startDatePicker.setValue(null);
@@ -118,10 +140,10 @@ public class Admin_rentalFormController {
             endDatePicker.setValue(null);
             endTimeField.clear();
 
+            // --- HIDE AND DISABLE End Date/Time fields ---
             endDateLabel.setVisible(false);
             endDatePicker.setVisible(false);
             endDatePicker.setDisable(true);
-
             endTimeLabel.setVisible(false);
             endTimeField.setVisible(false);
             endTimeField.setDisable(true);
@@ -130,66 +152,117 @@ public class Admin_rentalFormController {
 
     @FXML
     private void handleSave() {
-        if (!validateFields()) return;
+        // --- 1. Run basic field validation ---
+        if (!validateFields()) {
+            return; // Stops if any required field is empty or format is wrong
+        }
 
+        // --- 2. Prep and validate date logic ---
+        LocalDateTime pickUpDateTime;
+        LocalDateTime startDateTime;
+        LocalDateTime endDateTime = null;
+
+        try {
+            pickUpDateTime = LocalDateTime.of(pickUpDatePicker.getValue(), LocalTime.parse(pickUpTimeField.getText().trim()));
+            startDateTime = LocalDateTime.of(startDatePicker.getValue(), LocalTime.parse(startTimeField.getText().trim()));
+
+            if (isUpdatingRecord && endDatePicker.getValue() != null && !endTimeField.getText().trim().isEmpty()) {
+                endDateTime = LocalDateTime.of(endDatePicker.getValue(), LocalTime.parse(endTimeField.getText().trim()));
+            }
+
+        } catch (java.time.format.DateTimeParseException e) {
+            showAlert(AlertType.ERROR, "Invalid Time", "Time must be in 24-hour HH:MM format (e.g., 09:30 or 14:00).");
+            return;
+        }
+
+        // --- HERE IS YOUR NEW DATE LOGIC VALIDATION ---
+        if (pickUpDateTime.isAfter(startDateTime)) {
+            showAlert(AlertType.ERROR, "Invalid Dates", "Pick-Up time must be before or the same as the Start time.");
+            return;
+        }
+
+        if (endDateTime != null && endDateTime.isBefore(startDateTime)) {
+            showAlert(AlertType.ERROR, "Invalid Dates", "End time must be after the Start time.");
+            return;
+        }
+
+        // --- 3. All validation passed, proceed with save ---
         try {
             RentalTransaction rental = isUpdatingRecord ? currentRental : new RentalTransaction();
 
-            // Only set these if it's a NEW rental
-            if (!isUpdatingRecord) {
+            // --- Set common fields ---
+            rental.setCustomerID(customerComboBox.getValue().getCustomerID());
+            rental.setPlateID(vehicleComboBox.getValue().getPlateID());
+            rental.setLocationID(locationComboBox.getValue().getLocationID());
+            rental.setPickUpDateTime(java.sql.Timestamp.valueOf(pickUpDateTime));
+            rental.setStartDateTime(java.sql.Timestamp.valueOf(startDateTime));
+
+            boolean success;
+            if (isUpdatingRecord) {
+                // --- UPDATE LOGIC ---
+                if (endDateTime != null) {
+                    rental.setEndDateTime(java.sql.Timestamp.valueOf(endDateTime));
+                    rental.setStatus("Completed");
+                }
+                success = rentalDAO.updateRental(rental);
+            } else {
+                // --- NEW RENTAL LOGIC ---
                 rental.setRentalID(rentalIDField.getText().trim());
-                rental.setCustomerID(customerIDField.getText().trim());
-                rental.setPlateID(plateIDField.getText().trim());
-                rental.setLocationID(locationIDField.getText().trim());
+                rental.setEndDateTime(null);
+                rental.setStatus("Active");
 
-                LocalDate pickUpDate = pickUpDatePicker.getValue();
-                LocalTime pickUpTime = LocalTime.parse(pickUpTimeField.getText().trim());
-                LocalDateTime pickUpDateTime = LocalDateTime.of(pickUpDate, pickUpTime);
-                rental.setPickUpDateTime(java.sql.Timestamp.valueOf(pickUpDateTime));
-
-                LocalDate startDate = startDatePicker.getValue();
-                LocalTime startTime = LocalTime.parse(startTimeField.getText().trim());
-                LocalDateTime startDateTime = LocalDateTime.of(startDate, startTime);
-                rental.setStartDateTime(java.sql.Timestamp.valueOf(startDateTime));
-
-                rental.setStatus("Active"); // New rentals are "Active"
+                // --- THIS IS CRITICAL: UPDATE VEHICLE STATUS ---
+                success = rentalDAO.insertRental(rental);
+                if (success) {
+                    // After inserting, mark the vehicle as "In Use"
+                    vehicleDAO.updateVehicleStatus(rental.getPlateID(), "In Use");
+                }
             }
 
-            // This logic is for BOTH new and update
-            LocalDateTime endDateTime = null;
-            if (endDatePicker.getValue() != null && !endTimeField.getText().trim().isEmpty()) {
-                LocalDate endDate = endDatePicker.getValue();
-                LocalTime endTime = LocalTime.parse(endTimeField.getText().trim());
-                endDateTime = LocalDateTime.of(endDate, endTime);
-
-                rental.setEndDateTime(java.sql.Timestamp.valueOf(endDateTime));
-                rental.setStatus("Completed"); // If end date is set, it's "Completed"
-            }
-
-            boolean success = isUpdatingRecord
-                    ? rentalDAO.updateRental(rental)
-                    : rentalDAO.insertRental(rental);
-
-            // --- 2. UPDATE HANDLESAVE LOGIC ---
+            // --- Show Confirmation ---
             if (success) {
                 if (isUpdatingRecord) {
                     showAlert(AlertType.INFORMATION, "Save Successful", "Rental record has been updated.");
                 } else {
+                    // --- THIS IS THE FIX ---
+
+                    // Get the full objects from the ComboBoxes
+                    Customer customer = customerComboBox.getValue();
+                    Vehicle vehicle = vehicleComboBox.getValue();
+                    Location location = locationComboBox.getValue();
+
+                    // Format the dates/times
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' hh:mm a");
+                    String pickUpStr = rental.getPickUpDateTime().toLocalDateTime().format(dtf);
+                    String startStr = rental.getStartDateTime().toLocalDateTime().format(dtf);
+
                     String title = "New Rental Created!";
                     String content = "A new rental (check-out) has been recorded.\n\n" +
-                            "Rental ID:\n" + rental.getRentalID() + "\n\n" +
-                            "Customer ID:\n" + rental.getCustomerID() + "\n\n" +
-                            "Plate ID:\n" + rental.getPlateID() + "\n\n" +
-                            "Start Time:\n" + rental.getStartDateTime().toString();
 
-                    showConfirmationDialog(title, content); // <-- USE RECEIPT
+                            "Rental ID:\n" + rental.getRentalID() + "\n\n" +
+
+                            "Customer:\n" + String.format("%s %s (%s)\n\n",
+                            customer.getFirstName(),
+                            customer.getLastName(),
+                            customer.getCustomerID()) +
+
+                            "Vehicle:\n" + String.format("%s (%s)\n\n",
+                            vehicle.getPlateID(),
+                            vehicle.getVehicleType()) + // Uses your VehicleDAO's field
+
+                            "Pick-Up:\n" + String.format("%s\n%s\n\n",
+                            location.getName(), // Uses your LocationDAO's field
+                            pickUpStr) +
+
+                            "Rental Start:\n" + startStr;
+
+                    showConfirmationDialog(title, content);
+                    // --- END OF FIX ---
                 }
-                mainController.loadPage("Admin-rentalRecords.fxml"); // <-- This needs a records page
+                mainController.loadPage("Admin-rentalRecords.fxml");
             } else {
-                showAlert(AlertType.ERROR, "Error", "Failed to save rental record.");
+                showAlert(AlertType.ERROR, "Error", "Failed to save rental record. Check foreign keys.");
             }
-        } catch (java.time.format.DateTimeParseException e) {
-            showAlert(AlertType.ERROR, "Invalid Time", "Time must be in 24-hour HH:mm format (e.g., 09:30 or 14:00).");
         } catch (Exception e) {
             showAlert(AlertType.ERROR, "Error", "An unexpected error occurred.");
             e.printStackTrace();
@@ -202,10 +275,11 @@ public class Admin_rentalFormController {
     }
 
     private boolean validateFields() {
+        // --- NOW CHECKS ALL 3 COMBOBOXES ---
         if (rentalIDField.getText().trim().isEmpty() ||
-                customerIDField.getText().trim().isEmpty() ||
-                plateIDField.getText().trim().isEmpty() ||
-                locationIDField.getText().trim().isEmpty() ||
+                customerComboBox.getValue() == null ||
+                vehicleComboBox.getValue() == null ||
+                locationComboBox.getValue() == null ||
                 pickUpDatePicker.getValue() == null ||
                 pickUpTimeField.getText().trim().isEmpty() ||
                 startDatePicker.getValue() == null ||
@@ -214,6 +288,19 @@ public class Admin_rentalFormController {
             showAlert(Alert.AlertType.WARNING, "Validation Error", "Please fill in all required fields.");
             return false;
         }
+
+        // Check time formats (parsing is handled in handleSave)
+        try {
+            LocalTime.parse(pickUpTimeField.getText().trim());
+            LocalTime.parse(startTimeField.getText().trim());
+            if (isUpdatingRecord && !endTimeField.getText().trim().isEmpty() && endDatePicker.getValue() != null) {
+                LocalTime.parse(endTimeField.getText().trim());
+            }
+        } catch (Exception e) {
+            showAlert(AlertType.ERROR, "Invalid Time", "Time must be in 24-hour HH:MM format (e.g., 09:30 or 14:00).");
+            return false;
+        }
+
         return true;
     }
 
@@ -225,9 +312,10 @@ public class Admin_rentalFormController {
         alert.showAndWait();
     }
 
+    // --- (Keep your showConfirmationDialog method) ---
     private void showConfirmationDialog(String title, String content) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin_addRecordConfirmation.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-addRecordConfirmation.fxml"));
             AnchorPane page = loader.load();
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Confirmation");
@@ -245,5 +333,101 @@ public class Admin_rentalFormController {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Error", "Could not load confirmation dialog.");
         }
+    }
+
+    // --- (Keep your Customer helper methods) ---
+    private void loadCustomerComboBox() {
+        try {
+            List<Customer> customers = customerDAO.getAllCustomers();
+            customerComboBox.setItems(FXCollections.observableArrayList(customers));
+            customerComboBox.setConverter(new StringConverter<Customer>() {
+                @Override
+                public String toString(Customer c) {
+                    return (c == null) ? null : String.format("%s: %s %s (%s)",
+                            c.getCustomerID(), c.getFirstName(), c.getLastName(), c.getEmailAddress());
+                }
+                @Override
+                public Customer fromString(String s) { return null; }
+            });
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    private Customer findCustomerInList(String customerID) {
+        if (customerID == null) return null;
+        for (Customer c : customerComboBox.getItems()) {
+            if (c.getCustomerID().equals(customerID)) return c;
+        }
+        return customerDAO.getCustomerById(customerID);
+    }
+
+    // --- ADD THESE NEW HELPER METHODS FOR VEHICLE AND LOCATION ---
+
+    private void loadVehicleComboBox() {
+        try {
+            // Use getAvailableVehicles() so user can't rent a vehicle
+            // that is already 'In Use' or in 'Maintenance'
+            List<Vehicle> vehicles = vehicleDAO.getAvailableVehicles();
+            vehicleComboBox.setItems(FXCollections.observableArrayList(vehicles));
+
+            vehicleComboBox.setConverter(new StringConverter<Vehicle>() {
+                @Override
+                public String toString(Vehicle v) {
+                    if (v == null) return null;
+                    // Assumes Vehicle model has getPlateID, getVehicleType
+                    // and getRentalPrice. Adjust if needed.
+                    return String.format("%s: %s (₱%.2f/day)",
+                            v.getPlateID(),
+                            v.getVehicleType(),
+                            v.getRentalPrice()
+                    );
+                }
+                @Override
+                public Vehicle fromString(String string) { return null; }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(AlertType.ERROR, "Load Error", "Failed to load vehicle list.");
+        }
+    }
+
+    private Vehicle findVehicleInList(String plateID) {
+        if (plateID == null) return null;
+        for (Vehicle v : vehicleComboBox.getItems()) {
+            if (v.getPlateID().equals(plateID)) return v;
+        }
+        // If the vehicle is 'In Use' (i.e., we are editing),
+        // it won't be in the 'Available' list, so fetch it directly.
+        return vehicleDAO.getVehicleById(plateID);
+    }
+
+    private void loadLocationComboBox() {
+        try {
+            List<Location> locations = locationDAO.getAllLocations();
+            locationComboBox.setItems(FXCollections.observableArrayList(locations));
+
+            locationComboBox.setConverter(new StringConverter<Location>() {
+                @Override
+                public String toString(Location loc) {
+                    if (loc == null) return null;
+                    return String.format("%s: %s",
+                            loc.getLocationID(),
+                            loc.getName() // Uses 'getName' from your DAO
+                    );
+                }
+                @Override
+                public Location fromString(String string) { return null; }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(AlertType.ERROR, "Load Error", "Failed to load location list.");
+        }
+    }
+
+    private Location findLocationInList(String locationID) {
+        if (locationID == null) return null;
+        for (Location loc : locationComboBox.getItems()) {
+            if (loc.getLocationID().equals(locationID)) return loc;
+        }
+        return locationDAO.getLocationById(locationID);
     }
 }
