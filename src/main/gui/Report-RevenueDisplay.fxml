@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Report_RevenueDisplayController">
+    <children>
+        <Label layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Rental Revenue Report" />
+        <Label fx:id="subHeaderLabel" layoutX="38.0" layoutY="100.0" style="-fx-font-size: 16px;" text="Here is the generated report:" />
+
+        <Button fx:id="backButton" layoutX="575.0" layoutY="90.0" mnemonicParsing="false" onAction="#handleBack" prefHeight="40.0" prefWidth="100.0" styleClass="cancel-button" text="Back" />
+        <Button fx:id="exportButton" layoutX="690.0" layoutY="90.0" mnemonicParsing="false" onAction="#handleExportToPDF" prefHeight="40.0" prefWidth="100.0" styleClass="confirm-button" text="Export PDF" />
+
+        <TableView fx:id="reportTable" layoutX="38.0" layoutY="150.0" prefHeight="580.0" prefWidth="747.0" styleClass="transactions-table">
+            <columns>
+                <TableColumn fx:id="colTimePeriod" prefWidth="150.0" text="Period" />
+                <TableColumn fx:id="colVehicleType" prefWidth="150.0" text="Vehicle Type" />
+                <TableColumn fx:id="colTotalRevenue" prefWidth="150.0" text="Total Revenue" />
+                <TableColumn fx:id="colAvgRevenue" prefWidth="150.0" text="Avg Revenue" />
+                <TableColumn fx:id="colRentals" prefWidth="145.0" text="# of Rentals" />
+            </columns>
+        </TableView>
+    </children>
+</AnchorPane>
