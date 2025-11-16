@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_revenueSelectController">
+    <children>
+        <Label layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Rental Revenue Report" />
+        <Label layoutX="38.0" layoutY="110.0" style="-fx-font-size: 16px;" text="PLEASE SELECT FROM THE FOLLOWING:" />
+
+        <Label layoutX="38.0" layoutY="160.0" styleClass="sidebar-title" text="Vehicle Type" />
+        <ComboBox fx:id="vehicleTypeComboBox" layoutX="38.0" layoutY="185.0" prefWidth="250.0" promptText="Select Type" styleClass="form-text-field" />
+
+        <Label layoutX="310.0" layoutY="160.0" styleClass="sidebar-title" text="Year" />
+        <ComboBox fx:id="yearComboBox" layoutX="310.0" layoutY="185.0" prefWidth="250.0" promptText="Select Year" styleClass="form-text-field" />
+
+        <Label layoutX="580.0" layoutY="160.0" styleClass="sidebar-title" text="Month" />
+        <ComboBox fx:id="monthComboBox" layoutX="580.0" layoutY="185.0" prefWidth="200.0" promptText="Optional (for Monthly)" styleClass="form-text-field" />
+
+        <Button layoutX="38.0" layoutY="260.0" mnemonicParsing="false" onAction="#handleGenerateReport" prefHeight="40.0" prefWidth="120.0" styleClass="confirm-button" text="Generate" />
+        <Button layoutX="170.0" layoutY="260.0" mnemonicParsing="false" onAction="#handleCancel" prefHeight="40.0" prefWidth="120.0" styleClass="cancel-button" text="Cancel" />
+    </children>
+</AnchorPane>
