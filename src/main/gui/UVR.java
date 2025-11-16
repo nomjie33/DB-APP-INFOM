@@ -62,7 +62,6 @@ public class UVR extends Application {
 
         //3. This statement loads the first application state which is the launch scene.
         Parent root = FXMLLoader.load(getClass().getResource("main-launch.fxml"));
-
         Scene scene = new Scene(root, 1024, 768);
         stage.setTitle("UVR!");
         stage.setScene(scene);

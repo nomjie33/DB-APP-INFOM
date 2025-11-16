@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_paymentRecordsController">
+    <children>
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 20px;" text="Section" />
+        <Label layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Payment list" />
+        <Label fx:id="paymentCountLabel" layoutX="38.0" layoutY="100.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="(0) PAYMENTS:" />
+
+        <Button fx:id="addButton" layoutX="690.0" layoutY="100.0" onAction="#handleAddPayment" prefHeight="31.0" prefWidth="72.0" styleClass="add-button" text="+" />
+
+        <TableView fx:id="paymentTable" layoutX="38.0" layoutY="140.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
+            <columns>
+                <TableColumn fx:id="paymentIDColumn" prefWidth="150.0" text="Payment ID" />
+                <TableColumn fx:id="rentalIDColumn" prefWidth="150.0" text="Rental ID" />
+                <TableColumn fx:id="amountColumn" prefWidth="120.0" text="Amount" />
+                <TableColumn fx:id="paymentDateColumn" prefWidth="150.0" text="Payment Date" />
+                <TableColumn fx:id="statusColumn" prefWidth="90.0" text="Status" />
+                <TableColumn fx:id="editColumn" prefWidth="80.0" text="Action" />
+            </columns>
+        </TableView>
+
+    </children>
+</AnchorPane>
