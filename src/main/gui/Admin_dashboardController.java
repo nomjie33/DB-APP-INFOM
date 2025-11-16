@@ -343,10 +343,7 @@ public class Admin_dashboardController implements Initializable {
             Admin_rentalFormController controller = loader.getController();
             controller.setMainController(this);
 
-            if (rentalToEdit != null) {
-                controller.setRentalData(rentalToEdit);
-            }
-
+            controller.setRentalData(rentalToEdit);
             centerContentPane.getChildren().setAll(root);
 
             AnchorPane.setTopAnchor(root, 0.0);
