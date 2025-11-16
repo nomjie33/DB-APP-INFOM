@@ -343,6 +343,109 @@ public class Admin_dashboardController implements Initializable {
         }
     }
 
+    public void loadDeploymentForm(DeploymentTransaction deployment) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-deploymentForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_deploymentFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            controller.setDeploymentData(deployment);
+
+            loadPageFromSub(page);
+
+        } catch (IOException e) {
+            System.err.println("Failed to load deployment form.");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadMaintenanceChequeForm(model.MaintenanceCheque chequeToEdit) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-maintenanceChequeForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_maintenanceChequeFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (chequeToEdit != null) {
+                controller.setMaintenanceChequeData(chequeToEdit);
+            }
+
+            loadPageFromSub(page);
+
+        } catch (IOException e) {
+            System.err.println("Failed to load maintenance cheque form.");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadMaintenanceForm(MaintenanceTransaction maintenanceToEdit) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-maintenanceForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_maintenanceFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (maintenanceToEdit != null){
+                controller.setMaintenanceData(maintenanceToEdit);
+            }
+
+            loadPageFromSub(page);
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void loadPaymentForm(PaymentTransaction payment) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/gui/Admin_paymentForm.fxml"));
+            AnchorPane root = loader.load();
+
+            Admin_paymentFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (payment != null) {
+                controller.setPaymentData(payment);
+            }
+
+            centerContentPane.getChildren().setAll(root);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to load Payment Form FXML.");
+        }
+    }
+
+    public void loadPenaltyForm(PenaltyTransaction penalty) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin_penaltyForm.fxml"));
+            AnchorPane root = loader.load();
+
+            Admin_penaltyFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (penalty != null) {
+                controller.setPenaltyData(penalty);
+            }
+
+            centerContentPane.getChildren().setAll(root);
+
+            AnchorPane.setTopAnchor(root, 0.0);
+            AnchorPane.setBottomAnchor(root, 0.0);
+            AnchorPane.setLeftAnchor(root, 0.0);
+            AnchorPane.setRightAnchor(root, 0.0);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to load Penalty Form FXML.");
+        }
+    }
+
+
     public void loadCustomerReportDisplay(
             List<CustomerRentalReport.CustomerRentalData> rentalData,
             List<CustomerRentalReport.CustomerDemographicsData> demographicsData,
