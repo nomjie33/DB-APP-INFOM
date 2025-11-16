@@ -92,13 +92,12 @@ public class Admin_maintenanceFormController implements Initializable {
         if (!validateFields()) return;
 
         try {
-            // ... (Data extraction logic remains the same)
+
             String maintenanceID = maintenanceIDField.getText().trim();
             String plateID = plateComboBox.getValue().getPlateID();
             String technicianID = technicianComboBox.getValue().getTechnicianId();
             String notes = notesArea.getText().trim();
 
-            // ... (DateTime parsing logic remains the same)
             LocalDateTime startDateTime = LocalDateTime.of(startDatePicker.getValue(),
                     LocalTime.parse(startTimeField.getText().trim(), timeFormatter));
             LocalDateTime endDateTime = null;
@@ -107,7 +106,6 @@ public class Admin_maintenanceFormController implements Initializable {
                         LocalTime.parse(endTimeField.getText().trim(), timeFormatter));
             }
 
-            // ... (Maintenance object creation and DAO call remains the same)
             MaintenanceTransaction maintenance = isUpdatingRecord ? currentMaintenance : new MaintenanceTransaction();
             maintenance.setMaintenanceID(maintenanceID);
             maintenance.setPlateID(plateID);
@@ -124,7 +122,7 @@ public class Admin_maintenanceFormController implements Initializable {
                 if (isUpdatingRecord) {
                     showAlert(AlertType.INFORMATION, "Maintenance Saved", "Maintenance record saved successfully. ID: " + maintenance.getMaintenanceID());
                 } else {
-                    // FIX: Show confirmation dialog for NEW record
+
                     String title = "New Maintenance Added!";
                     String content = "A new vehicle maintenance record has been saved.\n\n" +
                             "Maintenance ID:\n" + maintenance.getMaintenanceID() + "\n\n" +
@@ -241,7 +239,7 @@ public class Admin_maintenanceFormController implements Initializable {
     }
 
     private void loadComboBoxes() {
-        // Load Vehicles
+
         try {
             ObservableList<Vehicle> vehicleList = FXCollections.observableArrayList(vehicleDAO.getAllVehicles()); // Assuming getAllVehicles() exists
             plateComboBox.setItems(vehicleList);
@@ -259,7 +257,6 @@ public class Admin_maintenanceFormController implements Initializable {
             e.printStackTrace();
         }
 
-        // Load Technicians
         try {
             ObservableList<Technician> technicianList = FXCollections.observableArrayList(technicianDAO.getAllTechnicians()); // Assuming getAllTechnicians() exists
             technicianComboBox.setItems(technicianList);
@@ -285,7 +282,7 @@ public class Admin_maintenanceFormController implements Initializable {
                 return v;
             }
         }
-        return vehicleDAO.getVehicleById(plateID); // Fallback lookup if not in the initial list
+        return vehicleDAO.getVehicleById(plateID);
     }
 
     private Technician findTechnicianInList(String technicianID) {
@@ -295,7 +292,7 @@ public class Admin_maintenanceFormController implements Initializable {
                 return t;
             }
         }
-        return technicianDAO.getTechnicianById(technicianID); // Fallback lookup
+        return technicianDAO.getTechnicianById(technicianID);
     }
 
 }
