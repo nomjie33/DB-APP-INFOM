@@ -15,10 +15,10 @@
                 <TextField fx:id="maintenanceIDField" layoutX="30.0" layoutY="55.0" prefWidth="320.0" promptText="MAINT-XXX" styleClass="form-text-field" />
 
                 <Label layoutX="380.0" layoutY="30.0" styleClass="sidebar-title" text="Vehicle Plate ID" />
-                <TextField fx:id="plateIDField" layoutX="380.0" layoutY="55.0" prefWidth="320.0" promptText="ES-XXX / ET-XXX / EB-XXX" styleClass="form-text-field" />
+                <ComboBox fx:id="plateComboBox" layoutX="380.0" layoutY="55.0" prefWidth="320.0" styleClass="form-text-field" />
 
                 <Label layoutX="30.0" layoutY="110.0" styleClass="sidebar-title" text="Technician ID" />
-                <TextField fx:id="technicianIDField" layoutX="30.0" layoutY="135.0" prefWidth="320.0" promptText="TECH-001" styleClass="form-text-field" />
+                <ComboBox fx:id="technicianComboBox" layoutX="30.0" layoutY="135.0" prefWidth="320.0" styleClass="form-text-field"  />
 
                 <Label layoutX="30.0" layoutY="190.0" styleClass="sidebar-title" text="Start Date" />
                 <DatePicker fx:id="startDatePicker" layoutX="30.0" layoutY="215.0" prefWidth="155.0" styleClass="form-date-picker" />
