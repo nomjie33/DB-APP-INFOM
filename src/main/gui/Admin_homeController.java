@@ -129,13 +129,11 @@ public class Admin_homeController implements Initializable {
 
     @FXML private void handleReportLocationFrequency(MouseEvent e){
         System.out.println("Location Frequency report clicked");
-        // mainController.loadPage("Admin-locationFrequencyReportSelect.fxml"); // TODO
-        showAlert("Coming Soon", "Location Frequency report is not yet implemented.");
+        mainController.loadPage("Admin-locationFrequencySelect.fxml");
     }
 
     @FXML private void handleReportCustomerRental(MouseEvent event) {
         System.out.println("Customer Rental report clicked");
-        // This is the one we built
         mainController.loadPage("Admin-customerRentalReportSelect.fxml");
     }
 

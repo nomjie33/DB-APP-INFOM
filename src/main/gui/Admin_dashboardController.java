@@ -13,9 +13,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import model.*;
-import reports.CustomerRentalReport;
-import reports.DefectiveVehiclesReport;
-import reports.RentalRevenueReport;
+import reports.*;
 import reports.CustomerRentalReport.CustomerDemographicsData;
 import reports.CustomerRentalReport.CustomerPenaltyRiskData;
 import reports.CustomerRentalReport.SummaryStatistics;
@@ -180,7 +178,7 @@ public class Admin_dashboardController implements Initializable {
     @FXML void handleReportLocationFrequency(MouseEvent event) {
         setActiveNav(reportLocationFrequencyButton);
         System.out.println("Location Frequency Report clicked");
-        loadPage("Admin-locationFrequencyReport.fxml");
+        loadPage("Admin-locationFrequencySelect.fxml");
     }
 
     @FXML void handleReportCustomerRental(MouseEvent event) {
@@ -228,6 +226,8 @@ public class Admin_dashboardController implements Initializable {
                 ((Admin_defectiveVehicleSelectController) controller).setMainController(this);
             } else if (controller instanceof Admin_revenueSelectController) {
                 ((Admin_revenueSelectController) controller).setMainController(this);
+            } else if (controller instanceof Admin_locationFrequencyController) {
+                ((Admin_locationFrequencyController) controller).setMainController(this);
             }
 
 
@@ -388,6 +388,24 @@ public class Admin_dashboardController implements Initializable {
 
         } catch (IOException e) {
             System.err.println("Failed to load page: Report-defectiveVehicleDisplay.fxml");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadLocationReportDisplay(List<LocationRentalFrequencyReport.LocationFrequencyData> data, int year, int month) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Report-locationFrequencyDisplay.fxml"));
+            Parent page = loader.load();
+
+            Report_locationFrequencyController controller = loader.getController();
+            controller.setMainController(this);
+
+            controller.setData(data, year, month);
+
+            loadPageFromSub(page);
+
+        } catch (IOException e){
+            System.err.println("Failed to load page: Report-locationFrequencyDisplay.fxml");
             e.printStackTrace();
         }
     }
