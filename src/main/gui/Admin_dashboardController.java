@@ -135,13 +135,13 @@ public class Admin_dashboardController implements Initializable {
     @FXML void handlePaymentTransactions(MouseEvent event) {
         setActiveNav(paymentTransactionsButton);
         System.out.println("Payment Transactions clicked");
-        loadPage("Admin-paymentTransactions.fxml");
+        loadPage("Admin-paymentRecords.fxml");
     }
 
     @FXML void handleDeploymentTransactions(MouseEvent event) {
         setActiveNav(deploymentTransactionsButton);
         System.out.println("Deployment Transactions clicked");
-        loadPage("Admin-deploymentTransactions.fxml");
+        loadPage("Admin-deploymentRecords.fxml");
     }
 
     @FXML void handleMaintenanceTransactions(MouseEvent event) {
@@ -220,6 +220,10 @@ public class Admin_dashboardController implements Initializable {
                 ((Admin_technicianRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_partRecordsController){
                 ((Admin_partRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_paymentRecordsController) {
+                ((Admin_paymentRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_deploymentRecordsController) {
+                ((Admin_deploymentRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_customerRentalReportSelectController) {
                 ((Admin_customerRentalReportSelectController) controller).setMainController(this);
             } else if (controller instanceof Admin_defectiveVehicleSelectController) {
@@ -339,6 +343,44 @@ public class Admin_dashboardController implements Initializable {
 
         } catch (IOException e){
             System.err.println("Failed to load part form.");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadPaymentForm(PaymentTransaction payment) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/main/gui/Admin-paymentForm.fxml"));
+            AnchorPane root = loader.load();
+
+            Admin_paymentFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (payment != null) {
+                controller.setPaymentData(payment);
+            }
+
+            centerContentPane.getChildren().setAll(root);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to load Payment Form FXML.");
+        }
+    }
+
+    public void loadDeploymentForm(DeploymentTransaction deployment) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-deploymentForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_deploymentFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            controller.setDeploymentData(deployment);
+
+            loadPageFromSub(page);
+
+        } catch (IOException e) {
+            System.err.println("Failed to load deployment form.");
             e.printStackTrace();
         }
     }
