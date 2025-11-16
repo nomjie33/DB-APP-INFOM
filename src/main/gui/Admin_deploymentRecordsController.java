@@ -1,7 +1,11 @@
 package main.gui;
 
 import dao.DeploymentDAO;
+import dao.VehicleDAO;
+import dao.LocationDAO;
 import model.DeploymentTransaction;
+
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
