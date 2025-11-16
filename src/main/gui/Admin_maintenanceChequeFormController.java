@@ -1,32 +1,50 @@
 package main.gui;
 
 import dao.MaintenanceChequeDAO;
+import dao.MaintenanceDAO;
+import dao.PartDAO;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.MaintenanceCheque;
+import model.MaintenanceTransaction;
+import model.Part;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class Admin_maintenanceChequeFormController {
+public class Admin_maintenanceChequeFormController implements Initializable {
 
     @FXML private Label formHeaderLabel;
-    @FXML private TextField maintenanceIDField;
-    @FXML private TextField partIDField;
+    @FXML private ComboBox<MaintenanceTransaction> maintenanceComboBox;
+    @FXML private ComboBox<Part> partComboBox;
     @FXML private TextField quantityField;
 
     private Admin_dashboardController mainController;
     private MaintenanceChequeDAO chequeDAO = new MaintenanceChequeDAO();
+    private MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
+    private PartDAO partDAO = new PartDAO();
     private boolean isUpdatingRecord = false;
     private MaintenanceCheque currentCheque;
+
+    @Override
+    public void initialize(java.net.URL url, java.util.ResourceBundle rb) {
+        loadComboBoxes();
+    }
 
     public void setMainController(Admin_dashboardController mainController){
         this.mainController = mainController;
@@ -38,12 +56,13 @@ public class Admin_maintenanceChequeFormController {
             currentCheque = cheque;
             formHeaderLabel.setText("Update Cheque");
 
-            maintenanceIDField.setText(cheque.getMaintenanceID());
-            partIDField.setText(cheque.getPartID());
+            maintenanceComboBox.setValue(findMaintenanceInList(cheque.getMaintenanceID()));
+            partComboBox.setValue(findPartInList(cheque.getPartID()));
+
             quantityField.setText(cheque.getQuantityUsed().setScale(2, RoundingMode.HALF_UP).toString());
 
-            maintenanceIDField.setDisable(true);
-            partIDField.setDisable(true);
+            maintenanceComboBox.setDisable(true);
+            partComboBox.setDisable(true);
         }
     }
 
@@ -53,9 +72,26 @@ public class Admin_maintenanceChequeFormController {
         }
 
         try {
-            String maintenanceID = maintenanceIDField.getText().trim();
-            String partID = partIDField.getText().trim();
+            String maintenanceID = maintenanceComboBox.getValue().getMaintenanceID();
+            String partID = partComboBox.getValue().getPartId();
+
             BigDecimal quantity = new BigDecimal(quantityField.getText().trim()).setScale(2, RoundingMode.HALF_UP);
+            Part selectedPart = partComboBox.getValue();
+
+            if (!isUpdatingRecord) {
+
+                if (chequeDAO.getMaintenanceChequeById(maintenanceID, partID) != null) {
+                    showAlert(Alert.AlertType.ERROR, "Duplicate Record", "This Part has already been added to this Maintenance record. Please edit the existing entry or enter a new Part ID.");
+                    return;
+                }
+
+                if (selectedPart.getQuantity() < quantity.intValue()) {
+                    showAlert(Alert.AlertType.ERROR, "Inventory Error",
+                            String.format("Insufficient stock for Part ID %s. Available: %d, Requested: %.2f.",
+                                    partID, selectedPart.getQuantity(), quantity));
+                }
+
+            }
 
             MaintenanceCheque cheque = isUpdatingRecord ? currentCheque : new MaintenanceCheque();
             cheque.setMaintenanceID(maintenanceID);
@@ -101,7 +137,7 @@ public class Admin_maintenanceChequeFormController {
 
     private boolean validateFields(){
         String quantityText = quantityField.getText().trim();
-        if (maintenanceIDField.getText().trim().isEmpty() || partIDField.getText().trim().isEmpty() || quantityText.isEmpty()){
+        if (maintenanceComboBox.getValue() == null || partComboBox.getValue() == null || quantityText.isEmpty()){
             showAlert(Alert.AlertType.WARNING, "Validation Error", "Please fill in all required fields.");
             return false;
         }
@@ -155,6 +191,56 @@ public class Admin_maintenanceChequeFormController {
         } catch (IOException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Error", "Could not load confirmation dialog.");
+        }
+    }
+
+    private MaintenanceTransaction findMaintenanceInList(String id) {
+        if (id == null || maintenanceComboBox.getItems() == null) return null;
+        return maintenanceComboBox.getItems().stream()
+                .filter(m -> m.getMaintenanceID().equals(id))
+                .findFirst().orElse(maintenanceDAO.getMaintenanceById(id));
+    }
+
+    private Part findPartInList(String id) {
+        if (id == null || partComboBox.getItems() == null) return null;
+        return partComboBox.getItems().stream()
+                .filter(p -> p.getPartId().equals(id))
+                .findFirst().orElse(partDAO.getPartById(id));
+    }
+
+
+    private void loadComboBoxes() {
+
+        try {
+            ObservableList<MaintenanceTransaction> maintenanceList = FXCollections.observableArrayList(maintenanceDAO.getAllMaintenance());
+            maintenanceComboBox.setItems(maintenanceList);
+
+            maintenanceComboBox.setConverter(new StringConverter<MaintenanceTransaction>() {
+                @Override public String toString(MaintenanceTransaction m) {
+                    if (m == null) return null;
+
+                    return String.format("%s (Vehicle: %s)", m.getMaintenanceID(), m.getPlateID());
+                }
+                @Override public MaintenanceTransaction fromString(String string) { return null; }
+            });
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Load Error", "Failed to load maintenance records.");
+        }
+
+        try {
+            ObservableList<Part> partList = FXCollections.observableArrayList(partDAO.getAllParts());
+            partComboBox.setItems(partList);
+
+            partComboBox.setConverter(new StringConverter<Part>() {
+                @Override public String toString(Part p) {
+                    if (p == null) return null;
+
+                    return String.format("%s (%s) - Stock: %d", p.getPartId(), p.getPartName(), p.getQuantity());
+                }
+                @Override public Part fromString(String string) { return null; }
+            });
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Load Error", "Failed to load parts inventory.");
         }
     }
 }

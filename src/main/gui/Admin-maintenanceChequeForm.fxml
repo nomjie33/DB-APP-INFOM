@@ -11,10 +11,10 @@
             <children>
 
                 <Label layoutX="30.0" layoutY="30.0" styleClass="sidebar-title" text="Maintenance ID" />
-                <TextField fx:id="maintenanceIDField" layoutX="30.0" layoutY="55.0" prefWidth="250.0" promptText="MAINT-XXXX" styleClass="form-text-field" />
+                <ComboBox fx:id="maintenanceComboBox" layoutX="30.0" layoutY="55.0" prefWidth="250.0" styleClass="form-text-field" />
 
                 <Label layoutX="300.0" layoutY="30.0" styleClass="sidebar-title" text="Part ID" />
-                <TextField fx:id="partIDField" layoutX="300.0" layoutY="55.0" prefWidth="250.0" promptText="PART-XXXX" styleClass="form-text-field" />
+                <ComboBox fx:id="partComboBox" layoutX="300.0" layoutY="55.0" prefWidth="250.0" styleClass="form-text-field" />
 
                 <Label layoutX="30.0" layoutY="110.0" styleClass="sidebar-title" text="Quantity Used" />
                 <TextField fx:id="quantityField" layoutX="30.0" layoutY="135.0" prefWidth="250.0" promptText="e.g. 1.00" styleClass="form-text-field" />
