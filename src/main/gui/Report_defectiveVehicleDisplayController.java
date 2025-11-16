@@ -11,6 +11,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import reports.DefectiveVehiclesReport;
 import reports.DefectiveVehiclesReport.DefectiveVehicleData;
+import reports.DefectiveVehiclesReport.PartsInventoryData;
 
 import java.net.URL;
 import java.util.Date;
@@ -31,11 +32,13 @@ public class Report_defectiveVehicleDisplayController implements Initializable {
     @FXML private TableColumn<DefectiveVehicleData, Integer> colTotalRentals;
     @FXML private TableColumn<DefectiveVehicleData, Double> colRatio;
 
+
     private Admin_dashboardController mainController;
 
     private List<DefectiveVehicleData> currentReportData;
     private int reportYear;
     private int reportMonth; // 0 = Yearly
+    private List<PartsInventoryData> currentPartsData;
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
@@ -84,7 +87,13 @@ public class Report_defectiveVehicleDisplayController implements Initializable {
                 fileName = String.format("Defective_Report_%d_Yearly.pdf", reportYear);
             }
 
-            report.exportToPDF(currentReportData, fileName, reportYear, reportMonth);
+            report.exportToPDF(
+                    currentReportData,
+                    currentPartsData,
+                    fileName,
+                    reportYear,
+                    reportMonth
+            );
 
             showAlert(Alert.AlertType.INFORMATION, "Export Successful",
                     "Report has been saved to the 'reports_output' folder as " + fileName);
