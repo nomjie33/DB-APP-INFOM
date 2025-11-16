@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import model.*;
 import reports.CustomerRentalReport;
+import reports.DefectiveVehiclesReport;
 import reports.RentalRevenueReport;
 
 import java.io.IOException;
@@ -169,7 +170,7 @@ public class Admin_dashboardController implements Initializable {
     void handleReportDefectiveVehicles(MouseEvent event) {
         setActiveNav(reportDefectiveVehiclesButton);
         System.out.println("Defective Vehicles Report clicked");
-        loadPage("Admin-defectiveVehiclesReport.fxml");
+        loadPage("Admin-defectiveVehicleSelect.fxml");
     }
 
     @FXML void handleReportLocationFrequency(MouseEvent event) {
@@ -213,14 +214,14 @@ public class Admin_dashboardController implements Initializable {
                 ((Admin_vehicleRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_locationRecordsController){
                 ((Admin_locationRecordsController) controller).setMainController(this);
-                ((Admin_locationRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_technicianRecordsController) {
                 ((Admin_technicianRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_partRecordsController){
                 ((Admin_partRecordsController) controller).setMainController(this);
-            }
-            else if (controller instanceof Admin_customerRentalReportSelectController) {
+            } else if (controller instanceof Admin_customerRentalReportSelectController) {
                 ((Admin_customerRentalReportSelectController) controller).setMainController(this);
+            } else if (controller instanceof Admin_defectiveVehicleSelectController) {
+                ((Admin_defectiveVehicleSelectController) controller).setMainController(this);
             } else if (controller instanceof Admin_revenueSelectController) {
                 ((Admin_revenueSelectController) controller).setMainController(this);
             }
@@ -351,6 +352,25 @@ public class Admin_dashboardController implements Initializable {
             loadPageFromSub(page);
         } catch (Exception e){
             System.err.println("Failed to load page: Report-CustomerRentalDisplay.fxml");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadDefectiveReportDisplay(List<DefectiveVehiclesReport.DefectiveVehicleData> data, int year, int month) {
+        try {
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Report_defectiveVehicleDisplay.fxml"));
+            Parent page = loader.load();
+
+            Report_defectiveVehicleDisplayController controller = loader.getController();
+            controller.setMainController(this);
+
+            controller.setData(data, year, month);
+
+            loadPageFromSub(page);
+
+        } catch (IOException e){
+            System.err.println("Failed to load page: Report_defectiveVehicleDisplay.fxml");
             e.printStackTrace();
         }
     }

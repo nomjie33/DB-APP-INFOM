@@ -124,8 +124,7 @@ public class Admin_homeController implements Initializable {
 
     @FXML private void handleReportDefectiveVehicles(MouseEvent event) {
         System.out.println("Defective Vehicles report clicked");
-        // mainController.loadPage("Admin-defectiveVehiclesReportSelect.fxml"); // TODO
-        showAlert("Coming Soon", "Defective Vehicles report is not yet implemented.");
+        mainController.loadPage("Admin-defectiveVehiclesReportSelect.fxml");
     }
 
     @FXML private void handleReportLocationFrequency(MouseEvent e){
