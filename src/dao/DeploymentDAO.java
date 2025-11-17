@@ -225,6 +225,36 @@ public class DeploymentDAO {
         return null;
     }
     
+    /**
+     * Get all deployments by status
+     *
+     * @param status Status to filter by ('Active', 'Cancelled')
+     * @return List of deployments with the specified status
+     */
+    public List<DeploymentTransaction> getDeploymentsByStatus(String status) {
+        List<DeploymentTransaction> deployments = new ArrayList<>();
+        String sql = "SELECT * FROM deployments WHERE status = ? ORDER BY startDate DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                deployments.add(extractDeploymentFromResultSet(rs));
+            }
+
+            System.out.println("Found " + deployments.size() + " deployment(s) with status: " + status);
+
+        } catch (SQLException e) {
+            System.err.println("Error getting deployments by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return deployments;
+    }
+
     public List<DeploymentTransaction> getCurrentDeploymentsByLocation(String locationID) {
         List<DeploymentTransaction> deployments = new ArrayList<>();
         String sql = "SELECT * FROM deployments WHERE locationID = ? AND endDate IS NULL AND status = 'Active'";

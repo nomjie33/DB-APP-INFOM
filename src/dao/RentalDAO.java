@@ -223,7 +223,37 @@ public class RentalDAO {
         
         return rentals;
     }
-    
+
+    /**
+     * Get all rentals by status
+     *
+     * @param status Status to filter by ('Active', 'Completed', 'Cancelled')
+     * @return List of rentals with the specified status
+     */
+    public List<RentalTransaction> getRentalsByStatus(String status) {
+        List<RentalTransaction> rentals = new ArrayList<>();
+        String sql = "SELECT * FROM rentals WHERE status = ? ORDER BY startDateTime DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                rentals.add(extractRentalFromResultSet(rs));
+            }
+
+            System.out.println("Found " + rentals.size() + " rental(s) with status: " + status);
+
+        } catch (SQLException e) {
+            System.err.println("Error getting rentals by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return rentals;
+    }
+
     public boolean hasActiveRental(String plateID) {
         String sql = "SELECT COUNT(*) FROM rentals WHERE plateID = ? AND endDateTime IS NULL AND status = 'Active'";
         
