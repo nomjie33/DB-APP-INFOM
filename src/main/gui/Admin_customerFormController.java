@@ -1,11 +1,13 @@
 package main.gui;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.Objects;
 import javafx.scene.control.DialogPane;
 import dao.AddressDAO;
 import dao.BarangayDAO;
@@ -61,6 +63,7 @@ public class Admin_customerFormController implements Initializable {
                 barangayComboBox.getItems().clear();
             }
         });
+
     }
 
     public void setMainController(Admin_dashboardController mainController){
@@ -72,13 +75,14 @@ public class Admin_customerFormController implements Initializable {
         isUpdatingRecord = true;
         currentCustomer = customer;
         formHeaderLabel.setText("Update Customer");
-        idField.setDisable(true); // Disable for edits too
+        idField.setDisable(true);
         idField.getStyleClass().add("form-text-field-disabled");
         idField.setText(customer.getCustomerID());
         firstNameField.setText(customer.getFirstName());
         lastNameField.setText(customer.getLastName());
         contactField.setText(customer.getContactNumber());
         emailField.setText(customer.getEmailAddress());
+
         if (customer.getAddressID() != null) {
             Address fullAddress = addressDAO.getAddressWithFullDetails(customer.getAddressID());
             if (fullAddress != null && fullAddress.getBarangay() != null && fullAddress.getBarangay().getCity() != null) {
@@ -92,11 +96,34 @@ public class Admin_customerFormController implements Initializable {
     }
 
     @FXML private void handleSave() {
+
         if (!validateFields()) return;
 
+        Barangay selectedBarangay = barangayComboBox.getValue();
+        String street = streetField.getText();
+
+        if (isUpdatingRecord) {
+            Address currentAddress = (currentCustomer.getAddressID() != null)
+                    ? addressDAO.getAddressWithFullDetails(currentCustomer.getAddressID())
+                    : new Address();
+            Barangay currentBarangay = (currentAddress.getBarangay() != null) ? currentAddress.getBarangay() : new Barangay();
+            String currentStreet = (currentAddress.getStreet() != null) ? currentAddress.getStreet() : "";
+
+            boolean fNameChanged = !Objects.equals(currentCustomer.getFirstName(), firstNameField.getText());
+            boolean lNameChanged = !Objects.equals(currentCustomer.getLastName(), lastNameField.getText());
+            boolean contactChanged = !Objects.equals(currentCustomer.getContactNumber(), contactField.getText());
+            boolean emailChanged = !Objects.equals(currentCustomer.getEmailAddress(), emailField.getText());
+            boolean streetChanged = !Objects.equals(currentStreet, street);
+            boolean barangayChanged = (selectedBarangay != null) &&
+                    !Objects.equals(currentBarangay.getBarangayID(), selectedBarangay.getBarangayID());
+
+            if (!fNameChanged && !lNameChanged && !contactChanged && !emailChanged && !streetChanged && !barangayChanged) {
+                showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                return; // Stop without saving
+            }
+        }
+
         try {
-            Barangay selectedBarangay = barangayComboBox.getValue();
-            String street = streetField.getText();
             Address address = addressDAO.findOrCreateAddress(selectedBarangay.getBarangayID(), street);
             if (address == null || address.getAddressID() == null) {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to save address record.");
@@ -116,7 +143,6 @@ public class Admin_customerFormController implements Initializable {
             } else {
                 customer = new Customer();
                 customer.setCustomerID(idField.getText());
-
                 customer.setFirstName(firstNameField.getText());
                 customer.setLastName(lastNameField.getText());
                 customer.setContactNumber(contactField.getText());
@@ -127,17 +153,20 @@ public class Admin_customerFormController implements Initializable {
             }
 
             if (isSuccessful){
+                String name = customer.getFirstName() + " " + customer.getLastName();
+                String fullAddress = street + ", " + selectedBarangay.getName() + ", " + cityComboBox.getValue().getName();
+
                 if (isUpdatingRecord) {
+
                     showAlert(Alert.AlertType.INFORMATION, "Update Successful", "Customer record has been updated.");
                 } else {
                     String title = "New Customer Created!";
-                    String name = customer.getFirstName() + " " + customer.getLastName();
-                    String fullAddress = street + ", " + selectedBarangay.getName() + ", " + cityComboBox.getValue().getName();
                     String content = "A new customer has been successfully added.\n\n" +
                             "Customer ID:\n" + customer.getCustomerID() + "\n\n" +
                             "Name:\n" + name + "\n\n" +
                             "Contact:\n" + customer.getContactNumber() + "\n\n" +
                             "Address:\n" + fullAddress;
+
                     showConfirmationDialog(title, content);
                 }
                 mainController.loadPage("Admin-customerRecords.fxml");
@@ -156,7 +185,9 @@ public class Admin_customerFormController implements Initializable {
 
     private boolean validateFields(){
 
-        if (idField.getText().isEmpty() || firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
+        String customerID = idField.getText().trim();
+
+        if (firstNameField.getText().isEmpty() || lastNameField.getText().isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Validation Error", "First Name and Last Name are required.");
             return false;
         }
@@ -165,6 +196,19 @@ public class Admin_customerFormController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Validation Error", "City and Barangay are required.");
             return false;
         }
+
+        if (!isUpdatingRecord) {
+            if (customerID.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Validation Error", "Customer ID is required.");
+                return false;
+            }
+
+            if (customerDAO.getCustomerById(customerID) != null) {
+                showAlert(Alert.AlertType.ERROR, "Duplicate ID", "The Customer ID '" + customerID + "' already exists. Please enter a unique ID.");
+                return false;
+            }
+        }
+
         return true;
     }
 

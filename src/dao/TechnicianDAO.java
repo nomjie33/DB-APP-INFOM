@@ -426,4 +426,26 @@ public class TechnicianDAO {
         
         System.out.println("\n=== Test Complete ===");
     }
+
+    public List<Technician> getTechniciansByStatus(String status) {
+        List<Technician> technicianList = new ArrayList<>();
+        String sql = "SELECT * FROM technicians WHERE status = ? ORDER BY last_name, first_name";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                technicianList.add(extractTechnicianFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving technicians by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return technicianList;
+    }
 }

@@ -1,29 +1,41 @@
 package main.gui;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.scene.control.DialogPane;
 import dao.VehicleDAO;
 import model.Vehicle;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
-public class Admin_vehicleFormController {
+public class Admin_vehicleFormController implements Initializable{
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField plateField;
     @FXML private TextField typeField;
     @FXML private TextField priceField;
 
+    @FXML private Label statusLabel;
+    @FXML private ComboBox<String> statusComboBox;
+
     private Admin_dashboardController mainController;
     private VehicleDAO vehicleDAO = new VehicleDAO();
     private boolean isEditMode = false;
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+    }
 
     public void setMainController(Admin_dashboardController mainController){
         this.mainController = mainController;
@@ -40,6 +52,32 @@ public class Admin_vehicleFormController {
 
             plateField.setDisable(true);
             plateField.getStyleClass().add("form-text-field-disabled");
+
+            statusLabel.setVisible(true);
+            statusComboBox.setVisible(true);
+
+            String currentStatus = vehicle.getStatus();
+            /*
+            if ("In Use".equals(currentStatus)) {
+
+                statusComboBox.setItems(FXCollections.observableArrayList("In Use"));
+                statusComboBox.setValue("In Use");
+                statusComboBox.setDisable(true);
+            } else {
+
+                statusComboBox.setItems(FXCollections.observableArrayList(
+                        "Available", "Maintenance", "Inactive"
+                ));
+                statusComboBox.setValue(currentStatus);
+                statusComboBox.setDisable(false);
+            } */
+
+            statusComboBox.setItems(FXCollections.observableArrayList(
+                    "Available", "In Use", "Maintenance", "Inactive"
+            ));
+
+            statusComboBox.setValue(currentStatus);
+            statusComboBox.setDisable(false);
         }
     }
 
@@ -47,17 +85,26 @@ public class Admin_vehicleFormController {
         if(!validateFields()) return;
 
         try {
-            // This part is the same, gathering the data
+
             Vehicle v = new Vehicle();
             v.setPlateID(plateField.getText());
-            //v.setVehicleModel(modelField.getText());
             v.setVehicleType(typeField.getText());
             v.setRentalPrice(Double.parseDouble(priceField.getText()));
 
             boolean success;
             if (isEditMode){
                 Vehicle target = vehicleDAO.getVehicleById(v.getPlateID());
-                if(target != null) v.setStatus(target.getStatus());
+
+                boolean typeChanged = !target.getVehicleType().equals(v.getVehicleType());
+                boolean priceChanged = (Double.compare(target.getRentalPrice(), v.getRentalPrice()) != 0);
+                boolean statusChanged = !target.getStatus().equals(statusComboBox.getValue());
+
+                if (!typeChanged && !priceChanged && !statusChanged) {
+                    showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                    return; // Stop without saving
+                }
+
+                v.setStatus(statusComboBox.getValue());
                 success = vehicleDAO.updateVehicle(v);
             } else {
                 v.setStatus("Available");
@@ -100,6 +147,12 @@ public class Admin_vehicleFormController {
             showAlert(Alert.AlertType.WARNING, "Validation Error!!!", "Please fill in all required Fields.");
             return false;
         }
+
+        if (statusComboBox.isVisible() && statusComboBox.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Validation Error!!!", "Please select a status.");
+            return false;
+        }
+
         return true;
     }
 

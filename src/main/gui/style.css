@@ -320,9 +320,29 @@
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-background-radius: 5;
+    -fx-padding: 3px 8px 3px 8px;
  }
 
  .edit-button:hover {
     -fx-background-color: #2b8a7f;
     -fx-cursor: hand;
+ }
+
+ /*
+  * ==============================================================================
+  * 9. TABLE ACTION BUTTONS (New)
+  * ==============================================================================
+  */
+
+ .deactivate-button {
+     -fx-background-color: #E06010; /* Darker orange from your theme */
+     -fx-text-fill: white;
+     -fx-font-size: 12px;
+     -fx-background-radius: 5;
+     -fx-padding: 3px 8px 3px 8px; /* Make it small */
+ }
+
+ .deactivate-button:hover {
+     -fx-background-color: #FC7222; /* Lighter orange on hover */
+     -fx-cursor: hand;
  }
