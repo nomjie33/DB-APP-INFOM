@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.DatePicker?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
+<?import javafx.geometry.Insets?>
 <AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_rentController">
     <children>
+
         <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 30px; -fx-font-weight: bold;" text="Rent a Vehicle" />
-        <Label layoutX="38.0" layoutY="80.0" style="-fx-font-weight: bold;" text="1. CHOOSE A VEHICLE TYPE" />
+
+        <Label layoutX="38.0" layoutY="80.0" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="1. Choose a Vehicle Type:" />
+
+        <Label layoutX="38.0" layoutY="300.0" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="2. Schedule a Reservation / Pick-Up:" />
 
         <HBox layoutX="38.0" layoutY="120.0" spacing="12.0">
             <Pane fx:id="scooterPane" onMouseClicked="#handleTypeSelected" prefHeight="150.0" prefWidth="200.0" styleClass="vehicle-pane">
@@ -82,6 +78,50 @@
 
             </children>
         </VBox>
+
+        <VBox fx:id="schedulePane" layoutX="38.0" layoutY="340.0" spacing="15.0" visible="true">
+            <children>
+
+                <HBox spacing="20.0">
+                    <VBox spacing="5.0">
+                        <children>
+                            <Label text="Date" />
+                            <DatePicker fx:id="scheduleDatePicker" prefWidth="180.0" />
+                        </children>
+                    </VBox>
+
+                    <VBox spacing="5.0">
+                        <children>
+                            <Label text="Time" />
+                            <TextField fx:id="scheduleTimeField" prefWidth="150.0" promptText="e.g. 02:00 PM" styleClass="form-text-field" />
+                        </children>
+                    </VBox>
+                </HBox>
+
+            </children>
+        </VBox>
+
+        <HBox layoutX="38.0" layoutY="570.0" spacing="10.0">
+            <children>
+                <Button fx:id="scheduleConfirmButton" onAction="#handleConfirmSchedule" prefHeight="40.0" prefWidth="150.0" styleClass="confirm-button" text="Confirm Schedule" />
+                <Button fx:id="scheduleCancelButton" onAction="#handleCancelSchedule" prefHeight="40.0" prefWidth="100.0" styleClass="cancel-button" text="Cancel" />
+            </children>
+        </HBox>
+
+        <Pane layoutX="38.0" layoutY="465.0" prefHeight="90.0" prefWidth="420.0" styleClass="heads-up-pane">
+            <children>
+                <Label layoutY="28.0" prefWidth="400.0" style="-fx-text-fill: #F99C03;" text="Please note that you may only have one active vehicle reservation at a time. To rent a different vehicle, you must first complete or cancel your current reservation." wrapText="true">
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                </Label>
+                <Label layoutY="11.0" style="-fx-font-weight: bold; -fx-text-fill: #F99C03;" text="Heads Up!">
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                </Label>
+            </children>
+        </Pane>
 
     </children>
 </AnchorPane>

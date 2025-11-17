@@ -68,6 +68,7 @@ public class Client_dashboardController implements Initializable {
         loadPage("Client-settings.fxml");
     }
 
+    /*
     @FXML
     public void handleRentVehicle(MouseEvent event) {
         System.out.println("--- Rent a Vehicle clicked ---");
@@ -98,6 +99,14 @@ public class Client_dashboardController implements Initializable {
             System.out.println("INFO: NO active rental found. Loading rent scene.");
             loadPage("Client-rent.fxml");
         }
+    }
+     */
+
+    @FXML
+    public void handleRentVehicle(MouseEvent event) {
+        System.out.println("Rent a Vehicle clicked");
+        setActiveNav(rentButton);
+        loadPage("Client-rent.fxml");
     }
 
     @FXML

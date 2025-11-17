@@ -19,7 +19,6 @@ Roberta Netanya Tan | S22-07
 package main.gui;
 
 // Core JavaFX
-
 import dao.LocationDAO;
 import dao.RentalDAO;
 import dao.VehicleDAO;
@@ -69,6 +68,11 @@ public class Client_rentController {
     @FXML private Label errorLabel;
     @FXML private Button confirmButton;
     @FXML private Button cancelButton;
+    @FXML private VBox schedulePane;
+    @FXML private DatePicker scheduleDatePicker;
+    @FXML private TextField scheduleTimeField;
+    @FXML private Button scheduleConfirmButton;
+    @FXML private Button scheduleCancelButton;
 
     /**
      =========================================================
@@ -89,7 +93,7 @@ public class Client_rentController {
 
         } catch (IOException e){
             e.printStackTrace();
-            showError(("Could not load return prompt page."));
+            showError("Could not load return prompt page.");
         }
     }
 
@@ -155,7 +159,6 @@ public class Client_rentController {
             selectedVehicleType = "E-Trike";
             trikePane.getStyleClass().add("vehicle-pane-selected");
         }
-        rentalFormPane.setVisible(true);
         errorLabel.setVisible(false);
     }
 
@@ -167,7 +170,6 @@ public class Client_rentController {
      */
     @FXML
     void handleConfirmRent() {
-
         if (mainController == null) {
             System.err.println("Client_rentController: Main controller is null!");
             return;
@@ -175,7 +177,7 @@ public class Client_rentController {
 
         LocalDate startDate = datePicker.getValue();
         LocalDate endDate = returnDatePicker.getValue();
-        Location selectedLocation = locationComboBox.getValue(); // Get Location object
+        Location selectedLocation = locationComboBox.getValue();
         String startTime = startTimeField.getText();
         String endTime = endTimeField.getText();
 
@@ -200,7 +202,6 @@ public class Client_rentController {
         LocalTime endLocalTime;
 
         try {
-
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
             startLocalTime = LocalTime.parse(startTime, timeFormatter);
             endLocalTime = LocalTime.parse(endTime, timeFormatter);
@@ -224,24 +225,18 @@ public class Client_rentController {
         }
 
         try {
-
             List<Vehicle> vehicleOfType = vehicleDAO.getVehiclesByType(selectedVehicleType);
-            Vehicle vehicleToRent = null;
-            for (Vehicle v: vehicleOfType){
-                if (v.getStatus().equalsIgnoreCase("Available")){
-                    vehicleToRent = v;
-                    break;
-                }
-            }
+            Vehicle vehicleToRent = vehicleOfType.stream()
+                    .filter(v -> v.getStatus().equalsIgnoreCase("Available"))
+                    .findFirst()
+                    .orElse(null);
 
-            if (vehicleToRent == null){
+            if (vehicleToRent == null) {
                 showError("Sorry, no " + selectedVehicleType + " vehicles are available at this time.");
                 return;
             }
 
             String newRentalID = "R" + (System.currentTimeMillis() % 1000000);
-            String newDeploymentID = "D" + newRentalID;
-
             RentalTransaction newRental = new RentalTransaction();
             newRental.setRentalID(newRentalID);
             newRental.setCustomerID(loggedInCustomer.getCustomerID());
@@ -262,16 +257,21 @@ public class Client_rentController {
 
             vehicleDAO.updateVehicleStatus(vehicleToRent.getPlateID(), "In Use");
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Client-deployment.fxml"));
-            Parent page = loader.load();
-            Client_deploymentController deploymentController = loader.getController();
-            deploymentController.initData(newRental, vehicleToRent, newDeploymentID);
-            deploymentController.setMainController(mainController);
-            mainController.loadPageFromSub(page);
+            System.out.println("Rental created successfully: " + newRental.getRentalID());
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Client-payment.fxml"));
+            Parent paymentPage = loader.load();
+
+            Client_paymentController paymentController = loader.getController();
+            paymentController.setMainController(mainController);
+            paymentController.initData(loggedInCustomer, newRental);
+
+            System.out.println("Loading payment scene for rental: " + newRental.getRentalID());
+            mainController.loadPageFromSub(paymentPage);
 
         } catch (IOException e) {
             e.printStackTrace();
-            showError("Could not load deployment page.");
+            showError("Could not load payment page.");
         } catch (Exception e) {
             e.printStackTrace();
             showError("An unexpected error occurred: " + e.getMessage());
@@ -285,7 +285,48 @@ public class Client_rentController {
     }
 
     private void showError(String message) {
-        errorLabel.setText(message);
-        errorLabel.setVisible(true);
+        if (errorLabel != null) {
+            errorLabel.setText(message);
+            errorLabel.setVisible(true);
+        } else {
+            System.err.println("ErrorLabel is null! Message: " + message);
+        }
+    }
+
+    @FXML
+    private void handleConfirmSchedule(javafx.event.ActionEvent event) {
+        LocalDate date = scheduleDatePicker.getValue();
+        String timeText = scheduleTimeField.getText();
+
+        if (date == null || timeText.isEmpty()) {
+            showScheduleError("Please enter both date and time.");
+            return;
+        }
+
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+            LocalTime time = LocalTime.parse(timeText, formatter);
+            LocalDateTime scheduledDateTime = LocalDateTime.of(date, time);
+
+            if (scheduledDateTime.isBefore(LocalDateTime.now())) {
+                showScheduleError("The scheduled time cannot be in the past.");
+                return;
+            }
+
+            System.out.println("Schedule confirmed for " + scheduledDateTime);
+
+        } catch (DateTimeParseException e) {
+            showScheduleError("Invalid time format. Use 'hh:mm AM/PM'.");
+        }
+    }
+
+    @FXML
+    private void handleCancelSchedule(javafx.event.ActionEvent event) {
+        scheduleDatePicker.setValue(null);
+        scheduleTimeField.clear();
+    }
+
+    private void showScheduleError(String message) {
+        System.err.println(message);
     }
 }
