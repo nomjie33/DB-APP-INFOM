@@ -188,5 +188,32 @@ public class LocationDAO {
         
         return locations;
     }
+
+    public List<Location> getAllLocationsByStatus(String status) {
+        List<Location> locations = new ArrayList<>();
+
+        String sql = "SELECT * FROM locations WHERE status = ? ORDER BY name";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Location location = new Location();
+                location.setLocationID(rs.getString("locationID"));
+                location.setName(rs.getString("name"));
+                location.setStatus(rs.getString("status"));
+                locations.add(location);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error getting locations by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return locations;
+    }
     
 }
