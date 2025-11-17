@@ -3,15 +3,19 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="771.0" prefWidth="850.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_rentalRecordsController">
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_rentalRecordsController">
     <children>
         <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 20px;" text="Section" />
         <Label layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Rental List" />
-        <Label fx:id="rentalCountLabel" layoutX="38.0" layoutY="100.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="(0) RENTALS:" />
+
+        <Label layoutX="38.0" layoutY="114.0" styleClass="sidebar-title" text="Show:" />
+        <ComboBox fx:id="statusFilterComboBox" layoutX="93.0" layoutY="104.0" prefWidth="150.0" styleClass="form-text-field" />
+
+        <Label fx:id="rentalCountLabel" layoutX="256.0" layoutY="113.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="(0) RENTALS:" />
 
         <Button fx:id="addButton" layoutX="690.0" layoutY="100.0" onAction="#handleAddRental" prefHeight="31.0" prefWidth="72.0" styleClass="add-button" text="+" />
 
-        <TableView fx:id="rentalTable" layoutX="38.0" layoutY="140.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
+        <TableView fx:id="rentalTable" layoutX="38.0" layoutY="150.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
             <columns>
                 <TableColumn fx:id="rentalIDColumn" prefWidth="85.0" text="Rental ID" />
                 <TableColumn fx:id="customerIDColumn" prefWidth="90.0" text="Customer ID" />
@@ -20,9 +24,16 @@
                 <TableColumn fx:id="pickUpColumn" prefWidth="120.0" text="Pick-Up Date/Time" />
                 <TableColumn fx:id="startColumn" prefWidth="100.0" text="Start Date/Time" />
                 <TableColumn fx:id="endColumn" prefWidth="100.0" text="End Date/Time" />
-                <TableColumn fx:id="statusColumn" prefWidth="50.0" text="Status" />
-                <TableColumn fx:id="actionColumn" prefWidth="50.0" text="Action" />
+                <TableColumn fx:id="statusColumn" prefWidth="80.0" text="Status" />
+
+                <TableColumn fx:id="editColumn" prefWidth="50.0" text="Edit" />
+                <TableColumn fx:id="actionColumn" prefWidth="90.0" text="Action" />
             </columns>
+
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+
         </TableView>
 
     </children>

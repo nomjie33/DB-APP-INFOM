@@ -14,6 +14,11 @@ public class RentalDAO {
     // ==================== CREATE ====================
     
     public boolean insertRental(RentalTransaction rental) {
+
+        if (rental.getRentalID() == null || rental.getRentalID().isEmpty()) {
+            rental.setRentalID(generateRentalID());
+        }
+
         String sql = "INSERT INTO rentals (rentalID, customerID, plateID, locationID, " +
                      "pickUpDateTime, startDateTime, endDateTime, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
@@ -178,6 +183,27 @@ public class RentalDAO {
         }
         
         return rentals;
+    }
+
+    public RentalTransaction getActiveRentalsByCustomer(String customerID) {
+
+        String sql = "SELECT * FROM rentals WHERE customerID = ? AND status != 'Cancelled' ORDER BY startDateTime DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, customerID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                return extractRentalFromResultSet(rs);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
     
     public List<RentalTransaction> getRentalsByVehicle(String plateID) {
@@ -372,4 +398,26 @@ public class RentalDAO {
         rental.setStatus(rs.getString("status"));
         return rental;
     }
+
+    public String generateRentalID() {
+        String lastID = getLastRentalID();
+        int nextNumber = 1;
+        if (lastID != null && lastID.startsWith("RNT-")) {
+            nextNumber = Integer.parseInt(lastID.substring(4)) + 1;
+        }
+        return String.format("RNT-%03d", nextNumber);
+    }
+
+    public String getLastRentalID() {
+        String sql = "SELECT rentalID FROM rentals ORDER BY rentalID DESC LIMIT 1";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) return rs.getString("rentalID");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

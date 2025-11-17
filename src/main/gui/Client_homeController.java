@@ -114,7 +114,16 @@ public class Client_homeController implements Initializable {
             List<RentalTransaction> rentals = rentalDAO.getRentalsByCustomer(customerId);
 
             for (RentalTransaction rental: rentals){
-                String date = rental.getStartDateTime().toString().substring(0, 10);
+
+                String date;
+
+                if (rental.getStartDateTime() != null) {
+                    date = rental.getStartDateTime().toString().substring(0, 10);
+                } else if (rental.getPickUpDateTime() != null) {
+                    date = rental.getPickUpDateTime().toString().substring(0, 10);
+                } else {
+                    date = "Pending";
+                }
                 allTransactions.add(new Transaction(date, rental.getRentalID(), "Vehicle Rental"));
 
                 List<PenaltyTransaction> penalties = penaltyDAO.getPenaltiesByRental(rental.getRentalID());
