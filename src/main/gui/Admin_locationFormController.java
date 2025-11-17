@@ -75,6 +75,15 @@ public class Admin_locationFormController implements Initializable{
 
         boolean success;
         if (isEditMode){
+            Location oldLoc = locationDAO.getLocationById(loc.getLocationID());
+            boolean nameChanged = !oldLoc.getName().equals(loc.getName());
+            boolean statusChanged = !oldLoc.getStatus().equals(statusComboBox.getValue());
+
+            if (!nameChanged && !statusChanged) {
+                showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                return;
+            }
+
             loc.setStatus(statusComboBox.getValue());
             success = locationDAO.updateLocation(loc);
         } else {

@@ -65,12 +65,19 @@ public class Admin_technicianFormController {
 
             boolean success;
             if (isEditMode){
-                Technician oldTech = technicianDAO.getTechnicianById(technician.getTechnicianId());
-                if (oldTech != null){
-                    technician.setStatus(oldTech.getStatus());
-                } else {
-                    technician.setStatus("Active");
+                Technician oldTech = technicianDAO.getTechnicianByIdIncludingInactive(technician.getTechnicianId());
+
+                boolean lastNameChanged = !oldTech.getLastName().equals(technician.getLastName());
+                boolean firstNameChanged = !oldTech.getFirstName().equals(technician.getFirstName());
+                boolean specIdChanged = !oldTech.getSpecializationId().equals(technician.getSpecializationId());
+                boolean rateChanged = oldTech.getRate().compareTo(technician.getRate()) != 0;
+                boolean contactChanged = !oldTech.getContactNumber().equals(technician.getContactNumber());
+
+                if (!lastNameChanged && !firstNameChanged && !specIdChanged && !rateChanged && !contactChanged) {
+                    showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                    return;
                 }
+                technician.setStatus(oldTech.getStatus());
                 success = technicianDAO.updateTechnician(technician);
             } else {
                 technician.setStatus("Active");

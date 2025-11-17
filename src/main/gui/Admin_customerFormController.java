@@ -114,12 +114,12 @@ public class Admin_customerFormController implements Initializable {
             boolean contactChanged = !Objects.equals(currentCustomer.getContactNumber(), contactField.getText());
             boolean emailChanged = !Objects.equals(currentCustomer.getEmailAddress(), emailField.getText());
             boolean streetChanged = !Objects.equals(currentStreet, street);
-            boolean barangayChanged = !Objects.equals(currentBarangay.getBarangayID(), selectedBarangay.getBarangayID());
+            boolean barangayChanged = (selectedBarangay != null) &&
+                    !Objects.equals(currentBarangay.getBarangayID(), selectedBarangay.getBarangayID());
 
             if (!fNameChanged && !lNameChanged && !contactChanged && !emailChanged && !streetChanged && !barangayChanged) {
-                System.out.println("No changes detected. Returning to list.");
-                mainController.loadPage("Admin-customerRecords.fxml"); // Just go back
-                return;
+                showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                return; // Stop without saving
             }
         }
 
@@ -143,7 +143,6 @@ public class Admin_customerFormController implements Initializable {
             } else {
                 customer = new Customer();
                 customer.setCustomerID(idField.getText());
-
                 customer.setFirstName(firstNameField.getText());
                 customer.setLastName(lastNameField.getText());
                 customer.setContactNumber(contactField.getText());
@@ -154,29 +153,22 @@ public class Admin_customerFormController implements Initializable {
             }
 
             if (isSuccessful){
-                String title;
-                String content;
                 String name = customer.getFirstName() + " " + customer.getLastName();
                 String fullAddress = street + ", " + selectedBarangay.getName() + ", " + cityComboBox.getValue().getName();
 
                 if (isUpdatingRecord) {
-                    title = "Customer Record Updated!";
-                    content = "The record has been successfully updated.\n\n" +
+
+                    showAlert(Alert.AlertType.INFORMATION, "Update Successful", "Customer record has been updated.");
+                } else {
+                    String title = "New Customer Created!";
+                    String content = "A new customer has been successfully added.\n\n" +
                             "Customer ID:\n" + customer.getCustomerID() + "\n\n" +
                             "Name:\n" + name + "\n\n" +
                             "Contact:\n" + customer.getContactNumber() + "\n\n" +
                             "Address:\n" + fullAddress;
 
-                    showAlert(Alert.AlertType.INFORMATION, "Update Successful", "Customer record has been updated.");
-                } else {
-                    title = "New Customer Created!";
-                    content = "A new customer has been successfully added.\n\n" +
-                            "Customer ID:\n" + customer.getCustomerID() + "\n\n" +
-                            "Name:\n" + name + "\n\n" +
-                            "Contact:\n" + customer.getContactNumber() + "\n\n" +
-                            "Address:\n" + fullAddress;
+                    showConfirmationDialog(title, content);
                 }
-                showConfirmationDialog(title, content);
                 mainController.loadPage("Admin-customerRecords.fxml");
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to save customer record.");

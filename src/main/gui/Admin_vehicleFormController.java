@@ -93,6 +93,17 @@ public class Admin_vehicleFormController implements Initializable{
 
             boolean success;
             if (isEditMode){
+                Vehicle target = vehicleDAO.getVehicleById(v.getPlateID());
+
+                boolean typeChanged = !target.getVehicleType().equals(v.getVehicleType());
+                boolean priceChanged = (Double.compare(target.getRentalPrice(), v.getRentalPrice()) != 0);
+                boolean statusChanged = !target.getStatus().equals(statusComboBox.getValue());
+
+                if (!typeChanged && !priceChanged && !statusChanged) {
+                    showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                    return; // Stop without saving
+                }
+
                 v.setStatus(statusComboBox.getValue());
                 success = vehicleDAO.updateVehicle(v);
             } else {
