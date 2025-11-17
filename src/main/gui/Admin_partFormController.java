@@ -14,6 +14,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class Admin_partFormController {
 
@@ -26,7 +27,7 @@ public class Admin_partFormController {
     private Admin_dashboardController mainController;
     private PartDAO dao = new PartDAO();
     private boolean isEditMode = false;
-    private Part currentPart; // To hold the part being edited
+    private Part currentPart;
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
@@ -53,34 +54,50 @@ public class Admin_partFormController {
         if (!validateFields()) return;
 
         try {
+
+            String newName = nameField.getText();
+            int newQuantity = Integer.parseInt(stockField.getText());
+            BigDecimal newPrice = new BigDecimal(priceField.getText());
+
+            if (isEditMode) {
+
+                boolean nameChanged = !Objects.equals(currentPart.getPartName(), newName);
+                boolean qtyChanged = currentPart.getQuantity() != newQuantity;
+                boolean priceChanged = currentPart.getPrice().compareTo(newPrice) != 0;
+
+                if (!nameChanged && !qtyChanged && !priceChanged) {
+                    showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                    return;
+                }
+            }
+
             Part part = new Part();
             part.setPartId(idField.getText());
-            part.setPartName(nameField.getText());
-            part.setQuantity(Integer.parseInt(stockField.getText()));
-            part.setPrice(new BigDecimal(priceField.getText()));
+            part.setPartName(newName);
+            part.setQuantity(newQuantity);
+            part.setPrice(newPrice);
 
             boolean success;
             if (isEditMode) {
-                // Preserve status on update
-                Part oldPart = dao.getPartById(part.getPartId());
+                part.setStatus(currentPart.getStatus());
+
+                Part oldPart = dao.getPartByIdIncludingInactive(part.getPartId());
                 if (oldPart != null) {
                     part.setStatus(oldPart.getStatus());
                 } else {
-                    // Fallback just in case
-                    part.setStatus(part.getQuantity() > 0 ? "Active" : "Out of Stock");
+                    part.setStatus("Active");
                 }
+
                 success = dao.updatePart(part);
             } else {
-                part.setStatus(part.getQuantity() > 0 ? "Active" : "Out of Stock");
+                part.setStatus("Active");
                 success = dao.insertPart(part);
             }
 
-            // --- 2. UPDATED CONFIRMATION LOGIC ---
             if (success) {
                 if (isEditMode) {
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Part record saved.");
                 } else {
-                    // Show custom dialog for new records
                     String title = "New Part Added!";
                     String content = "A new part has been successfully added.\n\n" +
                             "Part ID:\n" + part.getPartId() + "\n\n" +
@@ -94,7 +111,6 @@ public class Admin_partFormController {
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to save part. The ID might already exist.");
             }
-            // --- END OF UPDATE ---
 
         } catch (NumberFormatException e) {
             showAlert(Alert.AlertType.ERROR, "Invalid Input", "Stock (e.g., 10) and Price (e.g., 1500.00) must be valid numbers.");
@@ -126,10 +142,6 @@ public class Admin_partFormController {
         alert.showAndWait();
     }
 
-    // --- 3. ADD HELPER METHOD ---
-    /**
-     * Shows the new generic confirmation dialog.
-     */
     private void showConfirmationDialog(String title, String content) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin_addRecordConfirmation.fxml"));
@@ -157,5 +169,5 @@ public class Admin_partFormController {
             showAlert(Alert.AlertType.ERROR, "Error", "Could not load confirmation dialog.");
         }
     }
-    // --- END OF HELPER METHOD ---
+
 }
