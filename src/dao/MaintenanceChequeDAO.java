@@ -378,4 +378,25 @@ public class MaintenanceChequeDAO {
             rs.getString("status")
         );
     }
+
+    public List<MaintenanceCheque> getAllActiveMaintenanceCheques() {
+        List<MaintenanceCheque> chequeList = new ArrayList<>();
+        String sql = "SELECT * FROM maintenance_cheque WHERE status = 'Active'";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                chequeList.add(extractMaintenanceChequeFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving all active maintenance cheques: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return chequeList;
+    }
 }

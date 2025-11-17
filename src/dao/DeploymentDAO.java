@@ -24,7 +24,11 @@ public class DeploymentDAO {
             stmt.setString(2, deployment.getPlateID());
             stmt.setString(3, deployment.getLocationID());
             stmt.setDate(4, deployment.getStartDate());
-            stmt.setDate(5, deployment.getEndDate());
+            if (deployment.getEndDate() == null){
+                stmt.setNull(5, java.sql.Types.DATE);
+            } else {
+                stmt.setDate(5, deployment.getEndDate());
+            }
             stmt.setString(6, "Active");
             
             int rowsAffected = stmt.executeUpdate();
@@ -246,18 +250,19 @@ public class DeploymentDAO {
     // ==================== UPDATE ====================
     
     public boolean updateDeployment(DeploymentTransaction deployment) {
-        String sql = "UPDATE deployments SET plateID = ?, locationID = ?, " +
-                     "startDate = ?, endDate = ?, status = ? WHERE deploymentID = ?";
+        String sql = "UPDATE deployments SET endDate = ?, status = ? WHERE deploymentID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, deployment.getPlateID());
-            stmt.setString(2, deployment.getLocationID());
-            stmt.setDate(3, deployment.getStartDate());
-            stmt.setDate(4, deployment.getEndDate());
-            stmt.setString(5, deployment.getStatus());
-            stmt.setString(6, deployment.getDeploymentID());
+
+            if (deployment.getEndDate() == null){
+                stmt.setNull(1, java.sql.Types.DATE);
+            } else {
+                stmt.setDate(1, deployment.getEndDate());
+            }
+
+            stmt.setString(2, deployment.getStatus().trim());
+            stmt.setString(3, deployment.getDeploymentID());
             
             int rowsAffected = stmt.executeUpdate();
             

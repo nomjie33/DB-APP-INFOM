@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_maintenanceFormController">
+    <children>
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 20px;" text="Section" />
+        <Label fx:id="formHeaderLabel" layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="New Maintenance" />
+
+        <AnchorPane layoutX="38.0" layoutY="120.0" prefHeight="550.0" prefWidth="747.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+            <children>
+
+                <Label layoutX="30.0" layoutY="30.0" styleClass="sidebar-title" text="Maintenance ID" />
+                <TextField fx:id="maintenanceIDField" layoutX="30.0" layoutY="55.0" prefWidth="320.0" promptText="MAINT-XXX" styleClass="form-text-field" />
+
+                <Label layoutX="380.0" layoutY="30.0" styleClass="sidebar-title" text="Vehicle Plate ID" />
+                <ComboBox fx:id="plateComboBox" layoutX="380.0" layoutY="55.0" prefWidth="320.0" styleClass="form-text-field" />
+
+                <Label layoutX="30.0" layoutY="110.0" styleClass="sidebar-title" text="Technician ID" />
+                <ComboBox fx:id="technicianComboBox" layoutX="30.0" layoutY="135.0" prefWidth="320.0" styleClass="form-text-field"  />
+
+                <Label layoutX="30.0" layoutY="190.0" styleClass="sidebar-title" text="Start Date" />
+                <DatePicker fx:id="startDatePicker" layoutX="30.0" layoutY="215.0" prefWidth="155.0" styleClass="form-date-picker" />
+
+                <Label layoutX="195.0" layoutY="190.0" styleClass="sidebar-title" text="Start Time (HH:MM:SS)" />
+                <TextField fx:id="startTimeField" layoutX="195.0" layoutY="215.0" prefWidth="155.0" promptText="10:30:00" styleClass="form-text-field" />
+
+                <Label layoutX="380.0" layoutY="190.0" styleClass="sidebar-title" text="End Date (Optional)" />
+                <DatePicker fx:id="endDatePicker" layoutX="380.0" layoutY="215.0" prefWidth="155.0" styleClass="form-date-picker" />
+
+                <Label layoutX="545.0" layoutY="190.0" styleClass="sidebar-title" text="End Time (HH:MM:SS)" />
+                <TextField fx:id="endTimeField" layoutX="545.0" layoutY="215.0" prefWidth="155.0" promptText="11:30:00" styleClass="form-text-field" />
+
+                <Label layoutX="30.0" layoutY="270.0" styleClass="sidebar-title" text="Notes" />
+                <TextArea fx:id="notesArea" layoutX="30.0" layoutY="295.0" prefHeight="150.0" prefWidth="670.0" promptText="E.g., Replaced brake pads and performed oil change." styleClass="form-text-area" wrapText="true" />
+
+                <Button layoutX="30.0" layoutY="485.0" onAction="#handleSave" prefWidth="150.0" styleClass="save-button" text="Save Record" />
+                <Button layoutX="190.0" layoutY="485.0" onAction="#handleCancel" prefWidth="150.0" styleClass="cancel-button" text="Cancel" />
+            </children>
+        </AnchorPane>
+    </children>
+</AnchorPane>

@@ -1,7 +1,11 @@
 package main.gui;
 
 import dao.DeploymentDAO;
+import dao.VehicleDAO;
+import dao.LocationDAO;
 import model.DeploymentTransaction;
+
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -42,6 +46,26 @@ public class Admin_deploymentRecordsController implements Initializable {
         locationIDColumn.setCellValueFactory(new PropertyValueFactory<>("locationID"));
         startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startDate"));
         endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endDate"));
+
+        endDateColumn.setCellFactory(column -> {
+            return new TableCell<DeploymentTransaction, Date>() {
+                @Override
+                protected void updateItem(Date item, boolean empty) {
+                    super.updateItem(item, empty);
+
+                    if (empty) {
+                        setText(null);
+                        setStyle("");
+                    } else if (item == null) {
+                        setText("N/A"); // Show "N/A" if date is NULL
+                        setStyle("-fx-text-fill: grey;");
+                    } else {
+                        setText(item.toString());
+                        setStyle("");
+                    }
+                }
+            };
+        });
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         loadDeploymentData();

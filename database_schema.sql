@@ -386,7 +386,7 @@ CREATE TABLE deployments (
         ON UPDATE CASCADE,
     
     CONSTRAINT chk_deployment_status
-        CHECK (status IN ('Active', 'Cancelled'))
+        CHECK (status IN ('Active', 'Completed', 'Cancelled'))
 );
 
 CREATE INDEX idx_deployment_vehicle ON deployments(plateID);

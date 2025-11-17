@@ -129,7 +129,7 @@ public class Admin_dashboardController implements Initializable {
     @FXML void handleRentalTransactions(MouseEvent event) {
         setActiveNav(rentalTransactionsButton);
         System.out.println("Rental Transactions clicked");
-        loadPage("Admin-rentalTransactions.fxml");
+        loadPage("Admin-rentalRecords.fxml");
     }
 
     @FXML void handlePaymentTransactions(MouseEvent event) {
@@ -147,13 +147,13 @@ public class Admin_dashboardController implements Initializable {
     @FXML void handleMaintenanceTransactions(MouseEvent event) {
         setActiveNav(maintenanceTransactionsButton);
         System.out.println("Maintenance Transactions clicked");
-        loadPage("Admin-maintenanceTransactions.fxml");
+        loadPage("Admin-maintenanceRecords.fxml");
     }
 
     @FXML void handleMaintenanceCheques(MouseEvent event) {
         setActiveNav(maintenanceChequesButton);
         System.out.println("Maintenance Cheques clicked");
-        loadPage("Admin-maintenanceCheques.fxml");
+        loadPage("Admin-maintenanceChequeRecords.fxml");
     }
 
     @FXML void handlePenaltyTransactions(MouseEvent event) {
@@ -220,10 +220,18 @@ public class Admin_dashboardController implements Initializable {
                 ((Admin_technicianRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_partRecordsController){
                 ((Admin_partRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_rentalRecordsController){
+                ((Admin_rentalRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_paymentRecordsController) {
                 ((Admin_paymentRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_deploymentRecordsController) {
                 ((Admin_deploymentRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_maintenanceRecordsController){
+                ((Admin_maintenanceRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_maintenanceChequeRecordsController){
+                ((Admin_maintenanceChequeRecordsController) controller).setMainController(this);
+            } else if (controller instanceof Admin_penaltyRecordsController){
+                ((Admin_penaltyRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_customerRentalReportSelectController) {
                 ((Admin_customerRentalReportSelectController) controller).setMainController(this);
             } else if (controller instanceof Admin_defectiveVehicleSelectController) {
@@ -327,6 +335,28 @@ public class Admin_dashboardController implements Initializable {
         }
     }
 
+    public void loadRentalForm(RentalTransaction rentalToEdit) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-rentalForm.fxml"));
+            AnchorPane root = loader.load();
+
+            Admin_rentalFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            controller.setRentalData(rentalToEdit);
+            centerContentPane.getChildren().setAll(root);
+
+            AnchorPane.setTopAnchor(root, 0.0);
+            AnchorPane.setBottomAnchor(root, 0.0);
+            AnchorPane.setLeftAnchor(root, 0.0);
+            AnchorPane.setRightAnchor(root, 0.0);
+
+        } catch (IOException e) {
+            System.err.println("Failed to load Rental Form FXML.");
+            e.printStackTrace();
+        }
+    }
+
     public void loadPartForm(Part partToEdit){
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-partForm.fxml"));
@@ -382,6 +412,70 @@ public class Admin_dashboardController implements Initializable {
         } catch (IOException e) {
             System.err.println("Failed to load deployment form.");
             e.printStackTrace();
+        }
+    }
+
+    public void loadMaintenanceForm(MaintenanceTransaction maintenanceToEdit) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-maintenanceForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_maintenanceFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (maintenanceToEdit != null){
+                controller.setMaintenanceData(maintenanceToEdit);
+            }
+
+            loadPageFromSub(page);
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void loadMaintenanceChequeForm(model.MaintenanceCheque chequeToEdit) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-maintenanceChequeForm.fxml"));
+            Parent page = loader.load();
+
+            Admin_maintenanceChequeFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (chequeToEdit != null) {
+                controller.setMaintenanceChequeData(chequeToEdit);
+            }
+
+            loadPageFromSub(page);
+
+        } catch (IOException e) {
+            System.err.println("Failed to load maintenance cheque form.");
+            e.printStackTrace();
+        }
+    }
+
+    public void loadPenaltyForm(PenaltyTransaction penalty) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-penaltyForm.fxml"));
+            AnchorPane root = loader.load();
+
+            Admin_penaltyFormController controller = loader.getController();
+            controller.setMainController(this);
+
+            if (penalty != null) {
+                controller.setPenaltyData(penalty);
+            }
+
+            centerContentPane.getChildren().setAll(root);
+
+            AnchorPane.setTopAnchor(root, 0.0);
+            AnchorPane.setBottomAnchor(root, 0.0);
+            AnchorPane.setLeftAnchor(root, 0.0);
+            AnchorPane.setRightAnchor(root, 0.0);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Failed to load Penalty Form FXML.");
         }
     }
 

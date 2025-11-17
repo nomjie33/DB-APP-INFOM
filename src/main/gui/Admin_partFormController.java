@@ -1,13 +1,11 @@
 package main.gui;
 
-// --- 1. ADD IMPORTS ---
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
-// --- END IMPORTS ---
 
 import dao.PartDAO;
 import model.Part;

@@ -1,54 +1,90 @@
 package main.gui;
 
+import dao.PaymentDAO;
+import dao.RentalDAO;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import java.io.IOException;
-
-import dao.PaymentDAO;
+import javafx.util.StringConverter;
 import model.PaymentTransaction;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.Alert.AlertType;
+import model.RentalTransaction;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class Admin_paymentFormController {
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField idField;
-    @FXML private TextField rentalIDField;
+    @FXML private ComboBox<RentalTransaction> rentalComboBox;
     @FXML private TextField amountField;
     @FXML private DatePicker paymentDatePicker;
 
     private Admin_dashboardController mainController;
     private PaymentDAO paymentDAO = new PaymentDAO();
+    private RentalDAO rentalDAO = new RentalDAO();
 
     private boolean isUpdatingRecord = false;
     private PaymentTransaction currentPayment;
+
+    @FXML
+    public void initialize() {
+
+        loadRentalComboBox();
+    }
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
     }
 
     public void setPaymentData(PaymentTransaction payment) {
+
+
+
+        idField.setDisable(false);
+        rentalComboBox.setDisable(false);
+        amountField.setDisable(false);
+        paymentDatePicker.setDisable(false);
+        idField.getStyleClass().remove("form-text-field-disabled");
+        rentalComboBox.getStyleClass().remove("form-text-field-disabled");
+
         if (payment != null) {
+
             isUpdatingRecord = true;
             currentPayment = payment;
-
             formHeaderLabel.setText("Update Payment");
 
             idField.setText(payment.getPaymentID());
-            rentalIDField.setText(payment.getRentalID());
             amountField.setText(payment.getAmount().toPlainString());
             if (payment.getPaymentDate() != null) {
                 paymentDatePicker.setValue(payment.getPaymentDate().toLocalDate());
             }
 
+            RentalTransaction paymentRental = findRentalInList(payment.getRentalID());
+            rentalComboBox.setValue(paymentRental);
+
             idField.setDisable(true);
+            idField.getStyleClass().add("form-text-field-disabled");
+            rentalComboBox.setDisable(true);
+            rentalComboBox.getStyleClass().add("form-text-field-disabled");
+
+        } else {
+            isUpdatingRecord = false;
+            formHeaderLabel.setText("New Payment");
+
+            idField.clear();
+            rentalComboBox.setValue(null);
+            amountField.clear();
+            paymentDatePicker.setValue(null);
         }
     }
 
@@ -57,7 +93,10 @@ public class Admin_paymentFormController {
 
         try {
             String paymentID = idField.getText().trim();
-            String rentalID = rentalIDField.getText().trim();
+
+            RentalTransaction selectedRental = rentalComboBox.getValue();
+            String rentalID = selectedRental.getRentalID();
+
             BigDecimal amount = new BigDecimal(amountField.getText().trim());
             LocalDate paymentDate = paymentDatePicker.getValue();
 
@@ -95,6 +134,9 @@ public class Admin_paymentFormController {
 
         } catch (NumberFormatException e) {
             showAlert(AlertType.ERROR, "Invalid Amount", "Amount must be a valid number (e.g., 1500.00).");
+        } catch (NullPointerException e) {
+            showAlert(AlertType.ERROR, "Validation Error", "Please select a rental from the dropdown.");
+            e.printStackTrace();
         } catch (Exception e) {
             showAlert(AlertType.ERROR, "Error", "An unexpected error occurred during save.");
             e.printStackTrace();
@@ -107,7 +149,7 @@ public class Admin_paymentFormController {
 
     private boolean validateFields() {
         if (idField.getText().trim().isEmpty() ||
-                rentalIDField.getText().trim().isEmpty() ||
+                rentalComboBox.getValue() == null ||
                 amountField.getText().trim().isEmpty() ||
                 paymentDatePicker.getValue() == null) {
             showAlert(AlertType.WARNING, "Validation Error", "Please fill in all required fields.");
@@ -132,9 +174,52 @@ public class Admin_paymentFormController {
         alert.showAndWait();
     }
 
+    private void loadRentalComboBox() {
+        try {
+
+            List<RentalTransaction> rentals = rentalDAO.getAllRentals();
+            ObservableList<RentalTransaction> rentalList = FXCollections.observableArrayList(rentals);
+            rentalComboBox.setItems(rentalList);
+
+            rentalComboBox.setConverter(new StringConverter<RentalTransaction>() {
+                @Override
+                public String toString(RentalTransaction rental) {
+                    if (rental == null) {
+                        return null;
+                    }
+
+                    return String.format("%s (Customer: %s, Vehicle: %s)",
+                            rental.getRentalID(),
+                            rental.getCustomerID(),
+                            rental.getPlateID()
+                    );
+                }
+
+                @Override
+                public RentalTransaction fromString(String string) {
+                    return null;
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(AlertType.ERROR, "Load Error", "Failed to load rental list.");
+        }
+    }
+
+    private RentalTransaction findRentalInList(String rentalID) {
+        if (rentalID == null) return null;
+        for (RentalTransaction r : rentalComboBox.getItems()) {
+            if (r.getRentalID().equals(rentalID)) {
+                return r;
+            }
+        }
+        return rentalDAO.getRentalById(rentalID);
+    }
+
     private void showConfirmationDialog(String title, String content) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin_addRecordConfirmation.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-addRecordConfirmation.fxml"));
             AnchorPane page = loader.load();
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Confirmation");

@@ -95,16 +95,16 @@ public class Admin_homeController implements Initializable {
                 fxmlFile = "Admin-partRecords.fxml";
                 break;
             case "Rental records":
-                fxmlFile = "Admin-rentalTransactions.fxml";
+                fxmlFile = "Admin-rentalRecords.fxml";
                 break;
             case "Payment records":
-                fxmlFile = "Admin-paymentTransactions.fxml";
+                fxmlFile = "Admin-paymentRecords.fxml";
                 break;
             case "Maintenance records":
-                fxmlFile = "Admin-maintenanceTransactions.fxml";
+                fxmlFile = "Admin-maintenanceRecords.fxml";
                 break;
             case "Maintenance cheques":
-                fxmlFile = "Admin-maintenanceCheques.fxml";
+                fxmlFile = "Admin-maintenanceChequeRecords.fxml";
                 break;
             case "Penalty records":
                 fxmlFile = "Admin-penaltyRecords.fxml";
@@ -124,7 +124,7 @@ public class Admin_homeController implements Initializable {
 
     @FXML private void handleReportDefectiveVehicles(MouseEvent event) {
         System.out.println("Defective Vehicles report clicked");
-        mainController.loadPage("Admin-defectiveVehiclesReportSelect.fxml");
+        mainController.loadPage("Admin-defectiveVehicleSelect.fxml");
     }
 
     @FXML private void handleReportLocationFrequency(MouseEvent e){
