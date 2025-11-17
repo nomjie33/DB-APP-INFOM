@@ -273,11 +273,6 @@ public class RentalDAO {
         this.vehicleDAO = new VehicleDAO();
     }
 
-    // ========================================
-// FIXED updateRental() - Correct logic order!
-// ========================================
-// Replace your updateRental() method with this:
-
     public boolean updateRental(RentalTransaction rental) {
         boolean hasEndDateTime = rental.getEndDateTime() != null;
         boolean hasStartDateTime = rental.getStartDateTime() != null;

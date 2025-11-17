@@ -1,5 +1,6 @@
 package main.gui;
 
+import dao.AddressDAO;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.control.Tooltip;
@@ -10,6 +11,7 @@ import javafx.geometry.Bounds;
 
 import dao.CustomerDAO;
 import javafx.scene.control.*;
+import model.Address;
 import model.Customer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -35,27 +37,12 @@ public class Admin_customerRecordsController implements Initializable {
     @FXML private TableColumn<Customer, String> emailColumn;
     @FXML private TableColumn<Customer, Void> editColumn;
 
+    @FXML private TableColumn<Customer, Void> actionColumn;
+    @FXML private ComboBox<String> statusFilterComboBox;
+
     private CustomerDAO customerDAO = new CustomerDAO();
     private Admin_dashboardController mainController;
-
-    private static Popup textDisplayPopup = new Popup();
-    private static Label popupLabel = new Label();
-    private static TableCell<?, ?> currentlyOpenCell = null;
-
-    static {
-        popupLabel.setStyle(
-                "-fx-background-color: white;" +
-                        "-fx-border-color: #33a398;" +
-                        "-fx-border-width: 2;" +
-                        "-fx-padding: 8px;" +
-                        "-fx-background-radius: 5;" +
-                        "-fx-border-radius: 5;" +
-                        "-fx-text-fill: black;" +
-                        "-fx-font-size: 13px;"
-        );
-        textDisplayPopup.getContent().add(popupLabel);
-        textDisplayPopup.setAutoHide(true);
-    }
+    private AddressDAO addressDAO = new AddressDAO();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -64,69 +51,20 @@ public class Admin_customerRecordsController implements Initializable {
         lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         contactColumn.setCellValueFactory(new PropertyValueFactory<>("contactNumber"));
-
         addressColumn.setCellValueFactory(new PropertyValueFactory<>("fullAddressString"));
-        addressColumn.setCellFactory(column -> {
-            return new TableCell<Customer, String>() {
-                @Override
-                protected void updateItem(String item, boolean empty) {
-                    super.updateItem(item, empty);
-
-                    if (item == null || empty) {
-                        setText(null);
-                        setOnMouseClicked(null);
-                    } else {
-
-                        setText(item);
-                        setOnMouseClicked(event -> {
-
-                            if (textDisplayPopup.isShowing() && currentlyOpenCell == this) {
-                                textDisplayPopup.hide();
-                                currentlyOpenCell = null;
-                            } else {
-                                popupLabel.setText(item);
-                                Bounds bounds = this.localToScreen(this.getBoundsInLocal());
-                                textDisplayPopup.show(this.getScene().getWindow(), bounds.getMinX(), bounds.getMinY());
-                                currentlyOpenCell = this;
-                            }
-                        });
-                    }
-                }
-            };
-        });
-
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("emailAddress"));
-        emailColumn.setCellFactory(column -> {
-            return new TableCell<Customer, String>() {
-                @Override
-                protected void updateItem(String item, boolean empty) {
-                    super.updateItem(item, empty);
 
-                    if (item == null || empty) {
-                        setText(null);
-                        setOnMouseClicked(null);
-                    } else {
+        addressColumn.setCellFactory(column -> createPopupCellFactory());
+        emailColumn.setCellFactory(column -> createPopupCellFactory());
 
-                        setText(item);
-                        setOnMouseClicked(event -> {
+        statusFilterComboBox.setItems(FXCollections.observableArrayList("Active", "Inactive", "All"));
+        statusFilterComboBox.setValue("Active");
 
-                            if (textDisplayPopup.isShowing() && currentlyOpenCell == this) {
-                                textDisplayPopup.hide();
-                                currentlyOpenCell = null;
-                            } else {
-                                popupLabel.setText(item);
-                                Bounds bounds = this.localToScreen(this.getBoundsInLocal());
-                                textDisplayPopup.show(this.getScene().getWindow(), bounds.getMinX(), bounds.getMinY());
-                                currentlyOpenCell = this;
-                            }
-                        });
-                    }
-                }
-            };
-        });
+        statusFilterComboBox.setOnAction(e -> loadCustomerData());
 
         loadCustomerData();
         setupEditButtonColumn();
+        setupActionColumn();
     }
 
     public void setMainController(Admin_dashboardController mainController) {
@@ -135,11 +73,33 @@ public class Admin_customerRecordsController implements Initializable {
 
     private void loadCustomerData() {
 
-        // --- FIX 2: Use the DAO method that loads the full address ---
-        List<Customer> customerList = customerDAO.getAllCustomersWithAddress();
+        customerTable.getItems().clear();
+
+        String statusFilter = statusFilterComboBox.getValue();
+        List<Customer> customerList;
+
+        if ("All".equals(statusFilter)) {
+            customerList = customerDAO.getAllCustomersIncludingInactive();
+        } else {
+            customerList = customerDAO.getCustomersByStatus(statusFilter);
+        }
+
+        for (Customer customer : customerList) {
+            try {
+                if (customer != null && customer.getAddressID() != null) {
+                    Address address = addressDAO.getAddressWithFullDetails(customer.getAddressID());
+                    if (address != null) {
+                        customer.setAddress(address);
+                    }
+                }
+            } catch (Exception e) {
+
+                System.err.println("Error loading address for customer " + customer.getCustomerID() + ": " + e.getMessage());
+
+            }
+        }
 
         ObservableList<Customer> customers = FXCollections.observableArrayList(customerList);
-
         customerTable.setItems(customers);
         customerCountLabel.setText("(" + customers.size() + ") CUSTOMERS: ");
     }
@@ -159,22 +119,28 @@ public class Admin_customerRecordsController implements Initializable {
         Callback<TableColumn<Customer, Void>, TableCell<Customer, Void>> cellFactory = new Callback<>() {
             @Override
             public TableCell<Customer, Void> call(final TableColumn<Customer, Void> param) {
+
                 final TableCell<Customer, Void> cell = new TableCell<>() {
-                    private final Button btn = new Button("Edit");
-                    {
-                        btn.getStyleClass().add("edit-button");
-                        btn.setOnAction((ActionEvent event) -> {
-                            Customer customer = getTableView().getItems().get(getIndex());
-                            handleEditCustomer(customer);
-                        });
-                    }
 
                     @Override
                     public void updateItem(Void item, boolean empty) {
                         super.updateItem(item, empty);
-                        if (empty) {
+
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+
                             setGraphic(null);
                         } else {
+
+                            Button btn = new Button("Edit");
+                            btn.getStyleClass().add("edit-button");
+
+                            btn.setOnAction((ActionEvent event) -> {
+                                Customer customer = getTableRow().getItem();
+                                if (customer != null) {
+                                    handleEditCustomer(customer);
+                                }
+                            });
+
                             setGraphic(btn);
                         }
                     }
@@ -183,5 +149,106 @@ public class Admin_customerRecordsController implements Initializable {
             }
         };
         editColumn.setCellFactory(cellFactory);
+    }
+
+    private void setupActionColumn() {
+        Callback<TableColumn<Customer, Void>, TableCell<Customer, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<Customer, Void> call(final TableColumn<Customer, Void> param) {
+
+                final TableCell<Customer, Void> cell = new TableCell<>() {
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+
+                            setGraphic(null);
+                        } else {
+
+                            Button btn = new Button();
+                            Customer customer = getTableRow().getItem();
+
+                            if ("Active".equals(customer.getStatus())) {
+                                btn.setText("Deactivate");
+                                btn.getStyleClass().add("deactivate-button");
+                            } else {
+                                btn.setText("Reactivate");
+                                btn.getStyleClass().add("edit-button");
+                            }
+
+                            btn.setOnAction((ActionEvent event) -> {
+
+                                if (customer != null) {
+                                    handleDeactivateReactivate(customer);
+                                }
+                            });
+
+                            setGraphic(btn);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+        actionColumn.setCellFactory(cellFactory);
+    }
+
+    private void handleDeactivateReactivate(Customer customer) {
+        String newStatus = "Active".equals(customer.getStatus()) ? "Inactive" : "Active";
+        String action = "Active".equals(customer.getStatus()) ? "deactivate" : "reactivate";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Confirm " + action);
+        alert.setContentText("Are you sure you want to " + action + " customer: " + customer.getFullName() + "?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            boolean success;
+
+            if ("Active".equals(customer.getStatus())) {
+                success = customerDAO.deactivateCustomer(customer.getCustomerID());
+            } else {
+                success = customerDAO.reactivateCustomer(customer.getCustomerID());
+            }
+
+            if (success) {
+
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Customer has been " + action + "d.");
+                loadCustomerData();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update customer status.");
+            }
+        }
+    }
+
+    private TableCell<Customer, String> createPopupCellFactory() {
+        return new TableCell<Customer, String>() {
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (item == null || empty) {
+                    setText(null);
+                    setTooltip(null);
+                } else {
+                    setText(item);
+
+                    Tooltip tooltip = new Tooltip();
+                    tooltip.setText(item);
+                    setTooltip(tooltip);
+                }
+            }
+        };
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

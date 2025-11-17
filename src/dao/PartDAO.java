@@ -439,5 +439,26 @@ public class PartDAO {
             rs.getString("status")
         );
     }
+
+    public List<Part> getPartsByStatus(String status) {
+        List<Part> partList = new ArrayList<>();
+        String sql = "SELECT * FROM parts WHERE status = ? ORDER BY part_name";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                partList.add(extractPartFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving parts by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return partList;
+    }
     
 }

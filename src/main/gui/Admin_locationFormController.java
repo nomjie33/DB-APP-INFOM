@@ -1,28 +1,41 @@
 package main.gui;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 import dao.LocationDAO;
 import model.Location;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
-public class Admin_locationFormController {
+public class Admin_locationFormController implements Initializable{
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField idField;
     @FXML private TextField nameField;
 
+    @FXML private Label statusLabel;
+    @FXML private ComboBox<String> statusComboBox;
+
     private Admin_dashboardController mainController;
     private LocationDAO locationDAO = new LocationDAO();
     private boolean isEditMode = false;
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        statusComboBox.setItems(FXCollections.observableArrayList("Active", "Inactive"));
+    }
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
@@ -38,12 +51,21 @@ public class Admin_locationFormController {
 
             idField.setDisable(true);
             idField.getStyleClass().add("form-text-field-disabled");
+
+            statusLabel.setVisible(true);
+            statusComboBox.setVisible(true);
+            statusComboBox.setValue(loc.getStatus());
         }
     }
 
     @FXML private void handleSave(){
-        if (idField.getText().isEmpty() || nameField.getText().isEmpty()){
+
+        if (idField.getText().isEmpty() || nameField.getText().isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Validation Error!!!", "Please fill in all required Fields.");
+            return;
+        }
+        if (isEditMode && statusComboBox.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Validation Error!!!", "Please select a status.");
             return;
         }
 
@@ -54,7 +76,15 @@ public class Admin_locationFormController {
         boolean success;
         if (isEditMode){
             Location oldLoc = locationDAO.getLocationById(loc.getLocationID());
-            loc.setStatus(oldLoc.getStatus());
+            boolean nameChanged = !oldLoc.getName().equals(loc.getName());
+            boolean statusChanged = !oldLoc.getStatus().equals(statusComboBox.getValue());
+
+            if (!nameChanged && !statusChanged) {
+                showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                return;
+            }
+
+            loc.setStatus(statusComboBox.getValue());
             success = locationDAO.updateLocation(loc);
         } else {
             loc.setStatus("Active");
