@@ -15,7 +15,7 @@ CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
 USE vehicle_rental_db;
 
 -- =====================================================
--- DROP ALL TABLES IN CORRECT ORDER (respecting foreign keys)
+-- DROP ALL TABLES
 -- =====================================================
 SET FOREIGN_KEY_CHECKS = 0;
 
