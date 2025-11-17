@@ -7,6 +7,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.Objects;
 // --- END OF IMPORTS ---
 
 import dao.PenaltyDAO;
@@ -85,7 +86,7 @@ public class Admin_penaltyFormController implements Initializable{
             String rentalID = rentalComboBox.getValue() != null ? rentalComboBox.getValue().getRentalID() : null;
             String maintenanceID = (maintenanceComboBox.getValue() != null && maintenanceComboBox.getValue().getMaintenanceID() != null)
                     ? maintenanceComboBox.getValue().getMaintenanceID()
-                    : null; 
+                    : null;
 
             if (rentalID == null) {
                 showAlert(AlertType.WARNING, "Validation Error", "Rental ID is required.");
