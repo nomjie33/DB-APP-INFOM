@@ -1,8 +1,10 @@
 package main.gui;
 
 import dao.PenaltyDAO;
+import dao.RentalDAO;
 import model.Customer;
 import model.PenaltyTransaction;
+import model.RentalTransaction;
 import service.PenaltyService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -29,6 +31,7 @@ public class Client_resolveController {
     private PenaltyTransaction currentPenalty;
     private PenaltyService penaltyService = new PenaltyService();
     private PenaltyDAO penaltyDAO = new PenaltyDAO();
+    private RentalDAO rentalDAO = new RentalDAO();
 
     public void setMainController(Client_dashboardController mainController) {
         this.mainController = mainController;
@@ -37,9 +40,23 @@ public class Client_resolveController {
     public void initData(Customer customer){
 
         this.loggedInCustomer = customer;
-        List<PenaltyTransaction> unpaidPenalties = penaltyDAO.getPenaltiesByStatus("UNPAID");
 
-        if (unpaidPenalties.isEmpty()){
+        List<PenaltyTransaction> allUnpaidPenalties = penaltyDAO.getPenaltiesByPaymentStatus("UNPAID");
+
+        PenaltyTransaction myUnpaidPenalty = null;
+
+        for (PenaltyTransaction p : allUnpaidPenalties) {
+
+            RentalTransaction rental = rentalDAO.getRentalById(p.getRentalID());
+
+            if (rental != null && rental.getCustomerID().equals(customer.getCustomerID())) {
+                myUnpaidPenalty = p;
+                break;
+            }
+        }
+
+        if (myUnpaidPenalty == null){
+
             penaltyIDLabel.setText("N/A");
             rentalIDLabel.setText("No unpaid penalties found.");
             dateIssuedLabel.setText("N/A");
@@ -53,7 +70,7 @@ public class Client_resolveController {
             return;
         }
 
-        this.currentPenalty = unpaidPenalties.get(0);
+        this.currentPenalty = myUnpaidPenalty;
         loadPenaltyDetails(this.currentPenalty);
     }
 
@@ -79,12 +96,14 @@ public class Client_resolveController {
         penaltyAmountLabel.setText("₱" + String.format("%.2f", amount));
         confirmButton.setDisable(false);
 
+        confirmButton.setText("Pay Penalty");
+        confirmButton.setOnAction(event -> handleConfirm());
+        cancelButton.setVisible(true);
     }
 
     @FXML
     void handleBackToHome() {
         if (mainController != null) {
-            // Load the home page
             mainController.loadPage("Client-home.fxml");
         } else {
             System.err.println("Client_resolveController: Main controller is null!");
