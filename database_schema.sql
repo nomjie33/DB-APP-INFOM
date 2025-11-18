@@ -200,10 +200,21 @@ CREATE TABLE parts (
 -- Links customers, vehicles, and locations
 -- Tracks rental period with datetime precision
 -- 
+-- SOFT DELETE PATTERN:
+-- Uses 'Cancelled' status for soft delete (not 'Inactive')
+-- - 'Active': Rental is ongoing (vehicle picked up or awaiting pickup)
+-- - 'Completed': Rental finished successfully (vehicle returned)
+-- - 'Cancelled': Rental was cancelled/soft-deleted (preserves historical data)
+-- 
 -- TIMESTAMP FIELDS:
--- - startDateTime: When rental begins (date + time)
+-- - pickUpDateTime: Customer's scheduled pickup time
+-- - startDateTime: Actual rental start time (NULL if not yet picked up)
 -- - endDateTime: When rental ends (NULL if ongoing)
 -- - Duration calculated dynamically from start/end difference
+--
+-- CANCELLATION RULES:
+-- - Can only cancel if startDateTime IS NULL (not yet picked up)
+-- - Once picked up, rental cannot be cancelled, only completed
 
 CREATE TABLE rentals (
     rentalID VARCHAR(11) PRIMARY KEY,
