@@ -130,6 +130,19 @@ CREATE TABLE customers (
 -- 6. VEHICLES TABLE
 -- =====================================================
 -- Stores vehicle inventory
+-- 
+-- SOFT DELETE PATTERN:
+-- The status field serves dual purposes:
+-- 1. Operational Status (for active vehicles): 'Available', 'In Use', 'Maintenance'
+-- 2. Active/Inactive Status: 'Inactive' marks a vehicle as soft-deleted/retired
+-- 
+-- When status = 'Inactive', the vehicle is excluded from:
+-- - Active listings and searches
+-- - Rental workflows
+-- - Maintenance workflows
+-- - Deployment operations
+-- 
+-- Inactive vehicles can be reactivated by changing status back to 'Available'
 CREATE TABLE vehicles (
     plateID VARCHAR(11) PRIMARY KEY,
     vehicleType VARCHAR(25) NOT NULL, 
@@ -137,7 +150,7 @@ CREATE TABLE vehicles (
     rentalPrice DECIMAL (10, 2) NOT NULL,
 
     CONSTRAINT chk_vehicle_status 
-        CHECK (status IN ('Available', 'In Use', 'Maintenance'))
+        CHECK (status IN ('Available', 'In Use', 'Maintenance', 'Inactive'))
 );
 
 -- =====================================================

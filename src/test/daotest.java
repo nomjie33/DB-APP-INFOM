@@ -222,9 +222,24 @@ public class daotest {
             boolean statusUpdated = vehicleDAO.updateVehicleStatus("TEST-999", "Maintenance");
             System.out.println(statusUpdated ? "✅ Status update successful" : "❌ Status update failed");
             
-            // Delete
-            boolean deleted = vehicleDAO.deleteVehicle("TEST-999");
-            System.out.println(deleted ? "✅ Delete successful" : "❌ Delete failed");
+            // Soft Delete (deactivate)
+            boolean deactivated = vehicleDAO.deactivateVehicle("TEST-999");
+            System.out.println(deactivated ? "✅ Soft delete (deactivate) successful" : "❌ Soft delete failed");
+            
+            // Verify vehicle is inactive
+            Vehicle inactiveVehicle = vehicleDAO.getVehicleById("TEST-999");
+            if (inactiveVehicle != null && "Inactive".equals(inactiveVehicle.getStatus())) {
+                System.out.println("✅ Vehicle properly marked as Inactive");
+            } else {
+                System.out.println("❌ Vehicle not properly deactivated");
+            }
+            
+            // Test reactivation
+            boolean reactivated = vehicleDAO.reactivateVehicle("TEST-999");
+            System.out.println(reactivated ? "✅ Reactivation successful" : "❌ Reactivation failed");
+            
+            // Clean up - deactivate test vehicle
+            vehicleDAO.deactivateVehicle("TEST-999");
         }
         System.out.println();
     }
