@@ -2,8 +2,11 @@ package main.gui;
 
 import dao.CustomerDAO;
 import dao.LocationDAO;
+import dao.PaymentDAO;
 import dao.RentalDAO;
 import dao.VehicleDAO;
+import service.PaymentService;
+import service.RentalService;
 import java.time.format.DateTimeFormatter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -51,12 +54,25 @@ public class Admin_rentalFormController {
     private CustomerDAO customerDAO = new CustomerDAO();
     private VehicleDAO vehicleDAO = new VehicleDAO();
     private LocationDAO locationDAO = new LocationDAO();
+    private PaymentDAO paymentDAO = new PaymentDAO();
+    private PaymentService paymentService = new PaymentService();
+    private RentalService rentalService;
 
     private boolean isUpdatingRecord = false;
     private RentalTransaction currentRental;
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
+        
+        // Initialize RentalService
+        this.rentalService = new RentalService(
+            customerDAO,
+            vehicleDAO,
+            locationDAO,
+            rentalDAO,
+            paymentDAO,
+            paymentService
+        );
     }
 
     public void setRentalData(RentalTransaction rental) {
@@ -172,7 +188,7 @@ public class Admin_rentalFormController {
 
         if (isUpdatingRecord) {
             LocalDateTime oldPickUp = currentRental.getPickUpDateTime().toLocalDateTime();
-            LocalDateTime oldStart = currentRental.getStartDateTime().toLocalDateTime();
+            LocalDateTime oldStart = (currentRental.getStartDateTime() == null) ? null : currentRental.getStartDateTime().toLocalDateTime();
             LocalDateTime oldEnd = (currentRental.getEndDateTime() == null) ? null : currentRental.getEndDateTime().toLocalDateTime();
 
             boolean noChange = Objects.equals(currentRental.getCustomerID(), newCustomer.getCustomerID()) &&
@@ -199,47 +215,83 @@ public class Admin_rentalFormController {
 
             boolean success;
             if (isUpdatingRecord) {
-
-                if (currentRental.isCompleted()) {
-
-                    rental.setStatus("Completed");
-
-                    rental.setEndDateTime(newEndDateTime == null ? null : java.sql.Timestamp.valueOf(newEndDateTime));
-                } else {
-
+                // UPDATE EXISTING RENTAL
+                
+                // Check if transitioning to completed status
+                if (!currentRental.isCompleted() && newEndDateTime != null) {
+                    // Complete the rental using service
+                    double rentalCost = rentalService.completeRental(rental.getRentalID());
+                    success = (rentalCost > 0);
+                    
+                    if (success) {
+                        rental.setEndDateTime(java.sql.Timestamp.valueOf(newEndDateTime));
+                        rental.setStatus("Completed");
+                    }
+                } 
+                // Check if transitioning from not-picked-up to picked-up
+                else if (!currentRental.isPickedUp() && newStartDateTime != null) {
+                    // Start the rental using service with custom timestamp
+                    success = rentalService.startRental(rental.getRentalID(), java.sql.Timestamp.valueOf(newStartDateTime));
+                    
+                    if (success) {
+                        rental.setStartDateTime(java.sql.Timestamp.valueOf(newStartDateTime));
+                        rental.setStatus("Active");
+                    }
+                }
+                // Otherwise, update rental data directly with proper status management
+                else {
+                    // Determine the correct status based on timestamps
                     if (newEndDateTime != null) {
                         rental.setEndDateTime(java.sql.Timestamp.valueOf(newEndDateTime));
                         rental.setStatus("Completed");
+                    } else if (newStartDateTime != null) {
+                        rental.setEndDateTime(null);
+                        rental.setStatus("Active");
                     } else {
                         rental.setEndDateTime(null);
                         rental.setStatus("Active");
                     }
-                }
-
-                success = rentalDAO.updateRental(rental);
-
-                if (success) {
-                    if (rental.isCompleted() || rental.isCancelled()) {
-                        vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
-                    } else if (rental.isPickedUp()) {
-                        vehicleDAO.updateVehicleStatus(rental.getPlateID(), "In Use");
+                    
+                    success = rentalDAO.updateRental(rental);
+                    
+                    if (success) {
+                        // Update vehicle status based on rental state
+                        if (rental.isCompleted() || rental.isCancelled()) {
+                            vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
+                        } else if (rental.isPickedUp()) {
+                            vehicleDAO.updateVehicleStatus(rental.getPlateID(), "In Use");
+                        } else {
+                            // Rental is booked but not picked up yet
+                            vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
+                        }
                     }
                 }
 
             } else {
-
-                rental.setRentalID(rentalIDField.getText().trim());
-                rental.setEndDateTime(null);
-                rental.setStatus("Active");
-
-                success = rentalDAO.insertRental(rental);
+                // NEW RENTAL: Use service layer to create booking
+                String newRentalID = rentalService.bookRental(
+                    newCustomer.getCustomerID(),
+                    newVehicle.getPlateID(),
+                    newLocation.getLocationID(),
+                    java.sql.Timestamp.valueOf(newPickUpDateTime)
+                );
+                
+                success = (newRentalID != null);
+                
                 if (success) {
-
-                    if (rental.isPickedUp()) {
-                        vehicleDAO.updateVehicleStatus(rental.getPlateID(), "In Use");
-                    } else {
-                        vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
+                    // If startDateTime is set, also mark as picked up
+                    if (newStartDateTime != null) {
+                        boolean pickupSuccess = rentalService.startRental(newRentalID);
+                        if (!pickupSuccess) {
+                            showAlert(AlertType.WARNING, "Partial Success", 
+                                "Rental created but failed to mark as picked up. Please update manually.");
+                        }
                     }
+                    
+                    // Update rental object for confirmation display
+                    rental.setRentalID(newRentalID);
+                    rental.setEndDateTime(null);
+                    rental.setStatus("Active");
                 }
             }
 
