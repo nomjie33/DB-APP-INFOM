@@ -89,25 +89,19 @@ public class Admin_vehicleRecordsController implements  Initializable {
         Callback<TableColumn<Vehicle, Void>, TableCell<Vehicle, Void>> cellFactory = new Callback<>() {
             @Override
             public TableCell<Vehicle, Void> call(final TableColumn<Vehicle, Void> param) {
-
                 final TableCell<Vehicle, Void> cell = new TableCell<>() {
-
                     @Override
                     public void updateItem(Void item, boolean empty) {
                         super.updateItem(item, empty);
+                        Vehicle vehicle = getTableRow() != null ? getTableRow().getItem() : null;
 
-                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                        if (empty || vehicle == null || !"Available".equals(vehicle.getStatus())) {
                             setGraphic(null);
                         } else {
-
                             Button btn = new Button("Edit");
                             btn.getStyleClass().add("edit-button");
-
                             btn.setOnAction((ActionEvent event) -> {
-                                Vehicle v = getTableRow().getItem(); // Get fresh item
-                                if (v != null) {
-                                    handleEditVehicle(v);
-                                }
+                                handleEditVehicle(vehicle);
                             });
                             setGraphic(btn);
                         }
