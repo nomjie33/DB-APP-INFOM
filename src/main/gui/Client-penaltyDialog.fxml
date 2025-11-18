@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="200.0" prefWidth="400.0" style="-fx-background-color: white; -fx-border-color: #FC7222; -fx-border-width: 2;" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_penaltyDialogController">
+    <children>
+        <Label layoutX="20.0" layoutY="20.0" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #FC7222;" text="Action Required" />
+        <Label layoutX="20.0" layoutY="60.0" prefWidth="360.0" style="-fx-font-size: 14px;" text="You have unpaid penalties. You cannot rent a new vehicle until these are resolved." wrapText="true" />
+
+        <Button fx:id="resolveButton" layoutX="230.0" layoutY="140.0" mnemonicParsing="false" onAction="#handleResolve" prefHeight="30.0" prefWidth="150.0" styleClass="confirm-button" text="Resolve Now" />
+        <Button fx:id="closeButton" layoutX="110.0" layoutY="140.0" mnemonicParsing="false" onAction="#handleClose" prefHeight="30.0" prefWidth="100.0" styleClass="cancel-button" text="Close" />
+    </children>
+</AnchorPane>
