@@ -26,7 +26,7 @@
                 <TableColumn fx:id="startDateTimeColumn" prefWidth="110.0" text="Start DateTime" />
                 <TableColumn fx:id="endDateTimeColumn" prefWidth="110.0" text="End DateTime" />
                 <TableColumn fx:id="notesColumn" text="Notes" />
-                <TableColumn fx:id="statusColumn" text="Status" />
+                <TableColumn fx:id="statusColumn" prefWidth="90.0"  text="Status" />
                 <TableColumn fx:id="editColumn" prefWidth="50.0" text="Edit" /> <TableColumn fx:id="actionColumn" prefWidth="90.0" text="Action" /> </columns>
 
         </TableView>
