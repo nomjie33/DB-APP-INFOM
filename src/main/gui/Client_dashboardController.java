@@ -1,5 +1,6 @@
 package main.gui;
 
+import dao.PenaltyDAO;
 import dao.RentalDAO;
 import model.Customer;
 import model.RentalTransaction;
@@ -13,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -33,6 +35,8 @@ public class Client_dashboardController implements Initializable {
 
     private List<HBox> navButtons;
     private Customer loggedInCustomer;
+
+    private PenaltyDAO penaltyDAO = new PenaltyDAO();
     private RentalDAO rentalDAO = new RentalDAO();
 
     @Override
@@ -77,6 +81,13 @@ public class Client_dashboardController implements Initializable {
             return;
         }
 
+        if (penaltyDAO.hasUnpaidPenalties(loggedInCustomer.getCustomerID())) {
+            System.out.println("BLOCK: User has unpaid penalties.");
+            showPenaltyBlockDialog();
+            return;
+        }
+
+        setActiveNav(rentButton);
         System.out.println("Checking for active rental for customer: " + loggedInCustomer.getCustomerID());
 
         List<RentalTransaction> allCustomerRentals = rentalDAO.getRentalsByCustomer(loggedInCustomer.getCustomerID());
@@ -96,6 +107,30 @@ public class Client_dashboardController implements Initializable {
 
             System.out.println("INFO: NO active rental found. Loading rent scene.");
             loadPage("Client-rent.fxml");
+        }
+    }
+
+    private void showPenaltyBlockDialog() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Client-penaltyDialog.fxml"));
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Action Required");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(quitButton.getScene().getWindow());
+
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            Client_penaltyDialogController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setMainController(this);
+
+            dialogStage.showAndWait();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

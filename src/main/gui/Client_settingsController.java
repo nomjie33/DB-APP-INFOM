@@ -111,11 +111,22 @@ public class Client_settingsController implements Initializable {
             for (RentalTransaction rental: rentals){
                 String id = rental.isCompleted() ? rental.getRentalID() : "ONGOING - " + rental.getRentalID();
 
-                allTransactions.add(new Transaction(rental.getStartDateTime().toString(), id, "Vehicle Rental"));
+                String dateStr = "Pending/N/A";
+                if (rental.getStartDateTime() != null) {
+                    dateStr = rental.getStartDateTime().toString();
+                }
+
+                allTransactions.add(new Transaction(dateStr, id, "Vehicle Rental"));
 
                 List<PenaltyTransaction> penalties = penaltyDAO.getPenaltiesByRental(rental.getRentalID());
                 if (penalties != null){
                     for (PenaltyTransaction penalty: penalties){
+
+                        String penaltyDateStr = "N/A";
+                        if (penalty.getDateIssued() != null) {
+                            penaltyDateStr = penalty.getDateIssued().toString();
+                        }
+
                         allTransactions.add(new Transaction(
                            penalty.getDateIssued().toString(),
                            penalty.getPenaltyID(),
