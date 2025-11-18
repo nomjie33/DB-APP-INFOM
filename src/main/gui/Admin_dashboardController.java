@@ -14,9 +14,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import model.*;
 import reports.*;
-import reports.CustomerRentalReport.CustomerDemographicsData;
-import reports.CustomerRentalReport.CustomerPenaltyRiskData;
-import reports.CustomerRentalReport.SummaryStatistics;
 import reports.DefectiveVehiclesReport;
 
 import java.io.IOException;
@@ -33,7 +30,7 @@ public class Admin_dashboardController implements Initializable {
 
     // Main Nav
     @FXML private HBox homeButton;
-    @FXML private HBox settingsButton;
+    @FXML private HBox profileButton;
 
     // Core Records
     @FXML private HBox customerRecordsButton;
@@ -59,10 +56,12 @@ public class Admin_dashboardController implements Initializable {
     // List to manage nav button styling
     private List<HBox> navButtons;
 
+    private Staff loggedInStaff;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         navButtons = List.of(
-                homeButton, settingsButton, customerRecordsButton, vehicleRecordsButton,
+                homeButton, profileButton, customerRecordsButton, vehicleRecordsButton,
                 locationRecordsButton, technicianRecordsButton, partRecordsButton,
                 rentalTransactionsButton, paymentTransactionsButton, deploymentTransactionsButton,
                 maintenanceTransactionsButton, maintenanceChequesButton, penaltyTransactionsButton,
@@ -72,16 +71,34 @@ public class Admin_dashboardController implements Initializable {
         handleHome(null);
     }
 
+    public void setLoggedInStaff(Staff staff){
+        this.loggedInStaff = staff;
+    }
+
     @FXML void handleHome(MouseEvent event) {
         setActiveNav(homeButton);
         System.out.println("Home clicked.");
         loadPage("Admin-home.fxml");
     }
 
-    @FXML void handleSettings(MouseEvent event) {
-        setActiveNav(settingsButton);
-        System.out.println("Settings clicked.");
-        loadPage("Admin-settings.fxml");
+    @FXML void handleProfile(MouseEvent event) {
+        setActiveNav(profileButton);
+        System.out.println("Profile clicked.");
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-profile.fxml"));
+            Parent page = loader.load();
+
+            Admin_profileController controller = loader.getController();
+            controller.setMainController(this);
+            controller.initData(loggedInStaff);
+
+            loadPageFromSub(page);
+
+        } catch (IOException e) {
+            System.err.println("Failed to load page: Admin-profile.fxml");
+            e.printStackTrace();
+        }
     }
 
     @FXML void handleLogout(ActionEvent event) {
@@ -240,8 +257,9 @@ public class Admin_dashboardController implements Initializable {
                 ((Admin_revenueSelectController) controller).setMainController(this);
             } else if (controller instanceof Admin_locationFrequencyController) {
                 ((Admin_locationFrequencyController) controller).setMainController(this);
+            } else if (controller instanceof Admin_profileController){
+                ((Admin_profileController) controller).setMainController(this);
             }
-
 
             loadPageFromSub(page);
 

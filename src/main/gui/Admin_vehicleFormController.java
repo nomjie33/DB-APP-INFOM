@@ -15,7 +15,6 @@ import dao.VehicleDAO;
 import model.Vehicle;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
@@ -26,12 +25,10 @@ public class Admin_vehicleFormController implements Initializable{
     @FXML private TextField typeField;
     @FXML private TextField priceField;
 
-    @FXML private Label statusLabel;
-    @FXML private ComboBox<String> statusComboBox;
-
     private Admin_dashboardController mainController;
     private VehicleDAO vehicleDAO = new VehicleDAO();
     private boolean isEditMode = false;
+    private String originalStatus; // Added to retain status in edit mode
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -49,35 +46,10 @@ public class Admin_vehicleFormController implements Initializable{
             plateField.setText(vehicle.getPlateID());
             typeField.setText(vehicle.getVehicleType());
             priceField.setText(String.valueOf(vehicle.getRentalPrice()));
+            originalStatus = vehicle.getStatus();
 
             plateField.setDisable(true);
             plateField.getStyleClass().add("form-text-field-disabled");
-
-            statusLabel.setVisible(true);
-            statusComboBox.setVisible(true);
-
-            String currentStatus = vehicle.getStatus();
-            /*
-            if ("In Use".equals(currentStatus)) {
-
-                statusComboBox.setItems(FXCollections.observableArrayList("In Use"));
-                statusComboBox.setValue("In Use");
-                statusComboBox.setDisable(true);
-            } else {
-
-                statusComboBox.setItems(FXCollections.observableArrayList(
-                        "Available", "Maintenance", "Inactive"
-                ));
-                statusComboBox.setValue(currentStatus);
-                statusComboBox.setDisable(false);
-            } */
-
-            statusComboBox.setItems(FXCollections.observableArrayList(
-                    "Available", "In Use", "Maintenance", "Inactive"
-            ));
-
-            statusComboBox.setValue(currentStatus);
-            statusComboBox.setDisable(false);
         }
     }
 
@@ -97,14 +69,12 @@ public class Admin_vehicleFormController implements Initializable{
 
                 boolean typeChanged = !target.getVehicleType().equals(v.getVehicleType());
                 boolean priceChanged = (Double.compare(target.getRentalPrice(), v.getRentalPrice()) != 0);
-                boolean statusChanged = !target.getStatus().equals(statusComboBox.getValue());
 
-                if (!typeChanged && !priceChanged && !statusChanged) {
-                    showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                if (!typeChanged && !priceChanged) {
+                    showAlert(Alert.AlertType.INFORMATION, "No Changes", "No changes were detected in Type or Price.");
                     return; // Stop without saving
                 }
-
-                v.setStatus(statusComboBox.getValue());
+                v.setStatus(originalStatus);
                 success = vehicleDAO.updateVehicle(v);
             } else {
                 v.setStatus("Available");
@@ -145,11 +115,6 @@ public class Admin_vehicleFormController implements Initializable{
         if (plateField.getText().isEmpty() ||
                 typeField.getText().isEmpty() || priceField.getText().isEmpty()){
             showAlert(Alert.AlertType.WARNING, "Validation Error!!!", "Please fill in all required Fields.");
-            return false;
-        }
-
-        if (statusComboBox.isVisible() && statusComboBox.getValue() == null) {
-            showAlert(Alert.AlertType.WARNING, "Validation Error!!!", "Please select a status.");
             return false;
         }
 

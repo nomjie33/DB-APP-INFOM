@@ -110,19 +110,54 @@ public class Admin_maintenanceFormController implements Initializable {
             boolean isSuccessful;
             
             if (isUpdatingRecord) {
-                // Check if maintenance is being completed (endDateTime is being set)
+                // Check if maintenance is being completed for the FIRST TIME (endDateTime was null, now being set)
                 boolean wasIncomplete = currentMaintenance.getEndDateTime() == null;
                 boolean isNowComplete = endDateTime != null;
-                boolean isBeingCompleted = wasIncomplete && isNowComplete;
+                boolean isFirstTimeCompletion = wasIncomplete && isNowComplete;
                 
-                if (isBeingCompleted) {
-                    // COMPLETING MAINTENANCE: Use service to handle vehicle status update and cost calculation
+                if (isFirstTimeCompletion) {
+                    // PRE-COMPLETION CHECK: This is first-time completion (null → non-null transition)
+                    // Check if parts have been recorded before proceeding
+                    boolean hasParts = maintenanceService.hasMaintenanceCheques(maintenanceID);
+                    
+                    if (!hasParts) {
+                        // PROMPT USER: No parts recorded, ask if they want to continue
+                        Alert confirmAlert = new Alert(AlertType.CONFIRMATION);
+                        confirmAlert.setTitle("No Parts Recorded");
+                        confirmAlert.setHeaderText("Proceeding will calculate only labor cost");
+                        confirmAlert.setContentText(
+                            "No parts have been recorded for this maintenance.\n" +
+                            "Proceeding will result in calculating only the labor cost.\n\n" +
+                            "Do you want to continue?"
+                        );
+                        
+                        ButtonType btnConfirm = new ButtonType("Confirm Completion");
+                        ButtonType btnAddParts = new ButtonType("Add Parts");
+                        ButtonType btnCancel = new ButtonType("Cancel", ButtonType.CANCEL.getButtonData());
+                        
+                        confirmAlert.getButtonTypes().setAll(btnConfirm, btnAddParts, btnCancel);
+                        
+                        confirmAlert.showAndWait().ifPresent(response -> {
+                            if (response == btnAddParts) {
+                                // Redirect user to maintenance cheque creation for this maintenanceID
+                                mainController.loadPage("Admin-maintenanceChequeRecords.fxml");
+                            }
+                        });
+                        
+                        // If user chose "Add Parts" or "Cancel", abort the save
+                        if (confirmAlert.getResult() != btnConfirm) {
+                            return; // Exit handleSave without proceeding
+                        }
+                    }
+                    
+                    // COMPLETING MAINTENANCE (FIRST TIME): Use service to handle vehicle status update and cost calculation
                     isSuccessful = maintenanceService.completeMaintenance(
                         maintenanceID,
                         java.sql.Timestamp.valueOf(endDateTime)
                     );
                 } else {
-                    // REGULAR UPDATE: Use DAO directly (no status changes needed)
+                    // REGULAR UPDATE (editing already-completed or still-incomplete record): Use DAO directly
+                    // This handles: 1) editing fields without setting endDateTime, 2) editing already-completed records
                     MaintenanceTransaction maintenance = currentMaintenance;
                     maintenance.setPlateID(plateID);
                     maintenance.setTechnicianID(technicianID);
@@ -130,6 +165,11 @@ public class Admin_maintenanceFormController implements Initializable {
                     maintenance.setEndDateTime(endDateTime != null ? java.sql.Timestamp.valueOf(endDateTime) : null);
                     maintenance.setNotes(notes);
                     isSuccessful = maintenanceDAO.updateMaintenance(maintenance);
+                    
+                    // COST RECALCULATION: If editing a completed record (endDateTime exists), recalculate cost
+                    if (endDateTime != null && currentMaintenance.getEndDateTime() != null) {
+                        maintenanceService.recalculateMaintenanceCost(maintenanceID);
+                    }
                 }
             } else {
                 // NEW MAINTENANCE: Use service to handle vehicle status update
@@ -278,7 +318,12 @@ public class Admin_maintenanceFormController implements Initializable {
     private void loadComboBoxes() {
 
         try {
-            ObservableList<Vehicle> vehicleList = FXCollections.observableArrayList(vehicleDAO.getAllVehicles()); // Assuming getAllVehicles() exists
+            // REQUIREMENT: Only show vehicles with operational status 'Available' (ready for maintenance)
+            // 'Maintenance' = already in maintenance, 'In Use' = currently rented
+            // Only 'Available' vehicles can be scheduled for new maintenance records
+            ObservableList<Vehicle> vehicleList = FXCollections.observableArrayList(
+                vehicleDAO.getActiveVehiclesByOperationalStatus("Available")
+            );
             plateComboBox.setItems(vehicleList);
 
             plateComboBox.setConverter(new StringConverter<Vehicle>() {

@@ -122,15 +122,24 @@ public class Admin_maintenanceChequeFormController implements Initializable {
             }
 
             if (isSuccessful){
+                // REQUIREMENT: Recalculate maintenance cost whenever a cheque is added or edited
+                // This ensures the total cost is always accurate even if parts are added after completion
+                boolean costRecalculated = maintenanceService.recalculateMaintenanceCost(maintenanceID);
+                if (!costRecalculated) {
+                    showAlert(Alert.AlertType.WARNING, "Warning", "Part record saved but cost recalculation failed.");
+                }
+                
                 if (isUpdatingRecord){
-                    showAlert(Alert.AlertType.INFORMATION, "Save Successful", "Maintenance Cheque record saved successfully.");
+                    showAlert(Alert.AlertType.INFORMATION, "Save Successful", 
+                        "Maintenance Cheque record saved successfully.\nMaintenance cost has been recalculated.");
                 } else {
                     String title = "New Cheque Item Added!";
                     String content = "A new part has been successfully added to the maintenance record.\n\n" +
                             "Maintenance ID:\n" + maintenanceID + "\n\n" +
                             "Part ID:\n" + partID + "\n\n" +
                             "Quantity Used:\n" + String.format("%.2f", quantity) +
-                            "\n\nInventory has been decremented.";
+                            "\n\nInventory has been decremented." +
+                            "\nMaintenance cost has been recalculated.";
                     showConfirmationDialog(title, content);
                 }
                 mainController.loadPage("Admin-maintenanceChequeRecords.fxml");

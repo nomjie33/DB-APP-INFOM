@@ -310,7 +310,7 @@ public class DeploymentDAO {
     }
     
     public boolean endDeployment(String deploymentID, Date endDate) {
-        String sql = "UPDATE deployments SET endDate = ? WHERE deploymentID = ?";
+        String sql = "UPDATE deployments SET endDate = ?, status = 'Completed' WHERE deploymentID = ?";
         
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
