@@ -275,6 +275,59 @@ public class MaintenanceChequeDAO {
         
         return null;
     }
+
+    /**
+     * Get all records for maintenanceCheque table view's "All" option.
+     *
+     * @return MaintenanceCheque object or null if not found
+     */
+    public List<MaintenanceCheque> getAllMaintenanceChequesIncludingInactive(){
+        List<MaintenanceCheque> chequeList = new ArrayList<>();
+        String sql = "SELECT * FROM maintenance_cheque ORDER BY maintenanceID DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                chequeList.add(extractMaintenanceChequeFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving all maintenance cheques: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return chequeList;
+    }
+
+    /**
+     *
+     * @param status indicates whether a maintenance_cheque is "Active" or "Inactive"
+     * @return chequeList
+     */
+    public List<MaintenanceCheque> getMaintenanceChequesByStatus(String status) {
+        List<MaintenanceCheque> chequeList = new ArrayList<>();
+        String sql = "SELECT * FROM maintenance_cheque WHERE status = ? ORDER BY maintenanceID DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                chequeList.add(extractMaintenanceChequeFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving maintenance cheques by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return chequeList;
+    }
     
     /**
      * Get all active parts used in a specific maintenance record.

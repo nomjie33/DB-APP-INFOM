@@ -7,7 +7,11 @@
     <children>
         <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 20px;" text="Section" />
         <Label layoutX="38.0" layoutY="60.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Penalty list" />
-        <Label fx:id="penaltyCountLabel" layoutX="38.0" layoutY="100.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="(0) PENALTIES:" />
+
+        <Label layoutX="38.0" layoutY="114.0" styleClass="sidebar-title" text="Show:" />
+        <ComboBox fx:id="statusFilterComboBox" layoutX="93.0" layoutY="104.0" prefWidth="150.0" styleClass="form-text-field" />
+
+        <Label fx:id="penaltyCountLabel" layoutX="256.0" layoutY="113.0" style="-fx-font-size: 16px; -fx-font-weight: bold;" text="(0) PENALTIES:" />
 
         <Button fx:id="addButton" layoutX="690.0" layoutY="100.0" onAction="#handleAddPenalty" prefHeight="31.0" prefWidth="72.0" styleClass="add-button" text="+" />
 
@@ -23,8 +27,8 @@
                 <TableColumn fx:id="totalPenaltyColumn" prefWidth="100.0" text="Total Penalty" />
                 <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Status" />
                 <TableColumn fx:id="dateIssuedColumn" prefWidth="100.0" text="Date Issued" />
-                <TableColumn fx:id="editColumn" prefWidth="80.0" text="Action" />
-            </columns>
+                <TableColumn fx:id="editColumn" prefWidth="50.0" text="Edit" /> <TableColumn fx:id="actionColumn" prefWidth="90.0" text="Action" /> </columns>
+
         </TableView>
 
     </children>
