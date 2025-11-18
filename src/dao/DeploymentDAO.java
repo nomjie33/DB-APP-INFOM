@@ -246,6 +246,33 @@ public class DeploymentDAO {
         
         return deployments;
     }
+
+    /**
+     * Get all deployments by a specific status.
+     * @param status The status to filter by (e.g., "Active" or "Cancelled")
+     * @return List of DeploymentTransaction objects
+     */
+    public List<DeploymentTransaction> getDeploymentsByStatus(String status) {
+        List<DeploymentTransaction> deployments = new ArrayList<>();
+        String sql = "SELECT * FROM deployments WHERE status = ? ORDER BY startDate DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                deployments.add(extractDeploymentFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error getting deployments by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return deployments;
+    }
     
     // ==================== UPDATE ====================
     
@@ -302,6 +329,32 @@ public class DeploymentDAO {
         
         return false;
     }
+
+    /**
+     * Reactivates a 'Cancelled' deployment.
+     * Sets status back to 'Active'.
+     * @param deploymentID Deployment ID to reactivate
+     * @return true if successful, false otherwise
+     */
+    public boolean reactivateDeployment(String deploymentID) {
+        String sql = "UPDATE deployments SET status = 'Active' WHERE deploymentID = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, deploymentID);
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Deployment " + deploymentID + " has been reactivated");
+                return true;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reactivating deployment: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
     
     // ==================== DELETE ====================
     
@@ -334,6 +387,8 @@ public class DeploymentDAO {
         
         return false;
     }
+
+
     
     // ==================== HELPER ====================
     

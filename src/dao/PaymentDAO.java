@@ -414,6 +414,24 @@ public class PaymentDAO {
         );
     }
 
+    public List<PaymentTransaction> getPaymentsByStatus(String status) {
+        List<PaymentTransaction> paymentList = new ArrayList<>();
+        String sql = "SELECT * FROM payments WHERE status = ? ORDER BY paymentDate DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                paymentList.add(extractPaymentFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving payments by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return paymentList;
+    }
+
     /**
      * Finds the placeholder payment for a rental.
      * Specifically looks for an 'Active' payment with a 0.00 amount.

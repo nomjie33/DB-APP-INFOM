@@ -3,19 +3,14 @@ package main.gui;
 import dao.DeploymentDAO;
 import dao.VehicleDAO;
 import dao.LocationDAO;
+import javafx.scene.control.*;
 import model.DeploymentTransaction;
-
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
 
@@ -35,6 +30,9 @@ public class Admin_deploymentRecordsController implements Initializable {
     @FXML private TableColumn<DeploymentTransaction, Date> endDateColumn;
     @FXML private TableColumn<DeploymentTransaction, String> statusColumn;
     @FXML private TableColumn<DeploymentTransaction, Void> editColumn;
+
+    @FXML private TableColumn<DeploymentTransaction, Void> actionColumn;
+    @FXML private ComboBox<String> statusFilterComboBox;
 
     private final DeploymentDAO deploymentDAO = new DeploymentDAO();
     private Admin_dashboardController mainController;
@@ -68,8 +66,13 @@ public class Admin_deploymentRecordsController implements Initializable {
         });
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
+        statusFilterComboBox.setItems(FXCollections.observableArrayList("Active/Completed", "Cancelled", "All"));
+        statusFilterComboBox.setValue("Active/Completed");
+        statusFilterComboBox.setOnAction(e -> loadDeploymentData());
+
         loadDeploymentData();
         setupEditButtonColumn();
+        setupActionColumn();
     }
 
     public void setMainController(Admin_dashboardController mainController) {
@@ -77,7 +80,18 @@ public class Admin_deploymentRecordsController implements Initializable {
     }
 
     private void loadDeploymentData() {
-        List<DeploymentTransaction> deployments = deploymentDAO.getAllDeployments();
+        deploymentTable.getItems().clear();
+        String statusFilter = statusFilterComboBox.getValue();
+        List<DeploymentTransaction> deployments;
+
+        if ("All".equals(statusFilter)) {
+            deployments = deploymentDAO.getAllDeploymentsIncludingCancelled();
+        } else if ("Cancelled".equals(statusFilter)) {
+            deployments = deploymentDAO.getDeploymentsByStatus("Cancelled");
+        } else {
+            deployments = deploymentDAO.getAllDeployments(); // This is your original method
+        }
+
         ObservableList<DeploymentTransaction> data = FXCollections.observableArrayList(deployments);
         deploymentTable.setItems(data);
         deploymentCountLabel.setText("(" + deployments.size() + ") DEPLOYMENTS:");
@@ -94,23 +108,19 @@ public class Admin_deploymentRecordsController implements Initializable {
 
     private void setupEditButtonColumn() {
         Callback<TableColumn<DeploymentTransaction, Void>, TableCell<DeploymentTransaction, Void>> cellFactory = col -> new TableCell<>() {
-            private final Button btn = new Button("Edit");
-            {
-                btn.getStyleClass().add("edit-button");
-                btn.setOnAction(event -> {
-                    DeploymentTransaction deployment = getTableView().getItems().get(getIndex());
-                    handleEditDeployment(deployment);
-                });
-            }
-
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                 } else {
-                    DeploymentTransaction deployment = getTableView().getItems().get(getIndex());
+                    DeploymentTransaction deployment = getTableRow().getItem();
                     if ("Active".equalsIgnoreCase(deployment.getStatus())) {
+                        Button btn = new Button("Edit");
+                        btn.getStyleClass().add("edit-button");
+                        btn.setOnAction(event -> {
+                            handleEditDeployment(deployment);
+                        });
                         setGraphic(btn);
                     } else {
                         setGraphic(null);
@@ -118,7 +128,82 @@ public class Admin_deploymentRecordsController implements Initializable {
                 }
             }
         };
-
         editColumn.setCellFactory(cellFactory);
     }
+
+    private void setupActionColumn() {
+        Callback<TableColumn<DeploymentTransaction, Void>, TableCell<DeploymentTransaction, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<DeploymentTransaction, Void> call(final TableColumn<DeploymentTransaction, Void> param) {
+                final TableCell<DeploymentTransaction, Void> cell = new TableCell<>() {
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                            setGraphic(null);
+                        } else {
+                            DeploymentTransaction deployment = getTableRow().getItem();
+                            Button btn = new Button();
+
+                            if ("Active".equals(deployment.getStatus())) {
+                                btn.setText("Cancel");
+                                btn.getStyleClass().add("deactivate-button");
+                            } else if ("Cancelled".equals(deployment.getStatus())) {
+                                btn.setText("Reactivate");
+                                btn.getStyleClass().add("edit-button");
+                            } else {
+                                setGraphic(null);
+                                return;
+                            }
+
+                            btn.setOnAction((ActionEvent event) -> {
+                                DeploymentTransaction currentDep = getTableRow().getItem();
+                                if (currentDep != null) {
+                                    handleCancelReactivate(currentDep);
+                                }
+                            });
+                            setGraphic(btn);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+        actionColumn.setCellFactory(cellFactory);
+    }
+
+    private void handleCancelReactivate(DeploymentTransaction deployment) {
+        String action = "Active".equals(deployment.getStatus()) ? "cancel" : "reactivate";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Confirm " + action);
+        alert.setContentText("Are you sure you want to " + action + " deployment: " + deployment.getDeploymentID() + "?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            boolean success;
+            if ("Active".equals(deployment.getStatus())) {
+                success = deploymentDAO.cancelDeployment(deployment.getDeploymentID());
+            } else {
+                success = deploymentDAO.reactivateDeployment(deployment.getDeploymentID());
+            }
+
+            if (success) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Deployment has been " + action + "ed.");
+                loadDeploymentData();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update deployment status.");
+            }
+        }
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+
 }

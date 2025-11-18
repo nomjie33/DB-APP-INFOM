@@ -1,9 +1,6 @@
 package main.gui;
 
-import dao.*;
-import model.RentalTransaction;
-import service.PaymentService;
-import service.RentalService;
+import dao.RentalDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -12,7 +9,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
-import javafx.beans.property.SimpleStringProperty;
+import model.RentalTransaction;
 
 import java.net.URL;
 import java.sql.Timestamp;
@@ -20,10 +17,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javafx.beans.property.SimpleStringProperty;
+
 public class Admin_rentalRecordsController implements Initializable {
 
     @FXML private Label rentalCountLabel;
-    @FXML private ComboBox<String> statusFilterComboBox;
     @FXML private TableView<RentalTransaction> rentalTable;
     @FXML private TableColumn<RentalTransaction, String> rentalIDColumn;
     @FXML private TableColumn<RentalTransaction, String> customerIDColumn;
@@ -33,27 +31,18 @@ public class Admin_rentalRecordsController implements Initializable {
     @FXML private TableColumn<RentalTransaction, String> startColumn;
     @FXML private TableColumn<RentalTransaction, String> endColumn;
     @FXML private TableColumn<RentalTransaction, String> statusColumn;
-    @FXML private TableColumn<RentalTransaction, Void> editColumn; // Correctly mapped
-    @FXML private TableColumn<RentalTransaction, Void> actionColumn; // Correctly mapped
+
+    @FXML private TableColumn<RentalTransaction, Void> editColumn;
+    @FXML private TableColumn<RentalTransaction, Void> actionColumn;
+    @FXML private ComboBox<String> statusFilterComboBox;
 
     private RentalDAO rentalDAO = new RentalDAO();
-    private RentalService rentalService;
-
     private Admin_dashboardController mainController;
+
     private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
-
-
-        this.rentalService = new RentalService(
-                new CustomerDAO(),
-                new VehicleDAO(),
-                new LocationDAO(),
-                rentalDAO,
-                new PaymentDAO(),
-                new PaymentService()
-        );
     }
 
     @Override
@@ -63,154 +52,161 @@ public class Admin_rentalRecordsController implements Initializable {
         customerIDColumn.setCellValueFactory(new PropertyValueFactory<>("customerID"));
         plateIDColumn.setCellValueFactory(new PropertyValueFactory<>("plateID"));
         locationIDColumn.setCellValueFactory(new PropertyValueFactory<>("locationID"));
+
+        pickUpColumn.setCellValueFactory(cellData -> {
+            Timestamp ts = cellData.getValue().getPickUpDateTime();
+            String text = (ts != null) ? ts.toLocalDateTime().format(dtf) : "";
+            return new SimpleStringProperty(text);
+        });
+        startColumn.setCellValueFactory(cellData -> {
+            Timestamp ts = cellData.getValue().getStartDateTime();
+            String text = (ts != null) ? ts.toLocalDateTime().format(dtf) : "Not Started";
+            return new SimpleStringProperty(text);
+        });
+        endColumn.setCellValueFactory(cellData -> {
+            Timestamp ts = cellData.getValue().getEndDateTime();
+            String text = (ts != null) ? ts.toLocalDateTime().format(dtf) : "Not Ended";
+            return new SimpleStringProperty(text);
+        });
+
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        pickUpColumn.setCellValueFactory(cellData -> new SimpleStringProperty(formatTimestamp(cellData.getValue().getPickUpDateTime())));
-        startColumn.setCellValueFactory(cellData -> new SimpleStringProperty(formatTimestamp(cellData.getValue().getStartDateTime())));
-        endColumn.setCellValueFactory(cellData -> new SimpleStringProperty(formatTimestamp(cellData.getValue().getEndDateTime())));
-
         statusFilterComboBox.setItems(FXCollections.observableArrayList("Active", "Completed", "Cancelled", "All"));
-        statusFilterComboBox.setOnAction(e -> loadRentalData());
         statusFilterComboBox.setValue("Active");
+        statusFilterComboBox.setOnAction(e -> loadRentalRecords());
 
         setupEditButtonColumn();
         setupActionColumn();
-
-        loadRentalData();
+        loadRentalRecords();
     }
 
-    private String formatTimestamp(Timestamp ts) {
-        return (ts != null) ? ts.toLocalDateTime().format(dtf) : "---";
+    private void handleEditRental(RentalTransaction rental) {
+        mainController.loadRentalForm(rental);
     }
 
-    public void loadRentalData() {
-        String statusFilter = statusFilterComboBox.getValue();
-        List<RentalTransaction> rentalList;
+    /**
+     * Shows the "Edit" button for ALL records, including "Completed".
+     */
+    private void setupEditButtonColumn() {
+        Callback<TableColumn<RentalTransaction, Void>, TableCell<RentalTransaction, Void>> cellFactory = col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                } else {
+                    Button btn = new Button("Edit");
+                    btn.getStyleClass().add("edit-button");
+                    btn.setOnAction(event -> {
+                        RentalTransaction rentalOnClick = getTableRow().getItem();
+                        if (rentalOnClick != null) {
+                            handleEditRental(rentalOnClick);
+                        }
+                    });
+                    setGraphic(btn);
+                }
+            }
+        };
+        editColumn.setCellFactory(cellFactory);
+    }
 
+    /**
+     * Loads rentals based on the filter.
+     */
+    public void loadRentalRecords() {
         try {
-            if ("All".equals(statusFilter)) {
-                rentalList = rentalDAO.getAllRentalsIncludingCancelled();
-            } else if ("Completed".equals(statusFilter)) {
-                rentalList = rentalDAO.getCompletedRentals();
-            } else if ("Cancelled".equals(statusFilter)) {
-                rentalList = rentalDAO.getAllRentalsIncludingCancelled().stream()
-                        .filter(r -> "Cancelled".equals(r.getStatus()))
-                        .toList();
-            } else {
+            rentalTable.getItems().clear();
+            String statusFilter = statusFilterComboBox.getValue();
+            List<RentalTransaction> rentals;
 
-                rentalList = rentalDAO.getActiveRentals();
+            if ("All".equals(statusFilter)) {
+                rentals = rentalDAO.getAllRentalsIncludingCancelled();
+            } else if ("Active".equals(statusFilter)) {
+                rentals = rentalDAO.getRentalsByStatus("Active");
+            } else {
+                rentals = rentalDAO.getRentalsByStatus(statusFilter);
             }
 
-            ObservableList<RentalTransaction> obsList = FXCollections.observableArrayList(rentalList);
+            ObservableList<RentalTransaction> obsList = FXCollections.observableArrayList(rentals);
             rentalTable.setItems(obsList);
-            rentalCountLabel.setText("(" + obsList.size() + ") RENTALS:");
+            rentalCountLabel.setText("(" + rentals.size() + ") RENTALS:");
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Failed to load rental records.");
             e.printStackTrace();
         }
     }
 
-    private void setupEditButtonColumn() {
-        Callback<TableColumn<RentalTransaction, Void>, TableCell<RentalTransaction, Void>> cellFactory = col -> new TableCell<>() {
-            private final Button btn = new Button("Edit");
-            {
-                btn.getStyleClass().add("edit-button");
-                btn.setOnAction(event -> {
-                    RentalTransaction rental = getTableView().getItems().get(getIndex());
-                    handleEditRental(rental);
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : btn);
-            }
-        };
-
-        editColumn.setCellFactory(cellFactory);
-    }
-
-    private void setupActionColumn() {
-        Callback<TableColumn<RentalTransaction, Void>, TableCell<RentalTransaction, Void>> cellFactory = col -> new TableCell<>() {
-            private final Button btn = new Button();
-            {
-                btn.setOnAction(event -> {
-                    RentalTransaction rental = getTableView().getItems().get(getIndex());
-                    if (rental.getStartDateTime() == null) {
-                        handleStartRental(rental);
-                    } else {
-                        handleEndRental(rental);
-                    }
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    RentalTransaction rental = getTableView().getItems().get(getIndex());
-
-                    if ("Active".equals(rental.getStatus()) && rental.getStartDateTime() == null) {
-                        btn.setText("Start");
-                        btn.getStyleClass().clear();
-                        btn.getStyleClass().add("edit-button");
-                        setGraphic(btn);
-                    } else if ("Active".equals(rental.getStatus()) && rental.getStartDateTime() != null) {
-                        btn.setText("End");
-                        btn.getStyleClass().clear();
-                        btn.getStyleClass().add("deactivate-button");
-                        setGraphic(btn);
-                    } else {
-                        setGraphic(null);
-                    }
-                }
-            }
-        };
-
-        actionColumn.setCellFactory(cellFactory);
-    }
-
-    private void handleStartRental(RentalTransaction rental) {
-        System.out.println("PHASE 2: Starting rental: " + rental.getRentalID());
-
-        boolean success = rentalService.startRental(rental.getRentalID());
-
-        if (success) {
-            showAlert(Alert.AlertType.INFORMATION, "Rental Started", "Rental " + rental.getRentalID() + " has been started.");
-            loadRentalData();
-        } else {
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to start rental. Check console/service logs.");
-        }
-    }
-
-    private void handleEndRental(RentalTransaction rental) {
-        System.out.println("PHASE 3A: Ending rental: " + rental.getRentalID());
-
-        rental.setEndDateTime(new Timestamp(System.currentTimeMillis()));
-        rental.setStatus("Completed");
-
-        boolean success = rentalDAO.updateRental(rental);
-
-        if (success) {
-            showAlert(Alert.AlertType.INFORMATION, "Rental Ended", "Rental " + rental.getRentalID() + " has been completed.");
-            loadRentalData(); // Refresh the table
-        } else {
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to end rental.");
-        }
-    }
-
-    private void handleEditRental(RentalTransaction rental) {
-        System.out.println("Edit clicked for rental: " + rental.getRentalID());
-        mainController.loadRentalForm(rental);
-    }
-
     @FXML
     private void handleAddRental(ActionEvent event) {
         if (mainController != null) {
             mainController.loadRentalForm(null);
+        }
+    }
+
+    /**
+     * Sets up the action buttons for "Cancel" and "Reactivate".
+     */
+    private void setupActionColumn() {
+        Callback<TableColumn<RentalTransaction, Void>, TableCell<RentalTransaction, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<RentalTransaction, Void> call(final TableColumn<RentalTransaction, Void> param) {
+                final TableCell<RentalTransaction, Void> cell = new TableCell<>() {
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                            setGraphic(null);
+                        } else {
+                            RentalTransaction rental = getTableRow().getItem();
+                            Button btn = new Button();
+
+                            if ("Active".equals(rental.getStatus())) {
+                                btn.setText("Cancel");
+                                btn.getStyleClass().add("deactivate-button");
+                                btn.setOnAction(e -> handleCancelReactivate(rental));
+                                setGraphic(btn);
+                            } else if ("Cancelled".equals(rental.getStatus())) {
+                                btn.setText("Reactivate");
+                                btn.getStyleClass().add("edit-button");
+                                btn.setOnAction(e -> handleCancelReactivate(rental));
+                                setGraphic(btn);
+                            } else {
+                                setGraphic(null);
+                            }
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+        actionColumn.setCellFactory(cellFactory);
+    }
+
+    /**
+     * Handler for the "Cancel" / "Reactivate" buttons.
+     */
+    private void handleCancelReactivate(RentalTransaction rental) {
+        String action = "Active".equals(rental.getStatus()) ? "cancel" : "reactivate";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Confirm " + action);
+        alert.setContentText("Are you sure you want to " + action + " rental: " + rental.getRentalID() + "?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            boolean success;
+            if ("Active".equals(rental.getStatus())) {
+                success = rentalDAO.cancelRental(rental.getRentalID());
+            } else {
+                success = rentalDAO.reactivateRental(rental.getRentalID());
+            }
+
+            if (success) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Rental has been " + action + "ed.");
+                loadRentalRecords();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update rental status.");
+            }
         }
     }
 
