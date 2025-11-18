@@ -143,15 +143,21 @@ public class Admin_maintenanceRecordsController implements Initializable {
                         if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                             setGraphic(null);
                         } else {
-                            Button btn = new Button("Edit");
-                            btn.getStyleClass().add("edit-button");
-                            btn.setOnAction(event -> {
-                                MaintenanceTransaction maintenance = getTableRow().getItem();
-                                if (maintenance != null) {
-                                    handleEditMaintenance(maintenance);
-                                }
-                            });
-                            setGraphic(btn);
+                            MaintenanceTransaction maintenance = getTableRow().getItem();
+                            // REQUIREMENT: Only show Edit button for Active maintenance records
+                            if ("Active".equals(maintenance.getStatus())) {
+                                Button btn = new Button("Edit");
+                                btn.getStyleClass().add("edit-button");
+                                btn.setOnAction(event -> {
+                                    MaintenanceTransaction maint = getTableRow().getItem();
+                                    if (maint != null) {
+                                        handleEditMaintenance(maint);
+                                    }
+                                });
+                                setGraphic(btn);
+                            } else {
+                                setGraphic(null);
+                            }
                         }
                     }
                 };
