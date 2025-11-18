@@ -5,7 +5,7 @@
 
 <AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_settingsController">
     <children>
-        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Client Profile and Settings" />
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Client Profile" />
 
         <VBox layoutX="38.0" layoutY="90.0" spacing="5.0">
             <Label text="Full name" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #33a398;" />
