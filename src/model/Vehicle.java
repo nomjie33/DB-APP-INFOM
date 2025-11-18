@@ -5,25 +5,36 @@ package model;
  * 
  * PURPOSE: Maps to the 'vehicles' table in MySQL database.
  * 
- * FIELDS TO IMPLEMENT:
- * - vehicleId (int/String) - Primary key
- * - make (String) - Vehicle manufacturer (e.g., Toyota, Honda)
- * - year (int) - Year of manufacture
- * - licensePlate (String) - Unique plate number
- * - status (String) - Current status: "Available", "In Use", "Under Maintenance", "Defective"
- * - dailyRate (double) - Rental rate per day
- * - locationId (int/String) - Foreign key to Location (current branch)
- * - mileage (int) - Current odometer reading
+ * SOFT DELETE PATTERN:
+ * This entity uses a single 'status' field that serves dual purposes:
  * 
- * METHODS TO IMPLEMENT:
- * - Constructor(s)
- * - Getters and Setters for all fields
- * - toString() for debugging
- * - equals() and hashCode()
+ * 1. ACTIVE/INACTIVE STATUS (Record-level):
+ *    - 'Inactive': Vehicle is soft-deleted/retired (excluded from all operations)
+ *    - All other statuses: Vehicle is active and operational
  * 
- * COLLABORATOR NOTES:
- * - Status field is critical for rental logic
- * - LocationId links this to the Location entity
+ * 2. OPERATIONAL STATUS (for active vehicles only):
+ *    - 'Available': Ready for rental
+ *    - 'In Use': Currently rented out
+ *    - 'Maintenance': Under repair/maintenance
+ * 
+ * IMPORTANT DISTINCTIONS:
+ * - Inactive vehicles MUST NOT appear in active listings
+ * - Inactive vehicles MUST be excluded from rental workflows
+ * - Inactive vehicles MUST be excluded from maintenance workflows
+ * - Operational statuses (Available, In Use, Maintenance) apply ONLY to active vehicles
+ * - Reactivating a vehicle changes status from 'Inactive' to 'Available'
+ * 
+ * FIELDS:
+ * - plateID (String) - Primary key, vehicle plate number
+ * - vehicleType (String) - Type of vehicle (e.g., "E-Bike", "E-Scooter", "E-Trike")
+ * - status (String) - Dual-purpose status field (see above)
+ * - rentalPrice (double) - Rental rate per hour
+ * 
+ * METHODS:
+ * - isActive() - Check if vehicle is not retired (status != 'Inactive')
+ * - isAvailable() - Check if vehicle can be rented (status == 'Available')
+ * - isInUse() - Check if vehicle is currently rented (status == 'In Use')
+ * - isInMaintenance() - Check if vehicle is being repaired (status == 'Maintenance')
  */
 public class Vehicle {
     // TODO: Add private fields for vehicle attributes

@@ -59,6 +59,7 @@ SELECT * FROM locations;
 -- E-TRIKES (₱95-120/hour, for couples/families)
 
 INSERT INTO vehicles (plateID, vehicleType, status, rentalPrice) VALUES
+-- ACTIVE E-SCOOTERS
 ('ES-001', 'E-Scooter', 'Available', 50.00),
 ('ES-002', 'E-Scooter', 'Available', 55.00),
 ('ES-003', 'E-Scooter', 'In Use', 50.00),
@@ -69,6 +70,10 @@ INSERT INTO vehicles (plateID, vehicleType, status, rentalPrice) VALUES
 ('ES-008', 'E-Scooter', 'In Use', 60.00),
 ('ES-009', 'E-Scooter', 'Available', 58.00),
 ('ES-010', 'E-Scooter', 'Available', 50.00),
+('ES-011', 'E-Scooter', 'Inactive', 45.00),  -- Retired: Old model, battery issues
+('ES-012', 'E-Scooter', 'Inactive', 50.00),  -- Retired: Frame damage, beyond repair
+
+-- ACTIVE E-BIKES
 ('EB-001', 'E-Bike', 'Available', 80.00),
 ('EB-002', 'E-Bike', 'Available', 75.00),
 ('EB-003', 'E-Bike', 'In Use', 70.00),
@@ -77,11 +82,16 @@ INSERT INTO vehicles (plateID, vehicleType, status, rentalPrice) VALUES
 ('EB-006', 'E-Bike', 'Maintenance', 82.00),
 ('EB-007', 'E-Bike', 'Available', 72.00),
 ('EB-008', 'E-Bike', 'Available', 90.00),
+('EB-009', 'E-Bike', 'Inactive', 75.00),  -- Retired: Motor failure, not cost-effective to repair
+('EB-010', 'E-Bike', 'Inactive', 70.00),  -- Retired: Outdated model, being phased out
+
+-- ACTIVE E-TRIKES
 ('ET-001', 'E-Trike', 'Available', 100.00),
 ('ET-002', 'E-Trike', 'Available', 95.00),
 ('ET-003', 'E-Trike', 'In Use', 105.00),
 ('ET-004', 'E-Trike', 'Available', 120.00),
-('ET-005', 'E-Trike', 'Available', 98.00);
+('ET-005', 'E-Trike', 'Available', 98.00),
+('ET-006', 'E-Trike', 'Inactive', 95.00);  -- Retired: Involved in accident, retired from service
 
 -- =====================================================
 -- 3. CITIES TABLE

@@ -5,6 +5,10 @@
 
 USE vehicle_rental_db;
 
+SELECT rentalID, status FROM rentals;
+SELECT plateID, status FROM vehicles ;
+
+
 -- 1. Check ALL rentals (regardless of status)
 SELECT
     COUNT(*) AS total_rentals,

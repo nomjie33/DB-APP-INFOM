@@ -12,7 +12,7 @@ import java.util.List;
 public class RentalDAO {
 
     // ==================== CREATE ====================
-    
+
     public boolean insertRental(RentalTransaction rental) {
 
         if (rental.getRentalID() == null || rental.getRentalID().isEmpty()) {
@@ -249,7 +249,37 @@ public class RentalDAO {
         
         return rentals;
     }
-    
+
+    /**
+     * Get all rentals by status
+     *
+     * @param status Status to filter by ('Active', 'Completed', 'Cancelled')
+     * @return List of rentals with the specified status
+     */
+    public List<RentalTransaction> getRentalsByStatus(String status) {
+        List<RentalTransaction> rentals = new ArrayList<>();
+        String sql = "SELECT * FROM rentals WHERE status = ? ORDER BY startDateTime DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                rentals.add(extractRentalFromResultSet(rs));
+            }
+
+            System.out.println("Found " + rentals.size() + " rental(s) with status: " + status);
+
+        } catch (SQLException e) {
+            System.err.println("Error getting rentals by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return rentals;
+    }
+
     public boolean hasActiveRental(String plateID) {
         String sql = "SELECT COUNT(*) FROM rentals WHERE plateID = ? AND endDateTime IS NULL AND status = 'Active'";
         
@@ -292,32 +322,28 @@ public class RentalDAO {
         return null;
     }
 
-    public List<RentalTransaction> getRentalsByStatus(String status) {
-        List<RentalTransaction> rentals = new ArrayList<>();
-        String sql = "SELECT * FROM rentals WHERE status = ? ORDER BY pickUpDateTime DESC";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, status);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                rentals.add(extractRentalFromResultSet(rs));
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting rentals by status: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return rentals;
-    }
-    
     // ==================== UPDATE ====================
+    private VehicleDAO vehicleDAO;
+
+    public RentalDAO() {
+        this.vehicleDAO = new VehicleDAO();
+    }
 
     public boolean updateRental(RentalTransaction rental) {
+        boolean hasEndDateTime = rental.getEndDateTime() != null;
+        boolean hasStartDateTime = rental.getStartDateTime() != null;
+
+        if (hasEndDateTime) {
+            System.out.println("✓ endDateTime detected - automatically setting status to 'Completed'");
+            rental.setStatus("Completed");
+        }
+
         String sql = "UPDATE rentals SET customerID = ?, plateID = ?, locationID = ?, " +
-                     "pickUpDateTime = ?, startDateTime = ?, endDateTime = ?, status = ? WHERE rentalID = ?";
-        
+                "pickUpDateTime = ?, startDateTime = ?, endDateTime = ?, status = ? WHERE rentalID = ?";
+
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setString(1, rental.getCustomerID());
             stmt.setString(2, rental.getPlateID());
             stmt.setString(3, rental.getLocationID());
@@ -326,43 +352,60 @@ public class RentalDAO {
             stmt.setTimestamp(6, rental.getEndDateTime());
             stmt.setString(7, rental.getStatus());
             stmt.setString(8, rental.getRentalID());
-            
+
             int rowsAffected = stmt.executeUpdate();
-            
+
             if (rowsAffected > 0) {
                 System.out.println("Rental updated: " + rental.getRentalID());
+
+                // UPDATE VEHICLE STATUS - Priority: endDateTime > startDateTime
+                if (hasEndDateTime) {
+                    // Rental is completed - vehicle should be Available
+                    System.out.println("✓ Rental has endDateTime - setting vehicle to 'Available'");
+                    vehicleDAO.updateVehicleStatus(rental.getPlateID(), "Available");
+
+                } else if (hasStartDateTime) {
+                    // Rental is active (started but not ended) - vehicle should be In Use
+                    System.out.println("✓ Rental started but not ended - setting vehicle to 'In Use'");
+                    vehicleDAO.updateVehicleStatus(rental.getPlateID(), "In Use");
+
+                } else {
+                    // Rental is just booked (no start yet) - vehicle stays Available
+                    System.out.println("✓ Rental booked but not started - vehicle remains 'Available'");
+                }
+
                 return true;
             }
-            
+
         } catch (SQLException e) {
             System.err.println("Error updating rental: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         return false;
     }
-    
+
     public boolean completeRental(String rentalID, Timestamp endDateTime) {
         String sql = "UPDATE rentals SET endDateTime = ?, status = 'Completed' WHERE rentalID = ?";
-        
+
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setTimestamp(1, endDateTime);
             stmt.setString(2, rentalID);
-            
+
             int rowsAffected = stmt.executeUpdate();
-            
+
             if (rowsAffected > 0) {
                 System.out.println("Rental completed: " + rentalID);
                 return true;
             }
-            
+
         } catch (SQLException e) {
             System.err.println("Error completing rental: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         return false;
     }
 

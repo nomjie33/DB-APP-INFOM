@@ -15,7 +15,7 @@ CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
 USE vehicle_rental_db;
 
 -- =====================================================
--- DROP ALL TABLES IN CORRECT ORDER (respecting foreign keys)
+-- DROP ALL TABLES
 -- =====================================================
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -130,14 +130,27 @@ CREATE TABLE customers (
 -- 6. VEHICLES TABLE
 -- =====================================================
 -- Stores vehicle inventory
+-- 
+-- SOFT DELETE PATTERN:
+-- The status field serves dual purposes:
+-- 1. Operational Status (for active vehicles): 'Available', 'In Use', 'Maintenance'
+-- 2. Active/Inactive Status: 'Inactive' marks a vehicle as soft-deleted/retired
+-- 
+-- When status = 'Inactive', the vehicle is excluded from:
+-- - Active listings and searches
+-- - Rental workflows
+-- - Maintenance workflows
+-- - Deployment operations
+-- 
+-- Inactive vehicles can be reactivated by changing status back to 'Available'
 CREATE TABLE vehicles (
     plateID VARCHAR(11) PRIMARY KEY,
     vehicleType VARCHAR(25) NOT NULL, 
     status VARCHAR(15) NOT NULL DEFAULT 'Available',
     rentalPrice DECIMAL (10, 2) NOT NULL,
 
-    CONSTRAINT chk_vehicle_status 
-        CHECK (status IN ('Available', 'In Use', 'Maintenance'))
+    CONSTRAINT chk_vehicle_status
+        CHECK (status IN ('Available', 'In Use', 'Maintenance', 'Inactive'))
 );
 
 -- =====================================================
@@ -187,10 +200,21 @@ CREATE TABLE parts (
 -- Links customers, vehicles, and locations
 -- Tracks rental period with datetime precision
 -- 
+-- SOFT DELETE PATTERN:
+-- Uses 'Cancelled' status for soft delete (not 'Inactive')
+-- - 'Active': Rental is ongoing (vehicle picked up or awaiting pickup)
+-- - 'Completed': Rental finished successfully (vehicle returned)
+-- - 'Cancelled': Rental was cancelled/soft-deleted (preserves historical data)
+-- 
 -- TIMESTAMP FIELDS:
--- - startDateTime: When rental begins (date + time)
+-- - pickUpDateTime: Customer's scheduled pickup time
+-- - startDateTime: Actual rental start time (NULL if not yet picked up)
 -- - endDateTime: When rental ends (NULL if ongoing)
 -- - Duration calculated dynamically from start/end difference
+--
+-- CANCELLATION RULES:
+-- - Can only cancel if startDateTime IS NULL (not yet picked up)
+-- - Once picked up, rental cannot be cancelled, only completed
 
 CREATE TABLE rentals (
     rentalID VARCHAR(11) PRIMARY KEY,

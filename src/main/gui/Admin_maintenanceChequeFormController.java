@@ -3,6 +3,7 @@ package main.gui;
 import dao.MaintenanceChequeDAO;
 import dao.MaintenanceDAO;
 import dao.PartDAO;
+import service.MaintenanceService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -35,6 +36,7 @@ public class Admin_maintenanceChequeFormController implements Initializable {
     @FXML private TextField quantityField;
 
     private Admin_dashboardController mainController;
+    private MaintenanceService maintenanceService = new MaintenanceService();
     private MaintenanceChequeDAO chequeDAO = new MaintenanceChequeDAO();
     private MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
     private PartDAO partDAO = new PartDAO();
@@ -74,36 +76,49 @@ public class Admin_maintenanceChequeFormController implements Initializable {
         try {
             String maintenanceID = maintenanceComboBox.getValue().getMaintenanceID();
             String partID = partComboBox.getValue().getPartId();
-
             BigDecimal quantity = new BigDecimal(quantityField.getText().trim()).setScale(2, RoundingMode.HALF_UP);
             Part selectedPart = partComboBox.getValue();
 
             if (!isUpdatingRecord) {
-
+                // Check for duplicate
                 if (chequeDAO.getMaintenanceChequeById(maintenanceID, partID) != null) {
                     showAlert(Alert.AlertType.ERROR, "Duplicate Record", "This Part has already been added to this Maintenance record. Please edit the existing entry or enter a new Part ID.");
                     return;
                 }
 
+                // Check inventory availability
                 if (selectedPart.getQuantity() < quantity.intValue()) {
                     showAlert(Alert.AlertType.ERROR, "Inventory Error",
                             String.format("Insufficient stock for Part ID %s. Available: %d, Requested: %.2f.",
                                     partID, selectedPart.getQuantity(), quantity));
+                    return;
                 }
-
             }
 
-            MaintenanceCheque cheque = isUpdatingRecord ? currentCheque : new MaintenanceCheque();
-            cheque.setMaintenanceID(maintenanceID);
-            cheque.setPartID(partID);
-            cheque.setQuantityUsed(quantity);
-
             boolean isSuccessful;
+            
             if (isUpdatingRecord){
+                // UPDATE: Use DAO directly for updates
+                MaintenanceCheque cheque = currentCheque;
+                cheque.setQuantityUsed(quantity);
                 isSuccessful = chequeDAO.updateMaintenanceCheque(cheque);
             } else {
+                // NEW: Insert cheque record and decrement inventory
+                MaintenanceCheque cheque = new MaintenanceCheque();
+                cheque.setMaintenanceID(maintenanceID);
+                cheque.setPartID(partID);
+                cheque.setQuantityUsed(quantity);
                 cheque.setStatus("Active");
+                
                 isSuccessful = chequeDAO.insertMaintenanceCheque(cheque);
+                
+                if (isSuccessful) {
+                    // Decrement part inventory
+                    boolean inventoryUpdated = partDAO.decrementPartQuantity(partID, quantity.intValue());
+                    if (!inventoryUpdated) {
+                        showAlert(Alert.AlertType.WARNING, "Warning", "Part usage recorded but inventory update failed.");
+                    }
+                }
             }
 
             if (isSuccessful){
@@ -112,10 +127,10 @@ public class Admin_maintenanceChequeFormController implements Initializable {
                 } else {
                     String title = "New Cheque Item Added!";
                     String content = "A new part has been successfully added to the maintenance record.\n\n" +
-                            "Maintenance ID:\n" + cheque.getMaintenanceID() + "\n\n" +
-                            "Part ID:\n" + cheque.getPartID() + "\n\n" +
-                            "Quantity Used:\n" + String.format("%.2f", cheque.getQuantityUsed());
-
+                            "Maintenance ID:\n" + maintenanceID + "\n\n" +
+                            "Part ID:\n" + partID + "\n\n" +
+                            "Quantity Used:\n" + String.format("%.2f", quantity) +
+                            "\n\nInventory has been decremented.";
                     showConfirmationDialog(title, content);
                 }
                 mainController.loadPage("Admin-maintenanceChequeRecords.fxml");

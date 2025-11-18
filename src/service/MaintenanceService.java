@@ -102,6 +102,12 @@ public class MaintenanceService {
                 return false;
             }
             
+            // Check if vehicle is active (not retired/inactive)
+            if (!vehicle.isActive()) {
+                System.out.println("Error: Cannot schedule maintenance for inactive/retired vehicle: " + plateID);
+                return false;
+            }
+            
             // Verify technician exists
             Technician technician = technicianDAO.getTechnicianById(technicianID);
             if (technician == null) {
@@ -242,6 +248,19 @@ public class MaintenanceService {
     }
     
     /**
+     * Complete a maintenance job by recording repair end time (no new parts).
+     * Used when parts were already added separately via MaintenanceCheque.
+     * Updates vehicle status to "Available" and calculates total cost.
+     * 
+     * @param maintenanceID Maintenance record to complete
+     * @param endDateTime Timestamp when repair was completed
+     * @return true if completion successful, false otherwise
+     */
+    public boolean completeMaintenance(String maintenanceID, Timestamp endDateTime) {
+        return completeMaintenance(maintenanceID, endDateTime, null);
+    }
+    
+    /**
      * Complete a maintenance job by recording repair end time and parts used.
      * Updates MaintenanceTransaction with endDateTime and creates MaintenanceCheque records for parts.
      * Automatically calculates and stores total maintenance cost.
@@ -351,6 +370,12 @@ public class MaintenanceService {
             Vehicle vehicle = vehicleDAO.getVehicleById(plateID);
             if (vehicle == null) {
                 System.out.println("Error: Vehicle with ID " + plateID + " not found.");
+                return null;
+            }
+            
+            // Check if vehicle is active (not retired/inactive)
+            if (!vehicle.isActive()) {
+                System.out.println("Error: Cannot flag inactive/retired vehicle as defective: " + plateID);
                 return null;
             }
             

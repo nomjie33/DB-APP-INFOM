@@ -9,6 +9,32 @@ import java.util.List;
 
 /**
  * Data Access Object for VEHICLE table operations.
+ * 
+ * SOFT DELETE IMPLEMENTATION:
+ * This DAO implements soft delete using the 'status' field with dual purposes:
+ * 
+ * 1. ACTIVE/INACTIVE (Record-level):
+ *    - 'Inactive': Vehicle is soft-deleted/retired
+ *    - All other statuses: Vehicle is active
+ * 
+ * 2. OPERATIONAL STATUS (Active vehicles only):
+ *    - 'Available': Ready for rental
+ *    - 'In Use': Currently rented out
+ *    - 'Maintenance': Under repair
+ * 
+ * QUERY BEHAVIOR:
+ * - getAllVehicles(): Returns only active vehicles (status != 'Inactive')
+ * - getAllVehiclesIncludingInactive(): Returns ALL vehicles for reporting
+ * - getAvailableVehicles(): Returns only vehicles with status = 'Available'
+ * - getVehiclesByLocation(): Automatically excludes inactive vehicles
+ * - getVehiclesByType(): Automatically excludes inactive vehicles
+ * - getVehiclesByStatus(): Can query any status including 'Inactive'
+ * - getVehicleById(): Returns vehicle regardless of status (for lookups)
+ * 
+ * MODIFICATION METHODS:
+ * - deactivateVehicle(): Soft delete (sets status = 'Inactive')
+ * - reactivateVehicle(): Restore vehicle (sets status = 'Available')
+ * - updateVehicleStatus(): Change operational status (validates allowed values)
  */
 public class VehicleDAO {
     private static final String STATUS_AVAILABLE = "Available";
@@ -314,6 +340,72 @@ public class VehicleDAO {
             
         } catch (SQLException e) {
             System.err.println("Error getting vehicles by type: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return vehicles;
+    }
+
+    /**
+     * Get only INACTIVE vehicles (soft-deleted/retired).
+     * Used for UI filtering and reactivation workflows.
+     * 
+     * @return List of inactive vehicles
+     */
+    public List<Vehicle> getInactiveVehicles() {
+        List<Vehicle> vehicles = new ArrayList<>();
+        String sql = "SELECT * FROM vehicles WHERE status = 'Inactive' ORDER BY plateID";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                vehicles.add(extractVehicleFromResultSet(rs));
+            }
+            
+            System.out.println("Found " + vehicles.size() + " inactive vehicle(s)");
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting inactive vehicles: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return vehicles;
+    }
+    
+    /**
+     * Get active vehicles by operational status.
+     * Ensures only active (non-retired) vehicles are returned.
+     * 
+     * @param operationalStatus One of: 'Available', 'In Use', 'Maintenance'
+     * @return List of active vehicles with the specified operational status
+     */
+    public List<Vehicle> getActiveVehiclesByOperationalStatus(String operationalStatus) {
+        List<Vehicle> vehicles = new ArrayList<>();
+        
+        // Prevent querying for inactive vehicles through this method
+        if (STATUS_INACTIVE.equalsIgnoreCase(operationalStatus)) {
+            System.err.println("Use getInactiveVehicles() method instead");
+            return vehicles;
+        }
+        
+        String sql = "SELECT * FROM vehicles WHERE status = ? ORDER BY vehicleType, plateID";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, operationalStatus);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                vehicles.add(extractVehicleFromResultSet(rs));
+            }
+            
+            System.out.println("Found " + vehicles.size() + " " + operationalStatus + " vehicle(s)");
+            
+        } catch (SQLException e) {
+            System.err.println("Error getting vehicles by operational status: " + e.getMessage());
             e.printStackTrace();
         }
         

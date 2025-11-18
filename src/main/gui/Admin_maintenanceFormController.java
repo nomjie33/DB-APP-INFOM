@@ -3,6 +3,7 @@ package main.gui;
 import dao.MaintenanceDAO;
 import dao.TechnicianDAO;
 import dao.VehicleDAO;
+import service.MaintenanceService;
 import javafx.fxml.Initializable;
 import model.MaintenanceTransaction;
 import javafx.fxml.FXML;
@@ -41,8 +42,9 @@ public class Admin_maintenanceFormController implements Initializable {
     @FXML private TextArea notesArea;
 
     private Admin_dashboardController mainController;
+    private MaintenanceService maintenanceService = new MaintenanceService();
     private MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
-    private VehicleDAO vehicleDAO = new VehicleDAO();      // <-- NEW
+    private VehicleDAO vehicleDAO = new VehicleDAO();
     private TechnicianDAO technicianDAO = new TechnicianDAO();
 
     private boolean isUpdatingRecord = false;
@@ -92,7 +94,6 @@ public class Admin_maintenanceFormController implements Initializable {
         if (!validateFields()) return;
 
         try {
-
             String maintenanceID = maintenanceIDField.getText().trim();
             String plateID = plateComboBox.getValue().getPlateID();
             String technicianID = technicianComboBox.getValue().getTechnicianId();
@@ -106,32 +107,68 @@ public class Admin_maintenanceFormController implements Initializable {
                         LocalTime.parse(endTimeField.getText().trim(), timeFormatter));
             }
 
-            MaintenanceTransaction maintenance = isUpdatingRecord ? currentMaintenance : new MaintenanceTransaction();
-            maintenance.setMaintenanceID(maintenanceID);
-            maintenance.setPlateID(plateID);
-            maintenance.setTechnicianID(technicianID);
-            maintenance.setStartDateTime(java.sql.Timestamp.valueOf(startDateTime));
-            maintenance.setEndDateTime(endDateTime != null ? java.sql.Timestamp.valueOf(endDateTime) : null);
-            maintenance.setNotes(notes);
-
-            boolean isSuccessful = isUpdatingRecord
-                    ? maintenanceDAO.updateMaintenance(maintenance)
-                    : maintenanceDAO.insertMaintenance(maintenance);
+            boolean isSuccessful;
+            
+            if (isUpdatingRecord) {
+                // Check if maintenance is being completed (endDateTime is being set)
+                boolean wasIncomplete = currentMaintenance.getEndDateTime() == null;
+                boolean isNowComplete = endDateTime != null;
+                boolean isBeingCompleted = wasIncomplete && isNowComplete;
+                
+                if (isBeingCompleted) {
+                    // COMPLETING MAINTENANCE: Use service to handle vehicle status update and cost calculation
+                    isSuccessful = maintenanceService.completeMaintenance(
+                        maintenanceID,
+                        java.sql.Timestamp.valueOf(endDateTime)
+                    );
+                } else {
+                    // REGULAR UPDATE: Use DAO directly (no status changes needed)
+                    MaintenanceTransaction maintenance = currentMaintenance;
+                    maintenance.setPlateID(plateID);
+                    maintenance.setTechnicianID(technicianID);
+                    maintenance.setStartDateTime(java.sql.Timestamp.valueOf(startDateTime));
+                    maintenance.setEndDateTime(endDateTime != null ? java.sql.Timestamp.valueOf(endDateTime) : null);
+                    maintenance.setNotes(notes);
+                    isSuccessful = maintenanceDAO.updateMaintenance(maintenance);
+                }
+            } else {
+                // NEW MAINTENANCE: Use service to handle vehicle status update
+                isSuccessful = maintenanceService.scheduleMaintenance(
+                    maintenanceID,
+                    plateID,
+                    technicianID,
+                    notes,
+                    java.sql.Timestamp.valueOf(startDateTime)
+                );
+            }
 
             if (isSuccessful) {
                 if (isUpdatingRecord) {
-                    showAlert(AlertType.INFORMATION, "Maintenance Saved", "Maintenance record saved successfully. ID: " + maintenance.getMaintenanceID());
+                    boolean wasIncomplete = currentMaintenance.getEndDateTime() == null;
+                    boolean isNowComplete = endDateTime != null;
+                    
+                    if (wasIncomplete && isNowComplete) {
+                        // Maintenance was just completed
+                        showAlert(AlertType.INFORMATION, "Maintenance Completed", 
+                            "Maintenance record completed successfully. ID: " + maintenanceID + 
+                            "\n\nVehicle status has been updated to 'Available'." +
+                            "\nTotal maintenance cost has been calculated and recorded.");
+                    } else {
+                        // Regular update
+                        showAlert(AlertType.INFORMATION, "Maintenance Saved", 
+                            "Maintenance record saved successfully. ID: " + maintenanceID);
+                    }
                 } else {
-
                     String title = "New Maintenance Added!";
                     String content = "A new vehicle maintenance record has been saved.\n\n" +
-                            "Maintenance ID:\n" + maintenance.getMaintenanceID() + "\n\n" +
-                            "Vehicle Plate:\n" + maintenance.getPlateID() + "\n\n" +
-                            "Technician ID:\n" + maintenance.getTechnicianID() + "\n\n" +
-                            "Start Time:\n" + maintenance.getStartDateTime().toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                            "Maintenance ID:\n" + maintenanceID + "\n\n" +
+                            "Vehicle Plate:\n" + plateID + "\n\n" +
+                            "Technician ID:\n" + technicianID + "\n\n" +
+                            "Start Time:\n" + startDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) +
+                            "\n\nVehicle status has been updated to 'Maintenance'.";
                     showConfirmationDialog(title, content);
                 }
-                mainController.loadPage("Admin-maintenanceRecords.fxml"); // go back to records table
+                mainController.loadPage("Admin-maintenanceRecords.fxml");
             } else {
                 showAlert(AlertType.ERROR, "Error", "Failed to save maintenance record.");
             }
