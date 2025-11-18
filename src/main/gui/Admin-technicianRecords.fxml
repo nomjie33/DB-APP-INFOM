@@ -15,16 +15,21 @@
 
         <Button layoutX="690.0" layoutY="100.0" onAction="#handleAdd" prefHeight="31.0" prefWidth="72.0" styleClass="add-button" text="+" />
 
-        <TableView fx:id="table" layoutX="38.0" layoutY="150.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
+        <TableView fx:id="table"
+                   AnchorPane.topAnchor="150.0"
+                   AnchorPane.leftAnchor="38.0"
+                   AnchorPane.rightAnchor="38.0"
+                   AnchorPane.bottomAnchor="38.0"
+                   styleClass="transactions-table">
             <columns>
-                <TableColumn fx:id="idColumn" prefWidth="100.0" text="Technician ID" />
+                <TableColumn fx:id="idColumn" prefWidth="120.0" text="Technician ID" />
                 <TableColumn fx:id="lastNameColumn" prefWidth="110.0" text="Last Name" />
                 <TableColumn fx:id="firstNameColumn" prefWidth="110.0" text="First Name" />
-                <TableColumn fx:id="specIdColumn" prefWidth="110.0" text="Specialization ID" />
+                <TableColumn fx:id="specIdColumn" prefWidth="150.0" text="Specialization ID" />
                 <TableColumn fx:id="rateColumn" prefWidth="90.0" text="Rate" />
                 <TableColumn fx:id="contactColumn" prefWidth="140.0" text="Contact Number" />
                 <TableColumn fx:id="statusColumn" prefWidth="90.0" text="Status" /> <TableColumn fx:id="editColumn" prefWidth="70.0" text="Edit" />
-                <TableColumn fx:id="actionColumn" prefWidth="90.0" text="Action" /> </columns>
+                <TableColumn fx:id="actionColumn" prefWidth="130.0" text="Action" /> </columns>
 
             <columnResizePolicy>
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

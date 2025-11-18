@@ -18,7 +18,7 @@
         <TableView fx:id="table" layoutX="38.0" layoutY="150.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
             <columns>
                 <TableColumn fx:id="idColumn" prefWidth="150.0" text="Location ID" />
-                <TableColumn fx:id="nameColumn" prefWidth="350.0" text="Branch Name" />
+                <TableColumn fx:id="nameColumn" prefWidth="300.0" text="Branch Name" />
                 <TableColumn fx:id="statusColumn" prefWidth="150.0" text="Status" />
                 <TableColumn fx:id="editColumn" prefWidth="50.0" text="Edit" />
 
