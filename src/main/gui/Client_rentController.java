@@ -104,7 +104,6 @@ public class Client_rentController {
         LocalDate startDate = pickUpDatePicker.getValue();
         String startTimeStr = startTimeField.getText();
 
-        // 1. Validation
         if (selectedVehicleType == null || location == null || startDate == null || startTimeStr.isEmpty()) {
             showError("Please select vehicle type, location, date, and time.");
             return;

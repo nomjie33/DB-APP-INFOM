@@ -11,105 +11,127 @@
         <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <children>
 
-                <VBox alignment="TOP_CENTER" layoutX="24.0" layoutY="18.0" prefHeight="731.0" prefWidth="975.0" style="-fx-background-color: #FC7222; -fx-background-radius: 20;" AnchorPane.leftAnchor="24.0" AnchorPane.topAnchor="18.0">
+                <StackPane layoutX="24.0" layoutY="18.0" prefHeight="731.0" prefWidth="975.0" AnchorPane.leftAnchor="24.0" AnchorPane.topAnchor="18.0">
                     <children>
 
-                        <ImageView fitHeight="197.0" fitWidth="197.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fitHeight="731.0" fitWidth="975.0" pickOnBounds="true">
                             <image>
-                                <Image url="@assets/logo2_orig-03.png" />
+                                <Image url="@assets/main_bg.png" />
                             </image>
-                            <VBox.margin>
-                                <Insets top="50.0" />
-                            </VBox.margin>
+
+                            <StackPane.margin>
+                                <Insets />
+                            </StackPane.margin>
+                            <viewport>
+                                <Rectangle2D />
+                            </viewport>
                         </ImageView>
 
-                        <HBox alignment="CENTER" prefHeight="336.0" prefWidth="924.0" spacing="40.0">
+                        <Pane prefHeight="200.0" prefWidth="200.0"
+                              style="-fx-background-color: rgba(252, 114, 34, 0.7); -fx-background-radius: 20;" />
+
+                        <VBox alignment="TOP_CENTER" prefHeight="731.0" prefWidth="975.0" style="-fx-background-radius: 20;">
                             <children>
 
-                                <VBox fx:id="adminLoginButton" alignment="CENTER" onMouseClicked="#handleAdminLogin" prefHeight="200.0" prefWidth="200.0" spacing="10.0" style="-fx-cursor: hand;">
-                                    <children>
-                                        <StackPane prefHeight="200.0" prefWidth="200.0">
-                                            <children>
-                                                <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 15;" />
-                                                <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
-                                                    <image>
-                                                        <Image url="@assets/admin_icon.png" />
-                                                    </image>
-                                                </ImageView>
-                                            </children>
-                                        </StackPane>
-                                        <Label text="Admin login" textFill="WHITE">
-                                            <font>
-                                                <Font name="System Bold" size="18.0" />
-                                            </font>
-                                        </Label>
-                                    </children>
-                                </VBox>
+                                <ImageView fitHeight="197.0" fitWidth="197.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@assets/logo2_orig-03.png" />
+                                    </image>
+                                    <VBox.margin>
+                                        <Insets top="50.0" />
+                                    </VBox.margin>
+                                </ImageView>
 
-                                <VBox fx:id="clientLoginButton" alignment="CENTER" onMouseClicked="#handleClientLogin" prefHeight="200.0" prefWidth="200.0" spacing="10.0" style="-fx-cursor: hand;">
+                                <HBox alignment="CENTER" prefHeight="336.0" prefWidth="924.0" spacing="40.0">
                                     <children>
-                                        <StackPane prefHeight="200.0" prefWidth="200.0">
-                                            <children>
-                                                <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 15;" />
-                                                <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
-                                                    <image>
-                                                        <Image url="@assets/client_icon.png" />
-                                                    </image>
-                                                </ImageView>
-                                            </children>
-                                        </StackPane>
-                                        <Label text="Client login" textFill="WHITE">
-                                            <font>
-                                                <Font name="System Bold" size="18.0" />
-                                            </font>
-                                        </Label>
-                                    </children>
-                                </VBox>
 
-                                <VBox fx:id="clientSignupButton" alignment="CENTER" onMouseClicked="#handleClientSignup" prefHeight="200.0" prefWidth="200.0" spacing="10.0" style="-fx-cursor: hand;">
-                                    <children>
-                                        <StackPane prefHeight="200.0" prefWidth="200.0">
+                                        <VBox fx:id="adminLoginButton" alignment="CENTER" onMouseClicked="#handleAdminLogin" prefHeight="200.0" prefWidth="200.0" spacing="10.0" style="-fx-cursor: hand;">
                                             <children>
-                                                <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 15;" />
-                                                <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
-                                                    <image>
-                                                        <Image url="@assets/signup_icon.png" />
-                                                    </image>
-                                                </ImageView>
+                                                <StackPane prefHeight="200.0" prefWidth="200.0">
+                                                    <children>
+                                                        <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 15;" />
+                                                        <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
+                                                            <image>
+                                                                <Image url="@assets/admin_login.png" />
+                                                            </image>
+                                                        </ImageView>
+                                                    </children>
+                                                </StackPane>
+                                                <Label text="Admin login" textFill="WHITE">
+                                                    <font>
+                                                        <Font name="SFT Schrifted Sans TRIAL" size="18.0" />
+                                                    </font>
+                                                </Label>
                                             </children>
-                                        </StackPane>
-                                        <Label text="Client Sign Up" textFill="WHITE">
-                                            <font>
-                                                <Font name="System Bold" size="18.0" />
-                                            </font>
-                                        </Label>
-                                    </children>
-                                </VBox>
+                                        </VBox>
 
-                                <VBox fx:id="quitButton" alignment="CENTER" onMouseClicked="#handleQuit" prefHeight="200.0" prefWidth="200.0" spacing="10.0" style="-fx-cursor: hand;">
-                                    <children>
-                                        <StackPane prefHeight="200.0" prefWidth="200.0">
+                                        <VBox fx:id="clientLoginButton" alignment="CENTER" onMouseClicked="#handleClientLogin" prefHeight="200.0" prefWidth="200.0" spacing="10.0" style="-fx-cursor: hand;">
                                             <children>
-                                                <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 15;" />
-                                                <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
-                                                    <image>
-                                                        <Image url="@assets/quit_icon.png" />
-                                                    </image>
-                                                </ImageView>
+                                                <StackPane prefHeight="200.0" prefWidth="200.0">
+                                                    <children>
+                                                        <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 15;" />
+                                                        <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
+                                                            <image>
+                                                                <Image url="@assets/customer_login.png" />
+                                                            </image>
+                                                        </ImageView>
+                                                    </children>
+                                                </StackPane>
+                                                <Label text="Client login" textFill="WHITE">
+                                                    <font>
+                                                        <Font name="SFT Schrifted Sans TRIAL" size="18.0" />
+                                                    </font>
+                                                </Label>
                                             </children>
-                                        </StackPane>
-                                        <Label text="Quit" textFill="WHITE">
-                                            <font>
-                                                <Font name="System Bold" size="18.0" />
-                                            </font>
-                                        </Label>
-                                    </children>
-                                </VBox>
+                                        </VBox>
 
+                                        <VBox fx:id="clientSignupButton" alignment="CENTER" onMouseClicked="#handleClientSignup" prefHeight="200.0" prefWidth="200.0" spacing="10.0" style="-fx-cursor: hand;">
+                                            <children>
+                                                <StackPane prefHeight="200.0" prefWidth="200.0">
+                                                    <children>
+                                                        <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 15;" />
+                                                        <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
+                                                            <image>
+                                                                <Image url="@assets/client_signup.png" />
+                                                            </image>
+                                                        </ImageView>
+                                                    </children>
+                                                </StackPane>
+                                                <Label text="Client Sign Up" textFill="WHITE">
+                                                    <font>
+                                                        <Font name="SFT Schrifted Sans TRIAL" size="18.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </VBox>
+
+                                        <VBox fx:id="quitButton" alignment="CENTER" onMouseClicked="#handleQuit" prefHeight="200.0" prefWidth="200.0" spacing="10.0" style="-fx-cursor: hand;">
+                                            <children>
+                                                <StackPane prefHeight="200.0" prefWidth="200.0">
+                                                    <children>
+                                                        <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 15;" />
+                                                        <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
+                                                            <image>
+                                                                <Image url="@assets/quit.png" />
+                                                            </image>
+                                                        </ImageView>
+                                                    </children>
+                                                </StackPane>
+                                                <Label text="Quit" textFill="WHITE">
+                                                    <font>
+                                                        <Font name="SFT Schrifted Sans TRIAL" size="18.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </VBox>
+
+                                    </children>
+                                </HBox>
                             </children>
-                        </HBox>
+                        </VBox>
+
                     </children>
-                </VBox>
+                </StackPane>
             </children>
         </AnchorPane>
     </center>

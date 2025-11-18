@@ -3,6 +3,7 @@ package main.gui;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
 
 public class Client_penaltyDialogController {
 
@@ -19,6 +20,14 @@ public class Client_penaltyDialogController {
 
     public void setDialogStage(Stage dialogStage){
         this.dialogStage = dialogStage;
+
+        try {
+            Image dialogIcon = new Image(getClass().getResourceAsStream("assets/favicon.png"));
+            this.dialogStage.getIcons().add(dialogIcon);
+        } catch (Exception e) {
+            System.err.println("Warning: Could not load dialog icon for Penalty Dialog from assets/favicon.png");
+            e.printStackTrace();
+        }
     }
 
     @FXML private void handleResolve() {

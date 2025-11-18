@@ -18,8 +18,8 @@
 
                 <TableView fx:id="transactionsTable" prefHeight="350.0" prefWidth="747.0" styleClass="transactions-table" VBox.vgrow="NEVER">
                     <columns>
-                        <TableColumn fx:id="dateColumn" prefWidth="150.0" text="DATE" />
-                        <TableColumn fx:id="idColumn" prefWidth="300.0" text="TRANSACTION ID" />
+                        <TableColumn fx:id="dateColumn" prefWidth="200.0" text="DATE" />
+                        <TableColumn fx:id="idColumn" prefWidth="200.0" text="TRANSACTION ID" />
                         <TableColumn fx:id="categoryColumn" prefWidth="296.0" text="CATEGORY" />
                     </columns>
                 </TableView>
