@@ -1,10 +1,8 @@
 package main.gui;
 
-import dao.DeploymentDAO;
-import dao.LocationDAO;
-import dao.RentalDAO;
-import dao.VehicleDAO;
+import dao.*;
 import model.Customer;
+import model.PaymentTransaction;
 import model.RentalTransaction;
 import model.Vehicle;
 import service.DeploymentService;
@@ -30,10 +28,12 @@ public class Client_paymentController {
     @FXML private Label priceLabel;
     @FXML private Button confirmButton;
 
+    // Your DAOs and Services are perfect
     private VehicleDAO vehicleDAO = new VehicleDAO();
     private RentalDAO rentalDAO = new RentalDAO();
     private PaymentService paymentService = new PaymentService();
     private DeploymentService deploymentService = new DeploymentService(new DeploymentDAO(), new VehicleDAO(), new LocationDAO());
+    private PaymentDAO paymentDAO = new PaymentDAO();
 
     private Client_dashboardController mainController;
     private Customer loggedInCustomer;
@@ -59,28 +59,16 @@ public class Client_paymentController {
 
         try {
 
-            LocalDateTime startDateTime = finalRental.getStartDateTime().toLocalDateTime();
-            LocalDateTime endDateTime = finalRental.getEndDateTime().toLocalDateTime();
+            this.totalCost = paymentService.calculateRentalFee(completedRental.getRentalID());
 
-            Duration duration = Duration.between(startDateTime, endDateTime);
-
-            if (duration.isNegative()) {
-                plateNumberLabel.setText("Error: Invalid rental duration.");
+            if (this.totalCost.compareTo(BigDecimal.ZERO) <= 0) {
+                plateNumberLabel.setText("Error: Invalid rental duration or cost.");
                 confirmButton.setDisable(true);
                 return;
             }
 
-            double hoursDecimal = duration.toMillis() / (1000.0 * 60.0 * 60.0);
-
-            if (hoursDecimal < 1.0) hoursDecimal = 1.0;
-
-            BigDecimal dailyRate = BigDecimal.valueOf(foundVehicle.getRentalPrice());
-            BigDecimal hours = BigDecimal.valueOf(hoursDecimal);
-            BigDecimal hoursPerDay = BigDecimal.valueOf(24);
-
-            this.totalCost = hours.divide(hoursPerDay, 10, RoundingMode.HALF_UP)
-                    .multiply(dailyRate)
-                    .setScale(2, RoundingMode.HALF_UP);
+            LocalDateTime startDateTime = finalRental.getStartDateTime().toLocalDateTime();
+            LocalDateTime endDateTime = finalRental.getEndDateTime().toLocalDateTime();
 
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("h:mm a");
@@ -113,23 +101,17 @@ public class Client_paymentController {
         }
 
         try {
-
             String rentalID = finalRental.getRentalID();
-
-            String newPaymentID = "PAY-" + (System.currentTimeMillis() % 1000000);
             Date paymentDate = Date.valueOf(LocalDate.now());
 
-            boolean paymentSuccess = paymentService.processPayment(newPaymentID, rentalID, totalCost, paymentDate);
+            boolean paymentSuccess = paymentService.finalizePaymentForRental(rentalID, totalCost, paymentDate);
 
             if (paymentSuccess) {
                 System.out.println("Final Payment recorded for Rental ID: " + rentalID);
-
                 mainController.handleHome(null);
             } else {
                 System.err.println("Database error: Failed to record final payment.");
-
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }

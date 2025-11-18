@@ -208,32 +208,49 @@ public class PaymentService {
         System.out.println("\n=== FINALIZING PAYMENT ===");
         System.out.println("Rental ID: " + rentalID);
         System.out.println("Final Amount: ₱" + finalAmount);
-        
+
         try {
-            // Get the existing payment
+
             PaymentTransaction payment = getPaymentByRental(rentalID);
-            
+
             if (payment == null) {
-                System.out.println(":( No payment found to update");
-                return false;
-            }
-            
-            // Update payment details
-            payment.setAmount(finalAmount);
-            payment.setPaymentDate(paymentDate);
-            
-            // Update in database
-            boolean success = paymentDAO.updatePayment(payment);
-            
-            if (success) {
-                System.out.println(":) Payment finalized successfully");
-                System.out.println("Payment ID: " + payment.getPaymentID());
+
+                System.out.println("Note: No placeholder payment found. Creating new payment record.");
+                String newPaymentID = "PAY-" + rentalID;
+
+                PaymentTransaction newPayment = new PaymentTransaction(
+                        newPaymentID,
+                        finalAmount,
+                        rentalID,
+                        paymentDate,
+                        "Active"
+                );
+
+                boolean success = paymentDAO.insertPayment(newPayment);
+
+                if (success) {
+                    System.out.println(":) Payment (new) finalized successfully: " + newPaymentID);
+                } else {
+                    System.out.println(":( Failed to create new payment record");
+                }
+                return success;
+
+
             } else {
-                System.out.println(":( Failed to finalize payment");
+                System.out.println("✓ Placeholder payment found: " + payment.getPaymentID());
+                payment.setAmount(finalAmount);
+                payment.setPaymentDate(paymentDate);
+
+                boolean success = paymentDAO.updatePayment(payment);
+
+                if (success) {
+                    System.out.println(":) Payment (update) finalized successfully");
+                } else {
+                    System.out.println(":( Failed to finalize/update payment");
+                }
+                return success;
             }
-            
-            return success;
-            
+
         } catch (Exception e) {
             System.out.println(":( Error finalizing payment: " + e.getMessage());
             e.printStackTrace();

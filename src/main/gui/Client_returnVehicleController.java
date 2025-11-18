@@ -32,10 +32,17 @@ public class Client_returnVehicleController {
         this.activeRental = rental;
 
         if (activeRental != null) {
-
             rentalIdLabel.setText("Rental ID: " + rental.getRentalID());
             vehiclePlateLabel.setText("Vehicle: " + rental.getPlateID());
-            startTimeLabel.setText("Start Time: " + rental.getStartDateTime().toString());
+
+            if (rental.getStartDateTime() != null) {
+                startTimeLabel.setText("Start Time: " + rental.getStartDateTime().toString());
+                confirmReturnButton.setDisable(false);
+            } else {
+
+                startTimeLabel.setText("Start Time: PENDING (Admin must start)");
+                confirmReturnButton.setDisable(true);
+            }
 
             System.out.println("Loaded Active Rental: " + activeRental.getRentalID());
         }
@@ -53,18 +60,16 @@ public class Client_returnVehicleController {
             return;
         }
 
-        LocalDateTime currentReturnTime = LocalDateTime.now();
-        Timestamp returnTimestamp = Timestamp.valueOf(currentReturnTime);
+        Timestamp returnTimestamp = new Timestamp(System.currentTimeMillis());
+        activeRental.setEndDateTime(returnTimestamp);
+        activeRental.setStatus("Completed");
 
-        boolean success = rentalDAO.completeRental(activeRental.getRentalID(), returnTimestamp);
+        boolean success = rentalDAO.updateRental(activeRental);
 
         if (success) {
             System.out.println("Rental successfully finalized in DB: " + activeRental.getRentalID());
 
-            activeRental.setEndDateTime(returnTimestamp);
-
             loadFinalPaymentScene(activeRental);
-
         } else {
             System.err.println("Error finalizing rental return in DB. Check DAO.");
         }

@@ -37,7 +37,6 @@ public class Client_dashboardController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
         navButtons = List.of(homeButton, settingsButton, rentButton, resolveButton, historyButton);
     }
 
@@ -91,10 +90,10 @@ public class Client_dashboardController implements Initializable {
         }
 
         if (activeRental != null) {
-            System.out.println("SUCCESS: Found active rental: " + activeRental.getRentalID());
-
+            System.out.println("INFO: Found active rental. Loading return/pending screen.");
             loadReturnScene(activeRental);
         } else {
+
             System.out.println("INFO: NO active rental found. Loading rent scene.");
             loadPage("Client-rent.fxml");
         }
@@ -141,12 +140,13 @@ public class Client_dashboardController implements Initializable {
                 homeController.initData(this.loggedInCustomer);
 
             } else if (controller instanceof Client_rentController) {
-
                 Client_rentController rentController = (Client_rentController) controller;
                 rentController.setMainController(this);
                 rentController.initData(this.loggedInCustomer);
 
-            } else if (controller instanceof Client_paymentController) {
+            }
+
+            else if (controller instanceof Client_paymentController) {
                 Client_paymentController paymentController = (Client_paymentController) controller;
                 paymentController.setMainController(this);
 
@@ -186,7 +186,6 @@ public class Client_dashboardController implements Initializable {
             e.printStackTrace();
         }
     }
-
 
     private void loadReturnScene(RentalTransaction activeRental) {
         try {

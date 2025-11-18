@@ -68,17 +68,23 @@ public class Client_historyController implements Initializable {
 
         System.out.println("Fetching all transactions for Customer ID: " + customerID);
 
-        // --- THIS IS THE NEW, CORRECT LOOP ---
-        List<RentalTransaction> rentals = rentalDAO.getRentalsByCustomer(customerID); // This method is in RentalDAO, so it's OK
+        List<RentalTransaction> rentals = rentalDAO.getRentalsByCustomer(customerID);
 
         if (rentals != null){
             for (RentalTransaction rental: rentals){
                 String id = rental.isCompleted() ? rental.getRentalID() : "ONGOING - " + rental.getRentalID();
 
-                // 1. Add the rental transaction (which you already fixed)
-                allTransactions.add(new Transaction(rental.getStartDateTime().toString(), id, "Vehicle Rental"));
+                String date;
+                if (rental.getStartDateTime() != null) {
+                    date = rental.getStartDateTime().toString().substring(0, 10);
+                } else if (rental.getPickUpDateTime() != null) {
+                    date = rental.getPickUpDateTime().toString().substring(0, 10);
+                } else {
+                    date = "Pending";
+                }
 
-                // 2. NOW, find all penalties FOR THIS RENTAL
+                allTransactions.add(new Transaction(date, id, "Vehicle Rental"));
+
                 List<PenaltyTransaction> penalties = penaltyDAO.getPenaltiesByRental(rental.getRentalID());
                 if (penalties != null) {
                     for (PenaltyTransaction penalty : penalties) {

@@ -413,4 +413,32 @@ public class PaymentDAO {
             rs.getString("status")
         );
     }
+
+    /**
+     * Finds the placeholder payment for a rental.
+     * Specifically looks for an 'Active' payment with a 0.00 amount.
+     * @param rentalID The rental ID to find the payment for
+     * @return The placeholder PaymentTransaction, or null if not found
+     */
+    public PaymentTransaction getPlaceholderPaymentByRentalId(String rentalID) {
+        String sql = "SELECT * FROM payments " +
+                "WHERE rentalID = ? AND amount = 0.00 AND status = 'Active'";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, rentalID);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return extractPaymentFromResultSet(rs);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving placeholder payment: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
