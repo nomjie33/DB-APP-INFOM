@@ -18,10 +18,10 @@
                                 <Label prefHeight="20.0" styleClass="label" text="Home" textFill="WHITE" />
                             </children>
                         </HBox>
-                        <HBox fx:id="settingsButton" alignment="CENTER_LEFT" layoutX="10.0" layoutY="187.0" onMouseClicked="#handleSettings" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button">
+                        <HBox fx:id="profileButton" alignment="CENTER_LEFT" layoutX="10.0" layoutY="187.0" onMouseClicked="#handleProfile" prefHeight="20.0" prefWidth="200.0" styleClass="nav-button">
                             <children>
                                 <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true"><image><Image url="@assets/settings.png" /></image></ImageView>
-                                <Label prefHeight="20.0" styleClass="label" text="Settings" textFill="WHITE" />
+                                <Label prefHeight="20.0" styleClass="label" text="Profile" textFill="WHITE" />
                             </children>
                         </HBox>
 

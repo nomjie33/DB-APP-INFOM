@@ -46,7 +46,17 @@ public class Admin_loginController {
                 System.out.println("Admin login successful for: " + staff.getUsername());
                 errorLabel.setVisible(false);
 
-                loadScene("Admin-dashboard.fxml", "UVR!");
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-dashboard.fxml"));
+                Parent root = loader.load();
+
+                Admin_dashboardController controller = loader.getController();
+                controller.setLoggedInStaff(staff);
+
+                Scene scene = new Scene(root);
+                Stage stage = (Stage) adminLoginRoot.getScene().getWindow();
+                stage.setScene(scene);
+                stage.setTitle("UVR!");
+                stage.show();
             } else {
                 System.out.println("Admin login failed.");
                 showError("Invalid username or password.");
@@ -54,7 +64,7 @@ public class Admin_loginController {
 
         } catch (Exception ex){
             ex.printStackTrace();
-            showError("A database error occured. Please try again.");
+            showError("A database error occurred. Please try again.");
         }
     }
 

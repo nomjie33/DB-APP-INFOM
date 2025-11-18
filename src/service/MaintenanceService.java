@@ -248,9 +248,141 @@ public class MaintenanceService {
     }
     
     /**
+     * Recalculate and update the maintenance cost in the database.
+     * Should be called whenever:
+     * - A new maintenance cheque (parts record) is added
+     * - An existing maintenance cheque is edited
+     * - The endDateTime is set or edited
+     * 
+     * This ensures the total cost is always accurate even if parts are added
+     * after the maintenance was marked complete.
+     * 
+     * @param maintenanceID Maintenance record to recalculate
+     * @return true if recalculation and update successful, false otherwise
+     */
+    public boolean recalculateMaintenanceCost(String maintenanceID) {
+        try {
+            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceByIdIncludingInactive(maintenanceID);
+            if (maintenance == null) {
+                System.out.println("Error: Maintenance record " + maintenanceID + " not found.");
+                return false;
+            }
+            
+            // Calculate the new total cost
+            BigDecimal totalCost = calculateMaintenanceCost(maintenanceID);
+            maintenance.setTotalCost(totalCost);
+            
+            System.out.println("Recalculated maintenance cost for " + maintenanceID + ": Php" + totalCost);
+            
+            // Update the maintenance record
+            boolean updateSuccess = maintenanceDAO.updateMaintenance(maintenance);
+            if (!updateSuccess) {
+                System.out.println("Error: Failed to update maintenance cost.");
+                return false;
+            }
+            
+            return true;
+            
+        } catch (Exception e) {
+            System.out.println("Error recalculating maintenance cost: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Check if a maintenance record has any associated maintenance cheques (parts).
+     * Used for pre-completion validation.
+     * 
+     * @param maintenanceID Maintenance record to check
+     * @return true if at least one cheque exists, false otherwise
+     */
+    public boolean hasMaintenanceCheques(String maintenanceID) {
+        try {
+            List<MaintenanceCheque> cheques = maintenanceChequeDAO.getPartsByMaintenance(maintenanceID);
+            return cheques != null && !cheques.isEmpty();
+        } catch (Exception e) {
+            System.out.println("Error checking maintenance cheques: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Validate whether a maintenance can be completed (pre-completion check).
+     * This checks if the maintenance is transitioning from incomplete to complete
+     * and whether parts have been recorded.
+     * 
+     * @param maintenanceID Maintenance record to validate
+     * @return ValidationResult object indicating if completion should proceed and why
+     */
+    public ValidationResult validateCompletion(String maintenanceID) {
+        try {
+            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceById(maintenanceID);
+            if (maintenance == null) {
+                return new ValidationResult(false, "Maintenance record not found.", false);
+            }
+            
+            // Check if already completed
+            if (maintenance.getEndDateTime() != null) {
+                return new ValidationResult(false, "Maintenance is already completed.", false);
+            }
+            
+            // Check for parts
+            boolean hasParts = hasMaintenanceCheques(maintenanceID);
+            
+            if (!hasParts) {
+                // No parts - needs user confirmation
+                return new ValidationResult(true, "No parts recorded. User confirmation needed.", false);
+            }
+            
+            // Has parts - can proceed
+            return new ValidationResult(true, "Validation passed.", true);
+            
+        } catch (Exception e) {
+            System.out.println("Error validating completion: " + e.getMessage());
+            e.printStackTrace();
+            return new ValidationResult(false, "Error during validation: " + e.getMessage(), false);
+        }
+    }
+    
+    /**
+     * Inner class to represent validation result for pre-completion check.
+     */
+    public static class ValidationResult {
+        private boolean canProceed;
+        private String message;
+        private boolean hasParts;
+        
+        public ValidationResult(boolean canProceed, String message, boolean hasParts) {
+            this.canProceed = canProceed;
+            this.message = message;
+            this.hasParts = hasParts;
+        }
+        
+        public boolean canProceed() {
+            return canProceed;
+        }
+        
+        public String getMessage() {
+            return message;
+        }
+        
+        public boolean hasParts() {
+            return hasParts;
+        }
+    }
+    
+    /**
      * Complete a maintenance job by recording repair end time (no new parts).
      * Used when parts were already added separately via MaintenanceCheque.
      * Updates vehicle status to "Available" and calculates total cost.
+     * 
+     * IMPORTANT: This method should ONLY be called when setting endDateTime for the FIRST TIME.
+     * It will fail if the maintenance is already completed (endDateTime already set).
+     * 
+     * Pre-Completion Check: Validates that maintenance cheques exist before proceeding.
+     * If no cheques exist, the GUI should prompt the user before calling this method.
      * 
      * @param maintenanceID Maintenance record to complete
      * @param endDateTime Timestamp when repair was completed
@@ -265,6 +397,10 @@ public class MaintenanceService {
      * Updates MaintenanceTransaction with endDateTime and creates MaintenanceCheque records for parts.
      * Automatically calculates and stores total maintenance cost.
      * 
+     * IMPORTANT: This method enforces first-time completion only.
+     * If the maintenance already has an endDateTime set, this method will fail.
+     * This prevents accidental re-completion and ensures completion logic runs only once.
+     * 
      * @param maintenanceID Maintenance record to complete
      * @param endDateTime Timestamp when repair was completed
      * @param partsUsed List of PartUsage objects (partID and quantity)
@@ -277,6 +413,13 @@ public class MaintenanceService {
             MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceById(maintenanceID);
             if (maintenance == null) {
                 System.out.println("Error: Maintenance record " + maintenanceID + " not found.");
+                return false;
+            }
+            
+            // ENFORCE: Only complete if endDateTime is NOT already set (first-time completion only)
+            if (maintenance.getEndDateTime() != null) {
+                System.out.println("Error: Maintenance " + maintenanceID + " is already completed. Cannot complete again.");
+                System.out.println("Use recalculateMaintenanceCost() if you need to update costs after adding parts.");
                 return false;
             }
             

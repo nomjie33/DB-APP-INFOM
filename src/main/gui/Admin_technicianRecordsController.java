@@ -106,16 +106,22 @@ public class Admin_technicianRecordsController implements Initializable {
                         if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                             setGraphic(null);
                         } else {
-                            Button btn = new Button("Edit");
-                            btn.getStyleClass().add("edit-button");
-                            btn.setOnAction((ActionEvent event) -> {
-                                // Get fresh item on click
-                                Technician technician = getTableRow().getItem();
-                                if (technician != null) {
-                                    handleEditTechnician(technician);
-                                }
-                            });
-                            setGraphic(btn);
+                            Technician technician = getTableRow().getItem();
+                            // Only show Edit button for Active technicians
+                            if ("Active".equals(technician.getStatus())) {
+                                Button btn = new Button("Edit");
+                                btn.getStyleClass().add("edit-button");
+                                btn.setOnAction((ActionEvent event) -> {
+                                    // Get fresh item on click
+                                    Technician tech = getTableRow().getItem();
+                                    if (tech != null) {
+                                        handleEditTechnician(tech);
+                                    }
+                                });
+                                setGraphic(btn);
+                            } else {
+                                setGraphic(null);
+                            }
                         }
                     }
                 };

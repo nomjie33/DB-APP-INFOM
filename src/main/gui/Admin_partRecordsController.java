@@ -101,15 +101,21 @@ public class Admin_partRecordsController implements Initializable {
                         if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                             setGraphic(null);
                         } else {
-                            Button btn = new Button("Edit");
-                            btn.getStyleClass().add("edit-button");
-                            btn.setOnAction((ActionEvent event) -> {
-                                Part part = getTableRow().getItem();
-                                if (part != null) {
-                                    handleEdit(part);
-                                }
-                            });
-                            setGraphic(btn);
+                            Part part = getTableRow().getItem();
+                            // Only show Edit button for Active parts
+                            if ("Active".equals(part.getStatus())) {
+                                Button btn = new Button("Edit");
+                                btn.getStyleClass().add("edit-button");
+                                btn.setOnAction((ActionEvent event) -> {
+                                    Part p = getTableRow().getItem();
+                                    if (p != null) {
+                                        handleEdit(p);
+                                    }
+                                });
+                                setGraphic(btn);
+                            } else {
+                                setGraphic(null);
+                            }
                         }
                     }
                 };

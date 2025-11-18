@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="771.0" prefWidth="823.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Admin_profileController">
+    <children>
+        <Label layoutX="38.0" layoutY="35.0" style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #33a398;" text="Admin Profile" />
+
+        <VBox layoutX="38.0" layoutY="90.0" spacing="5.0">
+            <Label text="Username" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #33a398;" />
+            <Label fx:id="usernameLabel" text="Name" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #e8603c;" />
+        </VBox>
+
+        <VBox layoutX="38.0" layoutY="180.0" spacing="5.0">
+            <Label text="Email" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #33a398;" />
+            <Label fx:id="emailLabel" text="Name" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #e8603c;" />
+        </VBox>
+    </children>
+</AnchorPane>
