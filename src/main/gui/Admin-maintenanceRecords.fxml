@@ -21,7 +21,7 @@
                    AnchorPane.bottomAnchor="38.0" styleClass="transactions-table">
             <columns>
                 <TableColumn fx:id="maintenanceIDColumn" prefWidth="100.0" text="Maintenance ID" />
-                <TableColumn fx:id="plateIDColumn" prefWidth="100.0" text="Plate ID" />
+                <TableColumn fx:id="plateIDColumn" prefWidth="70.0" text="Plate ID" />
                 <TableColumn fx:id="technicianIDColumn" prefWidth="100.0" text="Technician ID" />
                 <TableColumn fx:id="startDateTimeColumn" prefWidth="110.0" text="Start DateTime" />
                 <TableColumn fx:id="endDateTimeColumn" prefWidth="110.0" text="End DateTime" />
