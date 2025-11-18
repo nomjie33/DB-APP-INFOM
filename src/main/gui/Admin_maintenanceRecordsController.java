@@ -31,7 +31,10 @@ public class Admin_maintenanceRecordsController implements Initializable {
     @FXML private TableColumn<MaintenanceTransaction, Timestamp> endDateTimeColumn;
     @FXML private TableColumn<MaintenanceTransaction, String> notesColumn;
     @FXML private TableColumn<MaintenanceTransaction, String> statusColumn;
-    @FXML private TableColumn<MaintenanceTransaction, Void> editColumn; // Action column
+    @FXML private TableColumn<MaintenanceTransaction, Void> editColumn;
+
+    @FXML private TableColumn<MaintenanceTransaction, Void> actionColumn;
+    @FXML private ComboBox<String> statusFilterComboBox;
 
     private MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
     private Admin_dashboardController mainController;
@@ -39,7 +42,6 @@ public class Admin_maintenanceRecordsController implements Initializable {
     private static Popup textDisplayPopup = new Popup();
     private static Label popupLabel = new Label();
     private static TableCell<?, ?> currentlyOpenCell = null;
-
     static {
         popupLabel.setStyle(
                 "-fx-background-color: white;" +
@@ -67,10 +69,10 @@ public class Admin_maintenanceRecordsController implements Initializable {
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         notesColumn.setCellFactory(column -> new TableCell<MaintenanceTransaction, String>() {
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-
                 if (item == null || empty) {
                     setText(null);
                     setOnMouseClicked(null);
@@ -91,8 +93,13 @@ public class Admin_maintenanceRecordsController implements Initializable {
             }
         });
 
+        statusFilterComboBox.setItems(FXCollections.observableArrayList("Active", "Inactive", "All"));
+        statusFilterComboBox.setValue("Active");
+        statusFilterComboBox.setOnAction(e -> loadMaintenanceData());
+
         loadMaintenanceData();
         setupEditButtonColumn();
+        setupActionColumn();
     }
 
     public void setMainController(Admin_dashboardController mainController) {
@@ -100,7 +107,17 @@ public class Admin_maintenanceRecordsController implements Initializable {
     }
 
     private void loadMaintenanceData() {
-        List<MaintenanceTransaction> maintenanceList = maintenanceDAO.getAllMaintenance();
+        maintenanceTable.getItems().clear();
+        String statusFilter = statusFilterComboBox.getValue();
+        List<MaintenanceTransaction> maintenanceList;
+
+        if ("All".equals(statusFilter)) {
+            maintenanceList = maintenanceDAO.getAllMaintenanceIncludingInactive();
+        } else {
+
+            maintenanceList = maintenanceDAO.getMaintenanceByStatus(statusFilter);
+        }
+
         ObservableList<MaintenanceTransaction> maintenances = FXCollections.observableArrayList(maintenanceList);
         maintenanceTable.setItems(maintenances);
         maintenanceCountLabel.setText("(" + maintenances.size() + ") MAINTENANCES:");
@@ -120,19 +137,22 @@ public class Admin_maintenanceRecordsController implements Initializable {
             @Override
             public TableCell<MaintenanceTransaction, Void> call(final TableColumn<MaintenanceTransaction, Void> param) {
                 final TableCell<MaintenanceTransaction, Void> cell = new TableCell<>() {
-                    private final Button btn = new Button("Edit");
-                    {
-                        btn.getStyleClass().add("edit-button");
-                        btn.setOnAction(event -> {
-                            MaintenanceTransaction maintenance = getTableView().getItems().get(getIndex());
-                            handleEditMaintenance(maintenance);
-                        });
-                    }
-
                     @Override
                     public void updateItem(Void item, boolean empty) {
                         super.updateItem(item, empty);
-                        setGraphic(empty ? null : btn);
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                            setGraphic(null);
+                        } else {
+                            Button btn = new Button("Edit");
+                            btn.getStyleClass().add("edit-button");
+                            btn.setOnAction(event -> {
+                                MaintenanceTransaction maintenance = getTableRow().getItem();
+                                if (maintenance != null) {
+                                    handleEditMaintenance(maintenance);
+                                }
+                            });
+                            setGraphic(btn);
+                        }
                     }
                 };
                 return cell;
@@ -140,5 +160,75 @@ public class Admin_maintenanceRecordsController implements Initializable {
         };
         editColumn.setCellFactory(cellFactory);
     }
-}
 
+    private void setupActionColumn() {
+        Callback<TableColumn<MaintenanceTransaction, Void>, TableCell<MaintenanceTransaction, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<MaintenanceTransaction, Void> call(final TableColumn<MaintenanceTransaction, Void> param) {
+                final TableCell<MaintenanceTransaction, Void> cell = new TableCell<>() {
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                            setGraphic(null);
+                        } else {
+                            MaintenanceTransaction maintenance = getTableRow().getItem();
+                            Button btn = new Button();
+
+                            if ("Active".equals(maintenance.getStatus())) {
+                                btn.setText("Deactivate");
+                                btn.getStyleClass().add("deactivate-button");
+                            } else {
+                                btn.setText("Reactivate");
+                                btn.getStyleClass().add("edit-button");
+                            }
+
+                            btn.setOnAction((ActionEvent event) -> {
+                                MaintenanceTransaction currentMaint = getTableRow().getItem();
+                                if (currentMaint != null) {
+                                    handleDeactivateReactivate(currentMaint);
+                                }
+                            });
+                            setGraphic(btn);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+        actionColumn.setCellFactory(cellFactory);
+    }
+
+    private void handleDeactivateReactivate(MaintenanceTransaction maintenance) {
+        String action = "Active".equals(maintenance.getStatus()) ? "deactivate" : "reactivate";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Confirm " + action);
+        alert.setContentText("Are you sure you want to " + action + " maintenance: " + maintenance.getMaintenanceID() + "?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            boolean success;
+            if ("Active".equals(maintenance.getStatus())) {
+                success = maintenanceDAO.deactivateMaintenance(maintenance.getMaintenanceID());
+            } else {
+                success = maintenanceDAO.reactivateMaintenance(maintenance.getMaintenanceID());
+            }
+
+            if (success) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Maintenance has been " + action + "d.");
+                loadMaintenanceData();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update maintenance status.");
+            }
+        }
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+}

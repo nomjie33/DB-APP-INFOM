@@ -333,6 +333,33 @@ public class MaintenanceDAO {
         
         return maintenanceList;
     }
+
+    /**
+     * Get all maintenance records by a specific status.
+     * @param status The status to filter by (e.g., "Active" or "Inactive")
+     * @return List of MaintenanceTransaction objects
+     */
+    public List<MaintenanceTransaction> getMaintenanceByStatus(String status) {
+        List<MaintenanceTransaction> maintenanceList = new ArrayList<>();
+        String sql = "SELECT * FROM maintenance WHERE status = ? ORDER BY startDateTime DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                maintenanceList.add(extractMaintenanceFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving maintenance records by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return maintenanceList;
+    }
     
     /**
      * Helper method to extract MaintenanceTransaction object from ResultSet.
