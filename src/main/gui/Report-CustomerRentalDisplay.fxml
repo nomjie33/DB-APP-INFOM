@@ -16,7 +16,10 @@
         <Button fx:id="backButton" layoutX="575.0" layoutY="90.0" mnemonicParsing="false" onAction="#handleBack" prefHeight="40.0" prefWidth="100.0" styleClass="cancel-button" text="Back" />
         <Button fx:id="exportButton" layoutX="690.0" layoutY="90.0" mnemonicParsing="false" onAction="#handleExportToPDF" prefHeight="40.0" prefWidth="100.0" styleClass="confirm-button" text="Export PDF" />
 
-        <TableView fx:id="reportTable" layoutX="38.0" layoutY="150.0" prefHeight="580.0" prefWidth="747.0" styleClass="transactions-table">
+        <TableView fx:id="reportTable" AnchorPane.topAnchor="150.0"
+                   AnchorPane.leftAnchor="38.0"
+                   AnchorPane.rightAnchor="38.0"
+                   AnchorPane.bottomAnchor="38.0" styleClass="transactions-table">
             <columns>
                 <TableColumn fx:id="colCustomerID" prefWidth="100.0" text="Customer ID" />
                 <TableColumn fx:id="colName" prefWidth="150.0" text="Customer Name" />
@@ -28,7 +31,7 @@
             </columns>
         </TableView>
 
-        <Pane layoutX="36.0" layoutY="630.0" prefHeight="89.0" prefWidth="395.0" styleClass="heads-up-pane">
+        <Pane layoutX="36.0" layoutY="615.0" prefHeight="89.0" prefWidth="420.0" styleClass="heads-up-pane">
             <children>
                 <Label layoutY="28.0" prefWidth="400.0" style="-fx-text-fill: #F99C03;" text="Exporting this report to PDF will include a total of 4 sections (Customer Rental Summary, Customer Demographics, Customer Penalty/Risk Analysis, and Summary/Key Metrics.)" wrapText="true">
                     <padding>
