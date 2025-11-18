@@ -30,7 +30,7 @@
 
         <Pane layoutX="36.0" layoutY="630.0" prefHeight="89.0" prefWidth="395.0" styleClass="heads-up-pane">
             <children>
-                <Label layoutY="28.0" prefWidth="400.0" style="-fx-text-fill: #F99C03;" text="Exporting this report to PDF will include 4 sections (Customer Rental Summary, Customer Demographics, Customer Penalty/Risk Analysis, and Summary/Key Metrics.)" wrapText="true">
+                <Label layoutY="28.0" prefWidth="400.0" style="-fx-text-fill: #F99C03;" text="Exporting this report to PDF will include a total of 4 sections (Customer Rental Summary, Customer Demographics, Customer Penalty/Risk Analysis, and Summary/Key Metrics.)" wrapText="true">
                     <padding>
                         <Insets left="10.0" />
                     </padding>
