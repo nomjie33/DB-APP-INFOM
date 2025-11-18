@@ -18,29 +18,19 @@ import java.util.ResourceBundle;
 
 public class Admin_penaltyRecordsController implements Initializable {
 
-    @FXML
-    private Label penaltyCountLabel;
-    @FXML
-    private TableView<PenaltyTransaction> penaltyTable;
-    @FXML
-    private TableColumn<PenaltyTransaction, String> penaltyIDColumn;
-    @FXML
-    private TableColumn<PenaltyTransaction, String> rentalIDColumn;
-    @FXML
-    private TableColumn<PenaltyTransaction, String> maintenanceIDColumn;
-    @FXML
-    private TableColumn<PenaltyTransaction, String> totalPenaltyColumn;
-    @FXML
-    private TableColumn<PenaltyTransaction, String> statusColumn;
-    @FXML
-    private TableColumn<PenaltyTransaction, Date> dateIssuedColumn;
-    @FXML
-    private TableColumn<PenaltyTransaction, Void> editColumn;
+    @FXML private Label penaltyCountLabel;
+    @FXML private TableView<PenaltyTransaction> penaltyTable;
+    @FXML private TableColumn<PenaltyTransaction, String> penaltyIDColumn;
+    @FXML private TableColumn<PenaltyTransaction, String> rentalIDColumn;
+    @FXML private TableColumn<PenaltyTransaction, String> maintenanceIDColumn;
+    @FXML private TableColumn<PenaltyTransaction, String> totalPenaltyColumn;
+    @FXML private TableColumn<PenaltyTransaction, String> statusColumn;
+    @FXML private TableColumn<PenaltyTransaction, Date> dateIssuedColumn;
+    @FXML private TableColumn<PenaltyTransaction, Void> editColumn;
 
-    @FXML
-    private TableColumn<PenaltyTransaction, Void> actionColumn;
-    @FXML
-    private ComboBox<String> statusFilterComboBox;
+    @FXML private TableColumn<PenaltyTransaction, Void> actionColumn;
+    @FXML private ComboBox<String> statusFilterComboBox;
+    @FXML private TableColumn<PenaltyTransaction, String> penaltyStatusColumn;
 
     private final PenaltyDAO penaltyDAO = new PenaltyDAO();
     private Admin_dashboardController mainController;
@@ -50,7 +40,15 @@ public class Admin_penaltyRecordsController implements Initializable {
         penaltyIDColumn.setCellValueFactory(new PropertyValueFactory<>("penaltyID"));
         rentalIDColumn.setCellValueFactory(new PropertyValueFactory<>("rentalID"));
         maintenanceIDColumn.setCellValueFactory(new PropertyValueFactory<>("maintenanceID"));
-        totalPenaltyColumn.setCellValueFactory(new PropertyValueFactory<>("totalPenalty"));
+
+        totalPenaltyColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(
+                        String.format("₱%.2f", cellData.getValue().getTotalPenalty())
+                )
+        );
+
+        penaltyStatusColumn.setCellValueFactory(new PropertyValueFactory<>("penaltyStatus"));
+
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         dateIssuedColumn.setCellValueFactory(new PropertyValueFactory<>("dateIssued"));
 

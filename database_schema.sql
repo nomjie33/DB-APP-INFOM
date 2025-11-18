@@ -2,7 +2,7 @@
 -- VEHICLE RENTAL MANAGEMENT SYSTEM
 -- Database Schema SQL Script
 -- =====================================================
--- 
+--
 -- INSTRUCTIONS FOR COLLABORATORS:
 -- 1. Create a new database first: CREATE DATABASE vehicle_rental_db;
 -- 2. Run this script to create all tables
@@ -15,7 +15,7 @@ CREATE DATABASE IF NOT EXISTS vehicle_rental_db;
 USE vehicle_rental_db;
 
 -- =====================================================
--- DROP ALL TABLES
+-- DROP ALL TABLES IN CORRECT ORDER (respecting foreign keys)
 -- =====================================================
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -35,7 +35,7 @@ DROP TABLE IF EXISTS parts;
 DROP TABLE IF EXISTS locations;
 DROP TABLE IF EXISTS staff;
 
-SET FOREIGN_KEY_CHECKS = 1; 
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- =====================================================
 -- 1. LOCATIONS TABLE
@@ -59,7 +59,7 @@ CREATE TABLE locations (
 CREATE TABLE cities (
     cityID INT(11) PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
-    
+
     INDEX idx_city_name (name)
 );
 
@@ -72,12 +72,12 @@ CREATE TABLE barangays (
     barangayID INT(11) PRIMARY KEY AUTO_INCREMENT,
     cityID INT(11) NOT NULL,
     name VARCHAR(30) NOT NULL,
-    
+
     CONSTRAINT fk_barangay_city
         FOREIGN KEY (cityID) REFERENCES cities(cityID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
+
     INDEX idx_barangay_city (cityID),
     INDEX idx_barangay_name (name)
 );
@@ -91,12 +91,12 @@ CREATE TABLE addresses (
     addressID INT(11) PRIMARY KEY AUTO_INCREMENT,
     barangayID INT(11) NOT NULL,
     street VARCHAR(30),
-    
+
     CONSTRAINT fk_address_barangay
         FOREIGN KEY (barangayID) REFERENCES barangays(barangayID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
+
     INDEX idx_address_barangay (barangayID)
 );
 
@@ -113,15 +113,15 @@ CREATE TABLE customers (
     addressID INT(11),
     emailAddress VARCHAR(80),
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
-    
+
     CONSTRAINT fk_customer_address
         FOREIGN KEY (addressID) REFERENCES addresses(addressID)
         ON DELETE SET NULL
         ON UPDATE CASCADE,
-    
+
     CONSTRAINT chk_customer_status
         CHECK (status IN ('Active', 'Inactive')),
-    
+
     INDEX idx_customer_address (addressID)
 );
 
@@ -130,22 +130,9 @@ CREATE TABLE customers (
 -- 6. VEHICLES TABLE
 -- =====================================================
 -- Stores vehicle inventory
--- 
--- SOFT DELETE PATTERN:
--- The status field serves dual purposes:
--- 1. Operational Status (for active vehicles): 'Available', 'In Use', 'Maintenance'
--- 2. Active/Inactive Status: 'Inactive' marks a vehicle as soft-deleted/retired
--- 
--- When status = 'Inactive', the vehicle is excluded from:
--- - Active listings and searches
--- - Rental workflows
--- - Maintenance workflows
--- - Deployment operations
--- 
--- Inactive vehicles can be reactivated by changing status back to 'Available'
 CREATE TABLE vehicles (
     plateID VARCHAR(11) PRIMARY KEY,
-    vehicleType VARCHAR(25) NOT NULL, 
+    vehicleType VARCHAR(25) NOT NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Available',
     rentalPrice DECIMAL (10, 2) NOT NULL,
 
@@ -166,9 +153,9 @@ CREATE TABLE technicians (
     rate DECIMAL(10, 2) NOT NULL,
     contact_number VARCHAR(15),
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
-    
+
     INDEX idx_technician_specialization (specialization_id),
-    
+
     CONSTRAINT chk_technician_status
         CHECK (status IN ('Active', 'Inactive'))
 );
@@ -184,10 +171,10 @@ CREATE TABLE parts (
     quantity INT(3) NOT NULL DEFAULT 0,
     price DECIMAL(10, 2) DEFAULT 0.00 COMMENT 'Price per unit of part',
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
-    
-    CONSTRAINT chk_part_quantity 
+
+    CONSTRAINT chk_part_quantity
         CHECK (quantity >= 0),
-    
+
     CONSTRAINT chk_part_status
         CHECK (status IN ('Active', 'Inactive'))
 );
@@ -199,22 +186,11 @@ CREATE TABLE parts (
 -- Stores rental transaction records
 -- Links customers, vehicles, and locations
 -- Tracks rental period with datetime precision
--- 
--- SOFT DELETE PATTERN:
--- Uses 'Cancelled' status for soft delete (not 'Inactive')
--- - 'Active': Rental is ongoing (vehicle picked up or awaiting pickup)
--- - 'Completed': Rental finished successfully (vehicle returned)
--- - 'Cancelled': Rental was cancelled/soft-deleted (preserves historical data)
--- 
+--
 -- TIMESTAMP FIELDS:
--- - pickUpDateTime: Customer's scheduled pickup time
--- - startDateTime: Actual rental start time (NULL if not yet picked up)
+-- - startDateTime: When rental begins (date + time)
 -- - endDateTime: When rental ends (NULL if ongoing)
 -- - Duration calculated dynamically from start/end difference
---
--- CANCELLATION RULES:
--- - Can only cancel if startDateTime IS NULL (not yet picked up)
--- - Once picked up, rental cannot be cancelled, only completed
 
 CREATE TABLE rentals (
     rentalID VARCHAR(11) PRIMARY KEY,
@@ -225,18 +201,18 @@ CREATE TABLE rentals (
     startDateTime TIMESTAMP NULL COMMENT 'Actual rental start time set by admin',
     endDateTime TIMESTAMP NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
-    
-    CONSTRAINT fk_rental_customer 
+
+    CONSTRAINT fk_rental_customer
         FOREIGN KEY (customerID) REFERENCES customers(customerID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
-    CONSTRAINT fk_rental_vehicle 
+
+    CONSTRAINT fk_rental_vehicle
         FOREIGN KEY (plateID) REFERENCES vehicles(plateID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
-    CONSTRAINT fk_rental_location 
+
+    CONSTRAINT fk_rental_location
         FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
@@ -260,14 +236,14 @@ CREATE TABLE payments (
     rentalID VARCHAR(11) NOT NULL,
     paymentDate DATE NOT NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Active' COMMENT 'Active or Inactive - soft delete flag',
-    
+
     CONSTRAINT fk_payment_rental
         FOREIGN KEY (rentalID) REFERENCES rentals(rentalID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
+
     CONSTRAINT chk_payment_status CHECK (status IN ('Active', 'Inactive')),
-    
+
     INDEX idx_payment_rental (rentalID),
     INDEX idx_payment_date (paymentDate)
 );
@@ -294,20 +270,20 @@ CREATE TABLE maintenance (
     technicianID VARCHAR(11) NOT NULL,
     plateID VARCHAR(11) NOT NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
-    
-    CONSTRAINT fk_maintenance_technician 
+
+    CONSTRAINT fk_maintenance_technician
         FOREIGN KEY (technicianID) REFERENCES technicians(technician_id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
-    CONSTRAINT fk_maintenance_vehicle 
+
+    CONSTRAINT fk_maintenance_vehicle
         FOREIGN KEY (plateID) REFERENCES vehicles(plateID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
+
     CONSTRAINT chk_maintenance_status
         CHECK (status IN ('Active', 'Inactive')),
-    
+
     INDEX idx_maintenance_vehicle (plateID),
     INDEX idx_maintenance_technician (technicianID),
     INDEX idx_maintenance_start_date (startDateTime)
@@ -324,25 +300,25 @@ CREATE TABLE maintenance_cheque (
     partID VARCHAR(11),
     quantityUsed DECIMAL(10, 2) NOT NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
-    
+
     PRIMARY KEY (maintenanceID, partID),
-    
-    CONSTRAINT fk_cheque_maintenance 
+
+    CONSTRAINT fk_cheque_maintenance
         FOREIGN KEY (maintenanceID) REFERENCES maintenance(maintenanceID)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    
-    CONSTRAINT fk_cheque_part 
+
+    CONSTRAINT fk_cheque_part
         FOREIGN KEY (partID) REFERENCES parts(part_id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
-    CONSTRAINT chk_quantity_positive 
+
+    CONSTRAINT chk_quantity_positive
         CHECK (quantityUsed > 0),
 
     CONSTRAINT chk_cheque_status
         CHECK (status IN ('Active', 'Inactive')),
-    
+
     INDEX idx_cheque_maintenance (maintenanceID),
     INDEX idx_cheque_part (partID)
 );
@@ -363,23 +339,23 @@ CREATE TABLE penalty (
     dateIssued DATE NOT NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
 
-    
-    CONSTRAINT fk_penalty_rental 
+
+    CONSTRAINT fk_penalty_rental
         FOREIGN KEY (rentalID) REFERENCES rentals(rentalID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
-    CONSTRAINT fk_penalty_maintenance 
+
+    CONSTRAINT fk_penalty_maintenance
         FOREIGN KEY (maintenanceID) REFERENCES maintenance(maintenanceID)
         ON DELETE SET NULL
         ON UPDATE CASCADE,
-    
+
     CONSTRAINT chk_penalty_payment_status
-        CHECK (penaltyStatus IN ('PAID', 'UNPAID')),
-    
+        CHECK (penaltyStatus IN ('PAID', 'WAIVED', 'UNPAID')),
+
     CONSTRAINT chk_penalty_status
         CHECK (status IN ('Active', 'Inactive')),
-    
+
     INDEX idx_penalty_rental (rentalID),
     INDEX idx_penalty_payment_status (penaltyStatus),
     INDEX idx_penalty_maintenance (maintenanceID),
@@ -398,17 +374,17 @@ CREATE TABLE deployments (
     startDate DATE NOT NULL,
     endDate DATE NULL,
     status VARCHAR(15) NOT NULL DEFAULT 'Active',
-    
-    CONSTRAINT fk_deployment_vehicle 
+
+    CONSTRAINT fk_deployment_vehicle
         FOREIGN KEY (plateID) REFERENCES vehicles(plateID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-        
-    CONSTRAINT fk_deployment_location 
+
+    CONSTRAINT fk_deployment_location
         FOREIGN KEY (locationID) REFERENCES locations(locationID)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
-    
+
     CONSTRAINT chk_deployment_status
         CHECK (status IN ('Active', 'Completed', 'Cancelled'))
 );
@@ -423,8 +399,8 @@ CREATE INDEX idx_deployment_location ON deployments(locationID);
 -- Verifies admin access before entering app
 CREATE TABLE staff (
     staffID VARCHAR(11) PRIMARY KEY,
-    username VARCHAR(30) NOT NULL UNIQUE, 
-    staffEmail VARCHAR(80) NOT NULL UNIQUE, 
+    username VARCHAR(30) NOT NULL UNIQUE,
+    staffEmail VARCHAR(80) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL
 );
 
