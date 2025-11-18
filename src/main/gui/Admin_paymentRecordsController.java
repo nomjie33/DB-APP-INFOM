@@ -111,16 +111,15 @@ public class Admin_paymentRecordsController implements Initializable {
                     @Override
                     public void updateItem(Void item, boolean empty) {
                         super.updateItem(item, empty);
-                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                        PaymentTransaction payment = getTableRow() != null ? getTableRow().getItem() : null;
+
+                        if (empty || payment == null || !"Active".equals(payment.getStatus())) {
                             setGraphic(null);
                         } else {
                             Button btn = new Button("Edit");
                             btn.getStyleClass().add("edit-button");
                             btn.setOnAction((ActionEvent event) -> {
-                                PaymentTransaction payment = getTableRow().getItem();
-                                if (payment != null) {
-                                    handleEditPayment(payment);
-                                }
+                                handleEditPayment(payment);
                             });
                             setGraphic(btn);
                         }

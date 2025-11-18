@@ -467,4 +467,68 @@ public class PenaltyDAO {
             rs.getString("status")
         );
     }
+
+    /**
+     * Check if a customer has any unpaid active penalties.
+     * Used to block rentals if the customer has outstanding debts.
+     * @param customerID The customer to check
+     * @return true if they have unpaid penalties, false otherwise
+     */
+    public boolean hasUnpaidPenalties(String customerID) {
+        String sql = "SELECT COUNT(*) FROM penalty p " +
+                "JOIN rentals r ON p.rentalID = r.rentalID " +
+                "WHERE r.customerID = ? " +
+                "AND p.penaltyStatus = 'UNPAID' " +
+                "AND p.status = 'Active'"; // Only count Active records
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, customerID);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0; // Returns true if count > 0
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error checking unpaid penalties: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Get unpaid penalties for a specific customer.
+     * @param customerID The customer in question
+     * @return List of unpaid PenaltyTransactions
+     */
+    public List<PenaltyTransaction> getUnpaidPenaltiesByCustomer(String customerID){
+        List<PenaltyTransaction> penaltyList = new ArrayList<>();
+
+        String sql = "SELECT p.* " +
+                "FROM penalty p " +
+                "JOIN rentals r ON p.rentalID = r.rentalID " +
+                "WHERE r.customerID = ? " +
+                "  AND p.penaltyStatus = 'UNPAID' " +
+                "  AND p.status = 'Active' " +
+                "ORDER BY p.dateIssued ASC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, customerID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                penaltyList.add(extractPenaltyFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving customer penalties: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return penaltyList;
+    }
 }

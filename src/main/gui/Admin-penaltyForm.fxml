@@ -25,6 +25,9 @@
                 <Label layoutX="30.0" layoutY="190.0" styleClass="sidebar-title" text="Date Issued" />
                 <DatePicker fx:id="dateIssuedPicker" layoutX="30.0" layoutY="215.0" prefWidth="250.0" styleClass="form-text-field" />
 
+                <Label layoutX="300.0" layoutY="190.0" styleClass="sidebar-title" text="Payment Status" />
+                <ComboBox fx:id="statusComboBox" layoutX="300.0" layoutY="215.0" prefWidth="250.0" styleClass="form-text-field" />
+
                 <Button layoutX="430.0" layoutY="430.0" mnemonicParsing="false" onAction="#handleCancel" prefHeight="40.0" prefWidth="120.0" styleClass="cancel-button" text="Cancel" />
                 <Button layoutX="290.0" layoutY="430.0" mnemonicParsing="false" onAction="#handleSave" prefHeight="40.0" prefWidth="120.0" styleClass="confirm-button" text="Save Record" />
 

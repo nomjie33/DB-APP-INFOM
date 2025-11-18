@@ -1,6 +1,5 @@
 package main.gui;
 
-// --- 1. ADD THESE IMPORTS ---
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -8,7 +7,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Objects;
-// --- END OF IMPORTS ---
 
 import dao.PenaltyDAO;
 import dao.RentalDAO;
@@ -36,20 +34,40 @@ public class Admin_penaltyFormController implements Initializable{
     @FXML private ComboBox<RentalTransaction> rentalComboBox;
     @FXML private ComboBox<MaintenanceTransaction> maintenanceComboBox;
 
+    @FXML private ComboBox<String> statusComboBox;
+
     @FXML private TextField totalPenaltyField;
     @FXML private DatePicker dateIssuedPicker;
 
     private Admin_dashboardController mainController;
     private PenaltyDAO penaltyDAO = new PenaltyDAO();
+    private RentalDAO rentalDAO = new RentalDAO();
+    private MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
 
     private boolean isUpdatingRecord = false;
     private PenaltyTransaction currentPenalty;
-    private RentalDAO rentalDAO = new RentalDAO();
-    private MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         loadComboBoxes();
+
+        if (statusComboBox != null) {
+            statusComboBox.setItems(FXCollections.observableArrayList("UNPAID", "PAID", "WAIVED"));
+            statusComboBox.setValue("UNPAID");
+        }
+
+        maintenanceComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && newVal.getMaintenanceID() != null) {
+
+                if (newVal.getTotalCost() != null) {
+                    totalPenaltyField.setText(newVal.getTotalCost().toString());
+                }
+
+                if (newVal.getPlateID() != null) {
+                    autoSelectRentalByVehicle(newVal.getPlateID());
+                }
+            }
+        });
     }
 
     public void setMainController(Admin_dashboardController mainController) {
@@ -65,6 +83,7 @@ public class Admin_penaltyFormController implements Initializable{
 
             idField.setText(penalty.getPenaltyID());
             totalPenaltyField.setText(penalty.getTotalPenalty().toPlainString());
+
             if (penalty.getDateIssued() != null) {
                 dateIssuedPicker.setValue(penalty.getDateIssued().toLocalDate());
             }
@@ -72,8 +91,16 @@ public class Admin_penaltyFormController implements Initializable{
             rentalComboBox.setValue(findRentalInList(penalty.getRentalID()));
             maintenanceComboBox.setValue(findMaintenanceInList(penalty.getMaintenanceID()));
 
+            if (statusComboBox != null) {
+                statusComboBox.setValue(penalty.getPenaltyStatus());
+            }
+
             idField.setDisable(true);
             idField.getStyleClass().add("form-text-field-disabled");
+        } else {
+            isUpdatingRecord = false;
+            formHeaderLabel.setText("New Penalty");
+            if (statusComboBox != null) statusComboBox.setValue("UNPAID");
         }
     }
 
@@ -83,22 +110,40 @@ public class Admin_penaltyFormController implements Initializable{
 
         try {
             String penaltyID = idField.getText().trim();
-            String rentalID = rentalComboBox.getValue() != null ? rentalComboBox.getValue().getRentalID() : null;
-            String maintenanceID = (maintenanceComboBox.getValue() != null && maintenanceComboBox.getValue().getMaintenanceID() != null)
-                    ? maintenanceComboBox.getValue().getMaintenanceID()
-                    : null;
 
-            if (rentalID == null) {
-                showAlert(AlertType.WARNING, "Validation Error", "Rental ID is required.");
+            if (rentalComboBox.getValue() == null) {
+                showAlert(AlertType.ERROR, "Missing Data", "Please select a Rental ID.");
                 return;
+            }
+            String rentalID = rentalComboBox.getValue().getRentalID();
+
+            String maintenanceID = null;
+            if (maintenanceComboBox.getValue() != null && maintenanceComboBox.getValue().getMaintenanceID() != null) {
+                maintenanceID = maintenanceComboBox.getValue().getMaintenanceID();
             }
 
             BigDecimal totalPenalty = new BigDecimal(totalPenaltyField.getText().trim());
             LocalDate dateIssued = dateIssuedPicker.getValue();
 
+            String penaltyStatus = (statusComboBox != null) ? statusComboBox.getValue() : "UNPAID";
+
             if (!isUpdatingRecord && penaltyDAO.getPenaltyById(penaltyID) != null) {
-                showAlert(AlertType.ERROR, "Duplicate ID", "Penalty ID already exists. Please choose a unique ID.");
+                showAlert(AlertType.ERROR, "Duplicate ID", "Penalty ID already exists.");
                 return;
+            }
+
+            if (isUpdatingRecord) {
+                boolean rentalSame = Objects.equals(currentPenalty.getRentalID(), rentalID);
+                boolean maintSame = Objects.equals(currentPenalty.getMaintenanceID(), maintenanceID);
+                boolean amountSame = currentPenalty.getTotalPenalty().compareTo(totalPenalty) == 0;
+                boolean statusSame = Objects.equals(currentPenalty.getPenaltyStatus(), penaltyStatus);
+                boolean dateSame = currentPenalty.getDateIssued().toLocalDate().equals(dateIssued);
+
+                if (rentalSame && maintSame && amountSame && statusSame && dateSame) {
+                    System.out.println("No changes detected.");
+                    mainController.loadPage("Admin-penaltyRecords.fxml");
+                    return;
+                }
             }
 
             PenaltyTransaction penalty = isUpdatingRecord ? currentPenalty : new PenaltyTransaction();
@@ -106,10 +151,10 @@ public class Admin_penaltyFormController implements Initializable{
             penalty.setRentalID(rentalID);
             penalty.setMaintenanceID(maintenanceID);
             penalty.setTotalPenalty(totalPenalty);
+            penalty.setPenaltyStatus(penaltyStatus);
             penalty.setDateIssued(dateIssued != null ? java.sql.Date.valueOf(dateIssued) : null);
 
             if (!isUpdatingRecord) {
-                penalty.setPenaltyStatus("UNPAID"); // Default for new penalties
                 penalty.setStatus("Active");
             }
 
@@ -118,36 +163,33 @@ public class Admin_penaltyFormController implements Initializable{
                     : penaltyDAO.insertPenalty(penalty);
 
             if (success) {
-                String title;
-                String content;
-                if (isUpdatingRecord) {
-                    title = "Penalty Updated!";
-                    content = "The penalty record has been successfully updated.\n\n" +
-                            "Penalty ID:\n" + penalty.getPenaltyID() + "\n\n" +
-                            "Rental ID:\n" + penalty.getRentalID() + "\n\n" +
-                            "Amount:\n₱" + String.format("%.2f", penalty.getTotalPenalty()) + "\n\n" +
-                            "Status:\n" + penalty.getPenaltyStatus();
-                } else {
-                    title = "New Penalty Added!";
-                    content = "A new penalty has been recorded.\n\n" +
-                            "Penalty ID:\n" + penalty.getPenaltyID() + "\n\n" +
-                            "Rental ID:\n" + penalty.getRentalID() + "\n\n" +
-                            "Amount:\n₱" + String.format("%.2f", penalty.getTotalPenalty()) + "\n\n" +
-                            "Status:\n" + penalty.getPenaltyStatus();
-                }
+                String title = isUpdatingRecord ? "Penalty Updated!" : "New Penalty Added!";
+                String content = "Penalty ID:\n" + penalty.getPenaltyID() + "\n\n" +
+                        "Amount:\n₱" + String.format("%.2f", penalty.getTotalPenalty()) + "\n\n" +
+                        "Status:\n" + penalty.getPenaltyStatus();
 
-                showConfirmationDialog(title, content); // Call the FXML dialog
-                mainController.loadPage("Admin-penaltyRecords.fxml"); // Go back to list
+                showConfirmationDialog(title, content);
+                mainController.loadPage("Admin-penaltyRecords.fxml");
 
             } else {
                 showAlert(AlertType.ERROR, "Error", "Failed to save penalty record.");
             }
 
         } catch (NumberFormatException e) {
-            showAlert(AlertType.ERROR, "Invalid Amount", "Total penalty must be a valid number (e.g., 500.00).");
+            showAlert(AlertType.ERROR, "Invalid Amount", "Total penalty must be a valid number.");
         } catch (Exception e) {
-            showAlert(AlertType.ERROR, "Error", "An unexpected error occurred while saving the record.");
+            showAlert(AlertType.ERROR, "Error", "An unexpected error occurred.");
             e.printStackTrace();
+        }
+    }
+
+    private void autoSelectRentalByVehicle(String plateID) {
+        if (rentalComboBox.getItems() == null) return;
+        for (RentalTransaction r : rentalComboBox.getItems()) {
+            if (r != null && r.getPlateID().equals(plateID)) {
+                rentalComboBox.setValue(r);
+                return;
+            }
         }
     }
 
@@ -166,17 +208,9 @@ public class Admin_penaltyFormController implements Initializable{
         }
 
         try {
-            BigDecimal penaltyAmount = new BigDecimal(totalPenaltyField.getText().trim());
-            if (penaltyAmount.scale() > 2){
-                showAlert(AlertType.ERROR, "Invalid Amount", "Total penalty must have at most two decimal places.");
-                return false;
-            }
-            if (penaltyAmount.compareTo(BigDecimal.ZERO) <= 0) {
-                showAlert(AlertType.ERROR, "Invalid Amount", "Total penalty must be greater than zero.");
-                return false;
-            }
+            new BigDecimal(totalPenaltyField.getText().trim());
         } catch (NumberFormatException e) {
-            showAlert(AlertType.ERROR, "Invalid Amount", "Total penalty must be a valid number (e.g., 500.00).");
+            showAlert(AlertType.ERROR, "Invalid Amount", "Penalty amount must be a number.");
             return false;
         }
 
@@ -209,7 +243,6 @@ public class Admin_penaltyFormController implements Initializable{
         try {
             ObservableList<RentalTransaction> rentalList = FXCollections.observableArrayList(rentalDAO.getAllRentals());
             rentalComboBox.setItems(rentalList);
-
             rentalComboBox.setConverter(new StringConverter<RentalTransaction>() {
                 @Override public String toString(RentalTransaction r) {
                     if (r == null) return null;
@@ -217,27 +250,21 @@ public class Admin_penaltyFormController implements Initializable{
                 }
                 @Override public RentalTransaction fromString(String string) { return null; }
             });
-        } catch (Exception e) {
-            System.err.println("Failed to load rental records: " + e.getMessage());
-        }
+        } catch (Exception e) { e.printStackTrace(); }
 
         try {
             ObservableList<MaintenanceTransaction> maintenanceList = FXCollections.observableArrayList(maintenanceDAO.getAllMaintenance());
-
             MaintenanceTransaction optionalNone = new MaintenanceTransaction();
             maintenanceList.add(0, optionalNone);
             maintenanceComboBox.setItems(maintenanceList);
-
             maintenanceComboBox.setConverter(new StringConverter<MaintenanceTransaction>() {
                 @Override public String toString(MaintenanceTransaction m) {
-                    if (m == null || m.getMaintenanceID() == null) return "None (Not Linked to Maintenance)";
+                    if (m == null || m.getMaintenanceID() == null) return "None (Not Linked)";
                     return String.format("%s (Vehicle: %s)", m.getMaintenanceID(), m.getPlateID());
                 }
                 @Override public MaintenanceTransaction fromString(String string) { return null; }
             });
-        } catch (Exception e) {
-            System.err.println("Failed to load maintenance records: " + e.getMessage());
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void showConfirmationDialog(String title, String content) {
