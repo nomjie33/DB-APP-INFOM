@@ -1,5 +1,6 @@
 package dao;
 
+import model.MaintenanceCheque;
 import model.PenaltyTransaction;
 import util.DBConnection;
 import java.sql.*;
@@ -311,17 +312,6 @@ public class PenaltyDAO {
         
         return penaltyList;
     }
-
-    /**
-     * Get penalties by payment status (deprecated - use getPenaltiesByPaymentStatus).
-     * Kept for backward compatibility.
-     * 
-     * @deprecated Use {@link #getPenaltiesByPaymentStatus(String)} instead
-     */
-    @Deprecated
-    public List<PenaltyTransaction> getPenaltiesByStatus(String penaltyStatus) {
-        return getPenaltiesByPaymentStatus(penaltyStatus);
-    }
     
     /**
      * Get active penalties linked to a specific maintenance record.
@@ -382,6 +372,26 @@ public class PenaltyDAO {
         
         return BigDecimal.ZERO;
     }
+
+    public List<PenaltyTransaction> getAllPenaltiesIncludingInactive(){
+        List<PenaltyTransaction> penaltyList = new ArrayList<>();
+        String sql = "SELECT * FROM penalty ORDER BY dateIssued DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                penaltyList.add(extractPenaltyFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving all penalties (including inactive): " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return penaltyList;
+    }
     
     /**
      * Get active penalties within a date range.
@@ -414,6 +424,30 @@ public class PenaltyDAO {
         
         return penaltyList;
     }
+
+    public List<PenaltyTransaction> getPenaltiesByStatus(String status) {
+        List<PenaltyTransaction> penaltyList = new ArrayList<>();
+        String sql = "SELECT * FROM penalty WHERE status = ? ORDER BY dateIssued DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                penaltyList.add(extractPenaltyFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error retrieving penalties by status: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return penaltyList;
+    }
+
+
     
     /**
      * Helper method to extract PenaltyTransaction object from ResultSet.

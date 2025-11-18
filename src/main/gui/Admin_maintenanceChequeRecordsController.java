@@ -11,10 +11,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Callback;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.Button;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,22 +27,26 @@ public class Admin_maintenanceChequeRecordsController implements Initializable {
     @FXML private TableColumn<MaintenanceCheque, String> statusColumn;
     @FXML private TableColumn<MaintenanceCheque, Void> editColumn;
 
+    @FXML private TableColumn<MaintenanceCheque, Void> actionColumn;
+    @FXML private ComboBox<String> statusFilterComboBox;
+
     private final MaintenanceChequeDAO chequeDAO = new MaintenanceChequeDAO();
     private Admin_dashboardController mainController;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Bind table columns
         maintenanceIDColumn.setCellValueFactory(new PropertyValueFactory<>("maintenanceID"));
         partIDColumn.setCellValueFactory(new PropertyValueFactory<>("partID"));
         quantityUsedColumn.setCellValueFactory(new PropertyValueFactory<>("quantityUsed"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // Load data
-        loadChequeData();
+        statusFilterComboBox.setItems(FXCollections.observableArrayList("Active", "Inactive", "All"));
+        statusFilterComboBox.setValue("Active");
+        statusFilterComboBox.setOnAction(e -> loadChequeData());
 
-        // Setup edit column
+        loadChequeData();
         setupEditButtonColumn();
+        setupActionColumn();
     }
 
     public void setMainController(Admin_dashboardController mainController) {
@@ -55,7 +55,15 @@ public class Admin_maintenanceChequeRecordsController implements Initializable {
 
     private void loadChequeData() {
         try {
-            List<MaintenanceCheque> chequeList = chequeDAO.getAllActiveMaintenanceCheques();
+            chequeTable.getItems().clear();
+            String statusFilter = statusFilterComboBox.getValue();
+            List<MaintenanceCheque> chequeList;
+
+            if ("All".equals(statusFilter)) {
+                chequeList = chequeDAO.getAllMaintenanceChequesIncludingInactive();
+            } else {
+                chequeList = chequeDAO.getMaintenanceChequesByStatus(statusFilter);
+            }
 
             ObservableList<MaintenanceCheque> observableList = FXCollections.observableArrayList(chequeList);
             chequeTable.setItems(observableList);
@@ -64,11 +72,7 @@ public class Admin_maintenanceChequeRecordsController implements Initializable {
         } catch (Exception e) {
             System.err.println("Failed to load maintenance cheque data:");
             e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Load Error");
-            alert.setHeaderText("Could not load maintenance cheque data.");
-            alert.setContentText("An error occurred while loading the data. Please check the logs.");
-            alert.showAndWait();
+            showAlert(Alert.AlertType.ERROR, "Load Error", "Could not load data.");
         }
     }
 
@@ -83,24 +87,95 @@ public class Admin_maintenanceChequeRecordsController implements Initializable {
 
     private void setupEditButtonColumn() {
         Callback<TableColumn<MaintenanceCheque, Void>, TableCell<MaintenanceCheque, Void>> cellFactory = col -> new TableCell<>() {
-
-            private final Button btn = new Button("Edit");
-
-            {
-                btn.getStyleClass().add("edit-button");
-                btn.setOnAction(event -> {
-                    MaintenanceCheque cheque = getTableView().getItems().get(getIndex());
-                    handleEditCheque(cheque);
-                });
-            }
-
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : btn);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                } else {
+                    Button btn = new Button("Edit");
+                    btn.getStyleClass().add("edit-button");
+                    btn.setOnAction(event -> {
+                        MaintenanceCheque cheque = getTableRow().getItem();
+                        if (cheque != null) {
+                            handleEditCheque(cheque);
+                        }
+                    });
+                    setGraphic(btn);
+                }
             }
         };
-
         editColumn.setCellFactory(cellFactory);
+    }
+
+    private void setupActionColumn() {
+        Callback<TableColumn<MaintenanceCheque, Void>, TableCell<MaintenanceCheque, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<MaintenanceCheque, Void> call(final TableColumn<MaintenanceCheque, Void> param) {
+                final TableCell<MaintenanceCheque, Void> cell = new TableCell<>() {
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                            setGraphic(null);
+                        } else {
+                            MaintenanceCheque cheque = getTableRow().getItem();
+                            Button btn = new Button();
+
+                            if ("Active".equals(cheque.getStatus())) {
+                                btn.setText("Deactivate");
+                                btn.getStyleClass().add("deactivate-button");
+                            } else {
+                                btn.setText("Reactivate");
+                                btn.getStyleClass().add("edit-button");
+                            }
+
+                            btn.setOnAction((ActionEvent event) -> {
+                                MaintenanceCheque currentCheque = getTableRow().getItem();
+                                if (currentCheque != null) {
+                                    handleDeactivateReactivate(currentCheque);
+                                }
+                            });
+                            setGraphic(btn);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+        actionColumn.setCellFactory(cellFactory);
+    }
+
+    private void handleDeactivateReactivate(MaintenanceCheque cheque) {
+        String action = "Active".equals(cheque.getStatus()) ? "deactivate" : "reactivate";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Confirm " + action);
+        alert.setContentText("Are you sure you want to " + action + " this record?\nMaintenance ID: " + cheque.getMaintenanceID() + "\nPart ID: " + cheque.getPartID());
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            boolean success;
+            if ("Active".equals(cheque.getStatus())) {
+                success = chequeDAO.deactivateMaintenanceCheque(cheque.getMaintenanceID(), cheque.getPartID());
+            } else {
+                success = chequeDAO.reactivateMaintenanceCheque(cheque.getMaintenanceID(), cheque.getPartID());
+            }
+
+            if (success) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Record has been " + action + "d.");
+                loadChequeData();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update status.");
+            }
+        }
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }
