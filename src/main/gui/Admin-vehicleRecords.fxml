@@ -17,8 +17,8 @@
 
         <TableView fx:id="vehicleTable" layoutX="38.0" layoutY="150.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
             <columns>
-                <TableColumn fx:id="plateColumn" prefWidth="150.0" text="Plate ID" />
-                <TableColumn fx:id="typeColumn" prefWidth="200.0" text="Type" />
+                <TableColumn fx:id="plateColumn" prefWidth="130.0" text="Plate ID" />
+                <TableColumn fx:id="typeColumn" prefWidth="180.0" text="Type" />
                 <TableColumn fx:id="priceColumn" prefWidth="150.0" text="Price/Day" />
                 <TableColumn fx:id="statusColumn" prefWidth="150.0" text="Status" />
 
