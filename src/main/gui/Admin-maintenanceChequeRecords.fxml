@@ -11,7 +11,12 @@
 
         <Button fx:id="addButton" layoutX="690.0" layoutY="100.0" onAction="#handleAddCheque" prefHeight="31.0" prefWidth="72.0" styleClass="add-button" text="+" />
 
-        <TableView fx:id="chequeTable" layoutX="38.0" layoutY="140.0" prefHeight="600.0" prefWidth="747.0" styleClass="transactions-table">
+        <TableView fx:id="chequeTable"
+                   AnchorPane.topAnchor="150.0"
+                   AnchorPane.leftAnchor="38.0"
+                   AnchorPane.rightAnchor="38.0"
+                   AnchorPane.bottomAnchor="38.0"
+                   styleClass="transactions-table">
             <columns>
                 <TableColumn fx:id="maintenanceIDColumn" prefWidth="150.0" text="Maintenance ID" />
                 <TableColumn fx:id="partIDColumn" prefWidth="150.0" text="Part ID" />
