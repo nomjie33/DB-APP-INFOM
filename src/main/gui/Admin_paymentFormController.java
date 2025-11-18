@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 public class Admin_paymentFormController {
 
@@ -90,6 +91,25 @@ public class Admin_paymentFormController {
 
     @FXML private void handleSave() {
         if (!validateFields()) return;
+
+        if (isUpdatingRecord) {
+
+            BigDecimal newAmount = new BigDecimal(amountField.getText().trim());
+            LocalDate newDate = paymentDatePicker.getValue();
+
+            BigDecimal oldAmount = currentPayment.getAmount();
+            LocalDate oldDate = (currentPayment.getPaymentDate() != null)
+                    ? currentPayment.getPaymentDate().toLocalDate()
+                    : null;
+
+            boolean amountChanged = oldAmount.compareTo(newAmount) != 0;
+            boolean dateChanged = !Objects.equals(oldDate, newDate);
+
+            if (!amountChanged && !dateChanged) {
+                showAlert(AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                return;
+            }
+        }
 
         try {
             String paymentID = idField.getText().trim();

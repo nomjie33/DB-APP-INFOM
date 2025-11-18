@@ -11,8 +11,8 @@ import dao.DeploymentDAO;
 import dao.VehicleDAO;
 import dao.LocationDAO;
 import model.DeploymentTransaction;
-import model.Vehicle; // Corrected model name
-import model.Location; // Corrected model name
+import model.Vehicle;
+import model.Location;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -26,6 +26,7 @@ import java.net.URL;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class Admin_deploymentFormController implements Initializable {
@@ -33,8 +34,8 @@ public class Admin_deploymentFormController implements Initializable {
     @FXML private Label formHeaderLabel;
     @FXML private TextField deploymentIDField;
 
-    @FXML private ComboBox<Location> locationComboBox; // FIX: Using ComboBox
-    @FXML private ComboBox<Vehicle> plateComboBox;    // FIX: Using ComboBox
+    @FXML private ComboBox<Location> locationComboBox;
+    @FXML private ComboBox<Vehicle> plateComboBox;
 
     @FXML private DatePicker startDatePicker;
     @FXML private DatePicker endDatePicker;
@@ -50,7 +51,7 @@ public class Admin_deploymentFormController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // FIX: Load ComboBoxes immediately after FXML injection
+
         loadComboBoxes();
     }
 
@@ -61,7 +62,7 @@ public class Admin_deploymentFormController implements Initializable {
     public void setDeploymentData(DeploymentTransaction deployment){
         if (deployment != null){
             isUpdatingRecord = true;
-            currentDeployment = deployment; // Store for update
+            currentDeployment = deployment;
             formHeaderLabel.setText("Update Deployment");
 
             deploymentIDField.setDisable(true);
@@ -86,7 +87,6 @@ public class Admin_deploymentFormController implements Initializable {
                 endDatePicker.setValue(null);
             }
 
-            // Disable foreign key fields on update
             plateComboBox.setDisable(true);
             plateComboBox.getStyleClass().add("form-text-field-disabled");
             locationComboBox.setDisable(true);
@@ -133,6 +133,18 @@ public class Admin_deploymentFormController implements Initializable {
             return;
         }
 
+        if (isUpdatingRecord) {
+            LocalDate newEndDate = endDatePicker.getValue();
+            LocalDate oldEndDate = (currentDeployment.getEndDate() != null)
+                    ? currentDeployment.getEndDate().toLocalDate()
+                    : null;
+
+            if (Objects.equals(oldEndDate, newEndDate)) {
+                showAlert(AlertType.INFORMATION, "No Changes", "No changes were detected.");
+                return;
+            }
+        }
+
         DeploymentTransaction deployment = isUpdatingRecord ? currentDeployment : new DeploymentTransaction();
 
         try {
@@ -153,12 +165,10 @@ public class Admin_deploymentFormController implements Initializable {
                 deployment.setStatus("Active");
             }
 
-            // 2. Execute DAO operation
             boolean isSuccessful = isUpdatingRecord
                     ? deploymentDAO.updateDeployment(deployment)
                     : deploymentDAO.insertDeployment(deployment);
 
-            // 3. Handle result
             if (isSuccessful) {
                 if (isUpdatingRecord){
                     showAlert(AlertType.INFORMATION, "Deployment Saved",
@@ -235,7 +245,6 @@ public class Admin_deploymentFormController implements Initializable {
             e.printStackTrace();
         }
 
-        // Load Locations
         try {
             List<Location> locations = locationDAO.getAllLocations();
             ObservableList<Location> locationList = FXCollections.observableArrayList(locations);
@@ -277,7 +286,6 @@ public class Admin_deploymentFormController implements Initializable {
         return locationDAO.getLocationById(locationID);
     }
 
-    // ==================== ALERT/CONFIRMATION ====================
 
     private void showAlert(Alert.AlertType type, String title, String content){
         Alert alert = new Alert(type);

@@ -33,13 +33,15 @@ public class Admin_paymentRecordsController implements Initializable {
     @FXML private TableColumn<PaymentTransaction, String> statusColumn;
     @FXML private TableColumn<PaymentTransaction, Void> editColumn;
 
+    @FXML private TableColumn<PaymentTransaction, Void> actionColumn;
+    @FXML private ComboBox<String> statusFilterComboBox;
+
     private PaymentDAO paymentDAO = new PaymentDAO();
     private Admin_dashboardController mainController;
 
     private static Popup textDisplayPopup = new Popup();
     private static Label popupLabel = new Label();
     private static TableCell<?, ?> currentlyOpenCell = null;
-
     static {
         popupLabel.setStyle(
                 "-fx-background-color: white;" +
@@ -63,8 +65,13 @@ public class Admin_paymentRecordsController implements Initializable {
         paymentDateColumn.setCellValueFactory(new PropertyValueFactory<>("paymentDate"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
+        statusFilterComboBox.setItems(FXCollections.observableArrayList("Active", "Inactive", "All"));
+        statusFilterComboBox.setValue("Active");
+        statusFilterComboBox.setOnAction(e -> loadPaymentData());
+
         loadPaymentData();
         setupEditButtonColumn();
+        setupActionColumn();
     }
 
     public void setMainController(Admin_dashboardController mainController) {
@@ -72,7 +79,16 @@ public class Admin_paymentRecordsController implements Initializable {
     }
 
     private void loadPaymentData() {
-        List<PaymentTransaction> paymentList = paymentDAO.getAllPayments();
+        paymentTable.getItems().clear();
+        String statusFilter = statusFilterComboBox.getValue();
+        List<PaymentTransaction> paymentList;
+
+        if ("All".equals(statusFilter)) {
+            paymentList = paymentDAO.getAllPaymentsIncludingInactive();
+        } else {
+            paymentList = paymentDAO.getPaymentsByStatus(statusFilter);
+        }
+
         ObservableList<PaymentTransaction> payments = FXCollections.observableArrayList(paymentList);
         paymentTable.setItems(payments);
         paymentCountLabel.setText("(" + payments.size() + ") PAYMENTS:");
@@ -92,21 +108,20 @@ public class Admin_paymentRecordsController implements Initializable {
             @Override
             public TableCell<PaymentTransaction, Void> call(final TableColumn<PaymentTransaction, Void> param) {
                 final TableCell<PaymentTransaction, Void> cell = new TableCell<>() {
-                    private final Button btn = new Button("Edit");
-                    {
-                        btn.getStyleClass().add("edit-button");
-                        btn.setOnAction((ActionEvent event) -> {
-                            PaymentTransaction payment = getTableView().getItems().get(getIndex());
-                            handleEditPayment(payment);
-                        });
-                    }
-
                     @Override
                     public void updateItem(Void item, boolean empty) {
                         super.updateItem(item, empty);
-                        if (empty) {
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                             setGraphic(null);
                         } else {
+                            Button btn = new Button("Edit");
+                            btn.getStyleClass().add("edit-button");
+                            btn.setOnAction((ActionEvent event) -> {
+                                PaymentTransaction payment = getTableRow().getItem();
+                                if (payment != null) {
+                                    handleEditPayment(payment);
+                                }
+                            });
                             setGraphic(btn);
                         }
                     }
@@ -115,5 +130,76 @@ public class Admin_paymentRecordsController implements Initializable {
             }
         };
         editColumn.setCellFactory(cellFactory);
+    }
+
+    private void setupActionColumn() {
+        Callback<TableColumn<PaymentTransaction, Void>, TableCell<PaymentTransaction, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<PaymentTransaction, Void> call(final TableColumn<PaymentTransaction, Void> param) {
+                final TableCell<PaymentTransaction, Void> cell = new TableCell<>() {
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                            setGraphic(null);
+                        } else {
+                            PaymentTransaction payment = getTableRow().getItem();
+                            Button btn = new Button();
+
+                            if ("Active".equals(payment.getStatus())) {
+                                btn.setText("Deactivate");
+                                btn.getStyleClass().add("deactivate-button");
+                            } else {
+                                btn.setText("Reactivate");
+                                btn.getStyleClass().add("edit-button");
+                            }
+
+                            btn.setOnAction((ActionEvent event) -> {
+                                PaymentTransaction currentPayment = getTableRow().getItem();
+                                if (currentPayment != null) {
+                                    handleDeactivateReactivate(currentPayment);
+                                }
+                            });
+                            setGraphic(btn);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+        actionColumn.setCellFactory(cellFactory);
+    }
+
+    private void handleDeactivateReactivate(PaymentTransaction payment) {
+        String action = "Active".equals(payment.getStatus()) ? "deactivate" : "reactivate";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Confirm " + action);
+        alert.setContentText("Are you sure you want to " + action + " payment: " + payment.getPaymentID() + "?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            boolean success;
+            if ("Active".equals(payment.getStatus())) {
+                success = paymentDAO.deactivatePayment(payment.getPaymentID());
+            } else {
+                success = paymentDAO.reactivatePayment(payment.getPaymentID());
+            }
+
+            if (success) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Payment has been " + action + "d.");
+                loadPaymentData();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update payment status.");
+            }
+        }
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

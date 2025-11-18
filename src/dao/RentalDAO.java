@@ -10,7 +10,7 @@ import java.util.List;
  * Data Access Object for RENTAL TRANSACTION table operations.
  */
 public class RentalDAO {
-    
+
     // ==================== CREATE ====================
 
     public boolean insertRental(RentalTransaction rental) {
@@ -406,6 +406,23 @@ public class RentalDAO {
             e.printStackTrace();
         }
 
+        return false;
+    }
+
+    public boolean reactivateRental(String rentalID) {
+        String sql = "UPDATE rentals SET status = 'Active' WHERE rentalID = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, rentalID);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Rental " + rentalID + " has been reactivated.");
+                return true;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reactivating rental: " + e.getMessage());
+            e.printStackTrace();
+        }
         return false;
     }
     
