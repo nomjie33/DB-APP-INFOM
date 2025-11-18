@@ -57,7 +57,7 @@ public class Main_loginController implements Initializable {
     private ParallelTransition slideToTop(VBox node, int delay){
 
         FadeTransition ft = new FadeTransition(Duration.millis(500), node);
-        ft.setToValue(1.0);
+        ft.setToValue(2.0);
 
         TranslateTransition tt = new TranslateTransition(Duration.millis(500), node);
         tt.setToY(0);

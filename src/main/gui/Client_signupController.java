@@ -4,6 +4,8 @@ import dao.CustomerDAO;
 import dao.AddressDAO;
 import dao.BarangayDAO;
 import dao.CityDAO;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 import model.Customer;
 import model.Address;
 import model.Barangay;
@@ -37,6 +39,8 @@ public class Client_signupController implements Initializable {
     @FXML private TextField firstNameField;
     @FXML private TextField contactNumberField;
     @FXML private TextField emailField;
+    @FXML private ImageView bgImage;
+    @FXML private Pane orangeOverlay;
 
     @FXML private ComboBox<City> cityComboBox;
     @FXML private ComboBox<Barangay> barangayComboBox;
@@ -51,6 +55,8 @@ public class Client_signupController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        orangeOverlay.prefWidthProperty().bind(bgImage.fitWidthProperty());
+        orangeOverlay.prefHeightProperty().bind(bgImage.fitHeightProperty());
         // 1. Load all cities into the first dropdown
         cityComboBox.getItems().setAll(cityDAO.getAllCities());
 
