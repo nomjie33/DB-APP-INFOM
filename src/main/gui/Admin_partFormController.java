@@ -7,7 +7,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
 
-import dao.PartDAO;
 import model.Part;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -25,7 +24,7 @@ public class Admin_partFormController {
     @FXML private TextField priceField;
 
     private Admin_dashboardController mainController;
-    private PartDAO dao = new PartDAO();
+    private service.PartService partService = new service.PartService();
     private boolean isEditMode = false;
     private Part currentPart;
 
@@ -51,6 +50,7 @@ public class Admin_partFormController {
 
     @FXML
     private void handleSave() {
+        System.out.println("DEBUG: handleSave called");
         if (!validateFields()) return;
 
         try {
@@ -77,27 +77,35 @@ public class Admin_partFormController {
             part.setQuantity(newQuantity);
             part.setPrice(newPrice);
 
+            System.out.println("DEBUG: Part object created, ID: " + part.getPartId());
+            System.out.println("DEBUG: isEditMode: " + isEditMode);
+
             boolean success;
             if (isEditMode) {
                 part.setStatus(currentPart.getStatus());
 
-                Part oldPart = dao.getPartByIdIncludingInactive(part.getPartId());
+                // Preserve existing status if present
+                model.Part oldPart = new dao.PartDAO().getPartByIdIncludingInactive(part.getPartId());
                 if (oldPart != null) {
                     part.setStatus(oldPart.getStatus());
                 } else {
                     part.setStatus("Active");
                 }
 
-                success = dao.updatePart(part);
+                success = partService.updatePart(part);
             } else {
                 part.setStatus("Active");
-                success = dao.insertPart(part);
+                success = partService.addPart(part);
             }
+            
+            System.out.println("DEBUG: Service call completed, success: " + success);
 
             if (success) {
                 if (isEditMode) {
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Part record saved.");
+                    mainController.loadPage("Admin-partRecords.fxml");
                 } else {
+                    // For new parts, show confirmation dialog THEN navigate
                     String title = "New Part Added!";
                     String content = "A new part has been successfully added.\n\n" +
                             "Part ID:\n" + part.getPartId() + "\n\n" +
@@ -105,9 +113,12 @@ public class Admin_partFormController {
                             "Stock Quantity:\n" + part.getQuantity() + "\n\n" +
                             "Price:\n₱" + String.format("%.2f", part.getPrice());
 
+                    // Show dialog and wait for user to close it
                     showConfirmationDialog(title, content);
+                    
+                    // Only navigate after dialog is closed
+                    mainController.loadPage("Admin-partRecords.fxml");
                 }
-                mainController.loadPage("Admin-partRecords.fxml");
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to save part. The ID might already exist.");
             }
@@ -144,15 +155,18 @@ public class Admin_partFormController {
 
     private void showConfirmationDialog(String title, String content) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin_addRecordConfirmation.fxml"));
+            System.out.println("DEBUG: Attempting to load confirmation dialog...");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin-addRecordConfirmation.fxml"));
             AnchorPane page = loader.load();
+            System.out.println("DEBUG: FXML loaded successfully");
 
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Confirmation");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
 
             if (mainController != null){
                 dialogStage.initOwner(mainController.getPrimaryStage());
+                System.out.println("DEBUG: Dialog owner set");
             }
 
             Scene scene = new Scene(page);
@@ -161,12 +175,20 @@ public class Admin_partFormController {
             Admin_addRecordConfirmationController controller = loader.getController();
             controller.setDialogStage(dialogStage);
             controller.setData(title, content);
+            System.out.println("DEBUG: Dialog data set, about to show");
 
             dialogStage.showAndWait();
+            System.out.println("DEBUG: Dialog closed");
 
         } catch (IOException e) {
+            System.err.println("ERROR: Failed to load confirmation dialog FXML");
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not load confirmation dialog.");
+            // Fallback: if FXML dialog fails to load, show a simple Alert so the user still receives feedback
+            showAlert(Alert.AlertType.INFORMATION, title, content);
+        } catch (Exception e) {
+            System.err.println("ERROR: Unexpected error showing confirmation dialog");
+            e.printStackTrace();
+            showAlert(Alert.AlertType.INFORMATION, title, content);
         }
     }
 
