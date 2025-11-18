@@ -10,6 +10,23 @@
     -fx-background-color: #fcf8ff; /* App Background */
 }
 
+.page-title {
+    -fx-font-family: "SFT Schrifted Sans TRIAL";
+    -fx-font-weight: bold;
+    -fx-text-fill: #FC7222; /* Use your primary orange color for titles */
+}
+
+#historyBanner {
+
+    -fx-background-image: url("assets/history_bg.png");
+
+    -fx-background-size: cover;
+
+    -fx-background-position: center;
+
+    -fx-background-repeat: no-repeat;
+}
+
 /* Specific Labels/Text */
 .sidebar-title {
     -fx-font-family: "SFT Schrifted Sans TRIAL";

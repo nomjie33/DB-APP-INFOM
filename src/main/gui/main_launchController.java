@@ -24,6 +24,7 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
+import javafx.scene.image.Image;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
@@ -95,6 +96,16 @@ public class main_launchController implements Initializable{
             Scene loginScene = new Scene(loginRoot);
 
             Stage currentStage = (Stage) splashRoot.getScene().getWindow();
+            try {
+                // FIX 1: Use the correct file name 'favicon.png' in the path.
+                Image appIcon = new Image(getClass().getResourceAsStream("assets/favicon.png"));
+
+                currentStage.getIcons().add(appIcon);
+            } catch (Exception iconException) {
+                // FIX 2: Correct the warning message to reflect the file path that was actually attempted.
+                System.err.println("Warning: Could not load application icon from /assets/favicon.png");
+                iconException.printStackTrace();
+            }
 
             currentStage.setScene(loginScene);
             currentStage.setTitle("UVR!");
