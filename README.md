@@ -1,4 +1,5 @@
-# 🚲 Vehicle Rental Management System
+# 🚲 U.V.R! - An Vehicle Rental App & Management System
+<img src="https://github.com/nomjie33/DB-APP-INFOM/blob/9ebf125472ca122eed8a7c043cc06762a2fac6d4/src/main/gui/assets/logo1_orig.png" alt="logo" width="200"/>
 
 A comprehensive database-driven application for managing electric vehicle rentals (E-Scooters, E-Bikes, and E-Trikes) built with Java, JavaFX, and MySQL.
 
@@ -153,13 +154,10 @@ customers
 3. **Run Database Schema**
    ```bash
    # In MySQL Workbench or command line:
-   mysql -u your_username -p < database_schema.sql
+   mysql -u your_username -p < "CCINFOM 22-07.sql"
    ```
-
-4. **Load Test Data (Optional)**
-   ```bash
-   mysql -u your_username -p vehicle_rental_db < test_data.sql
-   ```
+   
+   The SQL script will automatically create the `vehicle_rental_db` database and populate it with initial data.
 
 ### Application Setup
 
@@ -170,80 +168,112 @@ customers
    ```
 
 2. **Add Required Libraries**
-   - Download MySQL Connector/J from [MySQL Downloads](https://dev.mysql.com/downloads/connector/j/)
-   - Download iText 5.x from [Maven Central](https://mvnrepository.com/artifact/com.itextpdf/itextpdf)
+   - Download MySQL Connector/J 8.0+ from [MySQL Downloads](https://dev.mysql.com/downloads/connector/j/)
+   - Download iText 5.5.13.3 from [Maven Central](https://mvnrepository.com/artifact/com.itextpdf/itextpdf/5.5.13.3)
    - Place JAR files in the `lib/` directory
 
 3. **Configure IDE**
    
-   **For VS Code:**
-   - Ensure Java Extension Pack is installed
-   - Libraries should be auto-detected from `lib/` folder
-   - Use the provided `.vscode/launch.json` configuration
-
+   **For IntelliJ IDEA:**
+   - Open the project directory
+   - File → Project Structure → Libraries → Add (`+`) → Java
+   - Select all JAR files from the `lib/` directory
+   - Apply and OK
+   
    **For Eclipse:**
    - Import project as existing Java project
-   - Add libraries to build path: Right-click project → Build Path → Configure Build Path → Add JARs
+   - Right-click project → Build Path → Configure Build Path
+   - Libraries tab → Add JARs → Select JARs from `lib/` folder
+   
+   **For VS Code:**
+   - Ensure Java Extension Pack is installed
+   - Libraries in `lib/` folder should be auto-detected
+   - If not, add to `.classpath` file
 
-   **For IntelliJ IDEA:**
-   - Open project
-   - File → Project Structure → Libraries → Add JAR files from `lib/`
-
-4. **Test Database Connection**
-   ```bash
-   java util.DBConnection
-   ```
-   You should see: "✓ Database connection test SUCCESSFUL!"
+4. **Verify Database Connection**
+   - Run `util.DBConnection` to test connectivity
+   - You should see: "✓ Database connection test SUCCESSFUL!"
 
 5. **Run the Application**
-   ```bash
-   java main.VehicleRentalApp
-   ```
+   - Execute `main.VehicleRentalApp` as the main class
+   - The login screen should appear
 
 ## 📁 Project Structure
 
 ```
 DB-APP-INFOM/
 ├── src/
+│   ├── module-info.java     # Java module configuration
 │   ├── dao/                 # Data Access Objects
 │   │   ├── CustomerDAO.java
 │   │   ├── VehicleDAO.java
 │   │   ├── RentalDAO.java
+│   │   ├── PaymentDAO.java
+│   │   ├── DeploymentDAO.java
+│   │   ├── MaintenanceDAO.java
+│   │   ├── LocationDAO.java
+│   │   ├── AddressDAO.java
 │   │   └── ...
-│   ├── model/              # Entity classes
+│   ├── model/              # Entity/POJO classes
 │   │   ├── Customer.java
 │   │   ├── Vehicle.java
 │   │   ├── RentalTransaction.java
+│   │   ├── PaymentTransaction.java
+│   │   ├── DeploymentTransaction.java
+│   │   ├── MaintenanceTransaction.java
 │   │   └── ...
 │   ├── service/            # Business logic layer
 │   │   ├── RentalService.java
 │   │   ├── PaymentService.java
+│   │   ├── PenaltyService.java
+│   │   ├── MaintenanceService.java
+│   │   ├── DeploymentService.java
 │   │   └── ...
 │   ├── main/
-│   │   ├── VehicleRentalApp.java
-│   │   └── gui/            # JavaFX controllers
+│   │   ├── VehicleRentalApp.java  # Main application entry point
+│   │   └── gui/            # JavaFX FXML controllers
+│   │       ├── Admin-login.fxml
+│   │       ├── Admin-dashboard.fxml
+│   │       ├── Admin-customerRecords.fxml
+│   │       ├── Admin-vehicleRecords.fxml
+│   │       └── ...
 │   ├── reports/            # PDF report generators
 │   │   ├── CustomerRentalReport.java
 │   │   ├── DefectiveVehiclesReport.java
-│   │   └── ...
+│   │   ├── LocationRentalFrequencyReport.java
+│   │   ├── RentalRevenueReport.java
+│   │   └── PDFBrandingHelper.java
 │   ├── util/               # Utility classes
 │   │   ├── DBConnection.java
 │   │   └── Helpers.java
 │   └── test/               # Test classes
-├── lib/                    # External libraries
-├── bin/                    # Compiled classes
-├── reports_output/         # Generated PDF reports
-├── database_schema.sql     # Database creation script
-├── test_data.sql          # Sample data for testing
+│       ├── DAOCRUDTest.java
+│       ├── daotest.java
+│       └── ServiceTest.java
+├── bin/                    # Compiled .class files (generated)
+├── lib/                    # External JAR dependencies
+│   ├── mysql-connector-j-x.x.x.jar
+│   └── itextpdf-5.5.13.3.jar
+├── reports_output/         # Generated PDF reports directory
+├── SQL_Syntax_CrashCourse/ # SQL learning resources
+│   ├── SQL_D1.md
+│   ├── SQL_D2.md
+│   └── ...
+├── CCINFOM 22-07.sql      # Main database schema & data
+├── diagnose.sql           # Database diagnostic queries
 ├── db.properties.example  # Database config template
-└── README.md
+├── db.properties          # Actual DB config (gitignored)
+├── DB-APP-INFOM.iml      # IntelliJ project file
+├── PROJECT_STRUCTURE.md   # Detailed project documentation
+└── README.md             # This file
 ```
 
 ## 💡 Usage
 
 ### Login
-- Default admin credentials are created via the database schema
-- Login with staff credentials to access the admin dashboard
+- Launch the application to access the admin login screen
+- Use staff credentials from the database (created via the SQL schema)
+- Successfully logged-in users are directed to the admin dashboard
 
 ### Managing Rentals
 
@@ -304,29 +334,58 @@ DB-APP-INFOM/
 
 ## 👥 Contributors
 
-- **[Your Team Members' Names]**
-  - Database Design & Implementation
-  - Backend Development (DAO, Services)
-  - Frontend Development (JavaFX GUI)
-  - Report Generation System
+**CCINFOM S22 Group 07**
+- Team members responsible for:
+  - Database Schema Design & Implementation
+  - Backend Development (DAO Layer, Service Layer)
+  - Frontend Development (JavaFX GUI & Controllers)
+  - Business Logic & Transaction Management
+  - PDF Report Generation System
 
-## 📝 License
+## 📝 Academic Context
 
-This project is created for academic purposes as part of the Database Systems course.
+This project was developed as a major course requirement for **CCINFOM (Database Systems)** - Section S22, Group 07.
+
+**Institution**: De La Salle University  
+**Course**: Database Management Systems  
+**Academic Year**: 2024-2025  
+
+The system demonstrates:
+- Relational database design principles
+- CRUD operations with JDBC
+- Transaction management
+- Three-tier architecture (Presentation, Business, Data layers)
+- Real-world business process implementation
 
 ## 🤝 Contributing
 
-This is an academic project. For improvements or bug fixes:
+This is an academic project developed for coursework. While not actively maintained post-submission, feedback and suggestions are welcome:
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create a feature branch (`git checkout -b feature/improvement`)
+3. Commit your changes (`git commit -m 'Add improvement'`)
+4. Push to the branch (`git push origin feature/improvement`)
+5. Open a Pull Request
+
+## 🐛 Troubleshooting
+
+### Database Connection Issues
+- Verify MySQL server is running
+- Check credentials in `db.properties`
+- Ensure `vehicle_rental_db` database exists
+- Confirm MySQL Connector JAR is in `lib/` folder
+
+### JavaFX Runtime Issues
+- Ensure JavaFX SDK is properly configured in your IDE
+- For Java 11+, JavaFX is not bundled and must be added separately
+
+### PDF Generation Issues
+- Verify iText library is in `lib/` folder
+- Check write permissions for `reports_output/` directory
 
 ## 📧 Contact
 
-For questions or support, please contact the project maintainers through GitHub issues.
+For questions or issues related to this project, please use GitHub Issues or contact the repository maintainer.
 
 ---
 
-**Note**: This is a student project for educational purposes. The system demonstrates database design, Java application development, and software engineering principles.
+**Note**: This is an academic project developed for educational purposes, demonstrating database design, Java application development, and software engineering principles in the context of a vehicle rental management system.
