@@ -431,7 +431,7 @@ public class LocationRentalFrequencyReport {
     /**
      * Export report to branded PDF
      */
-    public void exportToPDF(List<LocationFrequencyData> data, String filename, int year, int month) {
+    public void exportToPDF(List<LocationFrequencyData> data, String filename, int year, int month, String chartImagePath) {
         Document document = new Document(PageSize.A4.rotate());
 
         try {
@@ -450,6 +450,21 @@ public class LocationRentalFrequencyReport {
             }
 
             PDFBrandingHelper.addHeaderSection(document, title, null);
+
+            if (chartImagePath != null) {
+                try {
+                    com.itextpdf.text.Image chartImage = com.itextpdf.text.Image.getInstance(chartImagePath);
+                    // Scale image to fit width, preserve aspect ratio
+                    float maxWidth = document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin();
+                    chartImage.scaleToFit(maxWidth, 350); // Max height 350
+                    chartImage.setAlignment(Element.ALIGN_CENTER);
+                    chartImage.setSpacingBefore(10);
+                    chartImage.setSpacingAfter(20);
+                    document.add(chartImage);
+                } catch (Exception e) {
+                    System.err.println("Could not load chart image: " + e.getMessage());
+                }
+            }
 
             if (data.isEmpty()) {
                 Paragraph noData = new Paragraph("No location rental data found for the specified period.",
@@ -531,6 +546,11 @@ public class LocationRentalFrequencyReport {
         } finally {
             document.close();
         }
+    }
+
+    //Overloaded version
+    public void exportToPDF(List<LocationFrequencyData> data, String filename, int year, int month) {
+        exportToPDF(data, filename, year, month, null);
     }
 
     /**
