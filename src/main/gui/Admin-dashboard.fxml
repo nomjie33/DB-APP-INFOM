@@ -96,7 +96,15 @@
                             </children>
                         </VBox>
 
-                        <Button fx:id="quitButton" layoutX="35.0" layoutY="710.0" mnemonicParsing="false" onAction="#handleLogout" prefHeight="29.0" prefWidth="150.0" text="Logout" />
+                        <Button fx:id="quitButton"
+                                layoutX="35.0"
+                                layoutY="710.0"
+                                mnemonicParsing="false"
+                                onAction="#handleLogout"
+                                prefHeight="29.0"
+                                prefWidth="150.0"
+                                styleClass="cancel-button"
+                                text="Logout" />
                   <ImageView fitHeight="138.0" fitWidth="119.0" layoutX="22.0" layoutY="11.0" pickOnBounds="true" preserveRatio="true" />
 
                     </children>
