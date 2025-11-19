@@ -546,4 +546,27 @@ public class PenaltyDAO {
         }
         return false;
     }
+
+    public String generateNewPenaltyID() {
+        String sql = "SELECT penaltyID FROM penalty ORDER BY LENGTH(penaltyID) DESC, penaltyID DESC LIMIT 1";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                String lastID = rs.getString("penaltyID");
+                if (lastID.startsWith("PEN-")) {
+                    String numberPart = lastID.substring(4);
+                    int nextID = Integer.parseInt(numberPart) + 1;
+                    return String.format("PEN-%03d", nextID);
+                }
+            }
+
+        } catch (SQLException | NumberFormatException e) {
+            System.err.println("Error generating new ID: " + e.getMessage());
+        }
+
+        return "PEN-001";
+    }
 }

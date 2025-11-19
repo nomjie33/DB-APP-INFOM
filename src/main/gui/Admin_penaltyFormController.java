@@ -84,7 +84,6 @@ public class Admin_penaltyFormController implements Initializable {
         if (penalty != null) {
 
             isLoading = true;
-
             isUpdatingRecord = true;
             currentPenalty = penalty;
 
@@ -92,22 +91,26 @@ public class Admin_penaltyFormController implements Initializable {
             idField.setText(penalty.getPenaltyID());
 
             totalPenaltyField.setText(penalty.getTotalPenalty().setScale(2, RoundingMode.HALF_UP).toPlainString());
-
             dateIssuedPicker.setValue(penalty.getDateIssued() != null ? penalty.getDateIssued().toLocalDate() : null);
-
             rentalComboBox.setValue(findRental(penalty.getRentalID()));
-
             maintenanceComboBox.setValue(findMaintenance(penalty.getMaintenanceID()));
-
             statusComboBox.setValue(penalty.getPenaltyStatus());
 
             idField.setDisable(true);
             idField.getStyleClass().add("form-text-field-disabled");
 
             isLoading = false;
+
         } else {
             isUpdatingRecord = false;
             formHeaderLabel.setText("New Penalty");
+
+            String nextID = penaltyDAO.generateNewPenaltyID();
+            idField.setText(nextID);
+
+            idField.setDisable(true);
+            idField.getStyleClass().add("form-text-field-disabled");
+
             statusComboBox.setValue("UNPAID");
             totalPenaltyField.setText("0.00");
         }
