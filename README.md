@@ -357,34 +357,6 @@ The system demonstrates:
 - Three-tier architecture (Presentation, Business, Data layers)
 - Real-world business process implementation
 
-## 🤝 Contributing
-
-This is an academic project developed for coursework. While not actively maintained post-submission, feedback and suggestions are welcome:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/improvement`)
-3. Commit your changes (`git commit -m 'Add improvement'`)
-4. Push to the branch (`git push origin feature/improvement`)
-5. Open a Pull Request
-
-## 🐛 Troubleshooting
-
-### Database Connection Issues
-- Verify MySQL server is running
-- Check credentials in `db.properties`
-- Ensure `vehicle_rental_db` database exists
-- Confirm MySQL Connector JAR is in `lib/` folder
-
-### JavaFX Runtime Issues
-- Ensure JavaFX SDK is properly configured in your IDE
-- For Java 11+, JavaFX is not bundled and must be added separately
-
-### PDF Generation Issues
-- Verify iText library is in `lib/` folder
-- Check write permissions for `reports_output/` directory
-
-## 📧 Contact
-
-For questions or issues related to this project, please use GitHub Issues or contact the repository maintainer.
 
 ---
 
