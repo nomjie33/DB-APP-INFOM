@@ -52,6 +52,13 @@ public class Admin_customerFormController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Auto-generate ID for new customers
+        if (!isUpdatingRecord) {
+            String nextID = customerDAO.generateNextCustomerID();
+            idField.setText(nextID);
+            idField.setDisable(true);
+            idField.getStyleClass().add("form-text-field-disabled");
+        }
 
         cityComboBox.getItems().setAll(cityDAO.getAllCities());
         cityComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -63,7 +70,6 @@ public class Admin_customerFormController implements Initializable {
                 barangayComboBox.getItems().clear();
             }
         });
-
     }
 
     public void setMainController(Admin_dashboardController mainController){
@@ -71,29 +77,48 @@ public class Admin_customerFormController implements Initializable {
     }
 
     public void setCustomerData(Customer customer){
-        if (customer == null) return;
-        isUpdatingRecord = true;
-        currentCustomer = customer;
-        formHeaderLabel.setText("Update Customer");
-        idField.setDisable(true);
-        idField.getStyleClass().add("form-text-field-disabled");
-        idField.setText(customer.getCustomerID());
-        firstNameField.setText(customer.getFirstName());
-        lastNameField.setText(customer.getLastName());
-        contactField.setText(customer.getContactNumber());
-        emailField.setText(customer.getEmailAddress());
+        if (customer != null) {
+            isUpdatingRecord = true;
+            currentCustomer = customer;
+            formHeaderLabel.setText("Update Customer");
 
-        if (customer.getAddressID() != null) {
-            Address fullAddress = addressDAO.getAddressWithFullDetails(customer.getAddressID());
-            if (fullAddress != null && fullAddress.getBarangay() != null && fullAddress.getBarangay().getCity() != null) {
-                City city = fullAddress.getBarangay().getCity();
-                Barangay barangay = fullAddress.getBarangay();
-                cityComboBox.setValue(city);
-                barangayComboBox.setValue(barangay);
-                streetField.setText(fullAddress.getStreet());
+            // Display existing customer ID (already disabled)
+            idField.setText(customer.getCustomerID());
+            idField.setDisable(true);
+            if (!idField.getStyleClass().contains("form-text-field-disabled")) {
+                idField.getStyleClass().add("form-text-field-disabled");
             }
+
+            firstNameField.setText(customer.getFirstName());
+            lastNameField.setText(customer.getLastName());
+            contactField.setText(customer.getContactNumber());
+            emailField.setText(customer.getEmailAddress());
+
+            if (customer.getAddressID() != null) {
+                Address fullAddress = addressDAO.getAddressWithFullDetails(customer.getAddressID());
+                if (fullAddress != null && fullAddress.getBarangay() != null && fullAddress.getBarangay().getCity() != null) {
+                    City city = fullAddress.getBarangay().getCity();
+                    Barangay barangay = fullAddress.getBarangay();
+                    cityComboBox.setValue(city);
+                    barangayComboBox.setValue(barangay);
+                    streetField.setText(fullAddress.getStreet());
+                }
+            }
+        } else {
+            // NEW CUSTOMER - initialize() already set the ID
+            isUpdatingRecord = false;
+            formHeaderLabel.setText("New Customer");
+            // Clear all fields except ID (already set in initialize)
+            firstNameField.clear();
+            lastNameField.clear();
+            contactField.clear();
+            emailField.clear();
+            streetField.clear();
+            cityComboBox.setValue(null);
+            barangayComboBox.setValue(null);
         }
     }
+
 
     @FXML private void handleSave() {
 

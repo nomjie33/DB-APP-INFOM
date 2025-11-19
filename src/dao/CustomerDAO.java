@@ -346,4 +346,50 @@ public class CustomerDAO {
         int nextNum = getNextCustomerNumber();
         return String.format("CUST-%03d", nextNum);
     }
+
+    /**
+     * Generate the next sequential customer ID.
+     * Format: CUST-XXX where XXX is a 3-digit number (001, 002, 003, etc.)
+     * Finds the highest existing ID (including inactive) and increments by 1.
+     *
+     * @return Next customer ID (e.g., "CUST-021")
+     */
+    public String generateNextCustomerID() {
+        try {
+            // Get all customers including inactive to ensure no ID collisions
+            List<Customer> allCustomers = getAllCustomersIncludingInactive();
+
+            int maxNumber = 0;
+
+            // Find the highest number from existing IDs
+            for (Customer customer : allCustomers) {
+                String id = customer.getCustomerID();
+                // Extract number from format "CUST-XXX"
+                if (id != null && id.startsWith("CUST-") && id.length() >= 8) {
+                    try {
+                        String numberPart = id.substring(5); // Get part after "CUST-"
+                        int number = Integer.parseInt(numberPart);
+                        if (number > maxNumber) {
+                            maxNumber = number;
+                        }
+                    } catch (NumberFormatException e) {
+                        // Skip IDs that don't have numeric suffix
+                        continue;
+                    }
+                }
+            }
+
+            // Generate next ID
+            int nextNumber = maxNumber + 1;
+            String nextID = String.format("CUST-%03d", nextNumber);
+            System.out.println("CustomerDAO: Generated next Customer ID: " + nextID);
+            return nextID;
+
+        } catch (Exception e) {
+            // Fallback: use timestamp-based ID if something goes wrong
+            System.err.println("Error generating customer ID, using fallback: " + e.getMessage());
+            long timestamp = System.currentTimeMillis();
+            return String.format("CUST-%03d", (int)(timestamp % 1000));
+        }
+    }
 }
