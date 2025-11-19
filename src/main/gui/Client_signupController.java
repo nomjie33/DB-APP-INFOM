@@ -123,7 +123,7 @@ public class Client_signupController implements Initializable {
             }
 
             // --- B. Create the Customer ---
-            String newCustomerID = "CUST-" + (System.currentTimeMillis() % 100000);
+            String newCustomerID = customerDAO.generateCustomerID();
             Customer newCustomer = new Customer();
             newCustomer.setCustomerID(newCustomerID);
             newCustomer.setLastName(lastName);
