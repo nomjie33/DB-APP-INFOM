@@ -32,6 +32,8 @@ public class Admin_locationFrequencyController implements Initializable {
             yearComboBox.getItems().add(i);
         }
 
+        monthComboBox.getItems().add("None");
+
         for (Month month : Month.values()) {
             String monthName = month.toString();
             String formattedName = monthName.substring(0, 1).toUpperCase() + monthName.substring(1).toLowerCase();
@@ -53,7 +55,7 @@ public class Admin_locationFrequencyController implements Initializable {
         List<LocationFrequencyData> reportData;
         int monthInt = 0; // 0 = Yearly
 
-        if (monthName == null || monthName.isEmpty()) {
+        if (monthName == null || monthName.isEmpty() || monthName.equals("None")) {
 
             System.out.println("Generating Yearly Location Report for " + year + "...");
             reportData = report.generateYearlyReport(year);

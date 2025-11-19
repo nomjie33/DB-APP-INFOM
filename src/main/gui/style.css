@@ -360,3 +360,431 @@
      -fx-background-color: #FC7222; /* Lighter orange on hover */
      -fx-cursor: hand;
  }
+
+ /*
+  * ==============================================================================
+  * 1. GENERAL & ROOT STYLES
+  * ==============================================================================
+  */
+ .root {
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-weight: normal;
+     -fx-font-size: 13px;
+     -fx-background-color: #fcf8ff; /* App Background */
+ }
+
+ .page-title {
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-weight: bold;
+     -fx-text-fill: #FC7222; /* Use your primary orange color for titles */
+ }
+
+ #historyBanner {
+
+     -fx-background-image: url("assets/history_bg.png");
+
+     -fx-background-size: cover;
+
+     -fx-background-position: center;
+
+     -fx-background-repeat: no-repeat;
+ }
+
+ /* Specific Labels/Text */
+ .sidebar-title {
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-weight: bold;
+ }
+
+ #welcomeLabel {
+     -fx-text-fill: #016346;
+ }
+
+ #clientNameLabel {
+     -fx-text-fill: #FC7222;
+ }
+
+ /*
+  * ==============================================================================
+  * 2. NAVIGATION STYLES (Sidebar & Shortcuts)
+  * ==============================================================================
+  */
+
+ /* Navigation Buttons */
+ .nav-button {
+     -fx-alignment: center-left;
+     -fx-padding: 0 0 0 20px;
+     -fx-spacing: 3px;
+ }
+
+ .nav-button-sub {
+     -fx-alignment: center-left;
+     -fx-padding: 0 0 0 20px;
+     -fx-spacing: 3px;
+ }
+
+ .nav-button-sub:hover {
+     -fx-background-color: #E06010;
+     -fx-cursor: hand;
+ }
+
+ .nav-button-sub .label {
+     -fx-font-weight: normal;
+ }
+
+ .nav-button-sub-active .label {
+     -fx-font-weight: bold;
+ }
+
+ .nav-button .label {
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-weight: normal;
+     -fx-font-size: 12px;
+ }
+
+ /* Active State */
+ .nav-button-active .label {
+     -fx-font-weight: bold;
+ }
+
+ /* Hover Effect */
+ .nav-button:hover {
+     -fx-background-color: #E06010; /* Darker orange hover */
+     -fx-cursor: hand;
+ }
+
+ /* General Shortcut/Action Pane */
+ .shortcut-pane:hover {
+     -fx-opacity: 0.8;
+     -fx-cursor: hand;
+ }
+
+ /*
+  * ==============================================================================
+  * 3. BUTTON STYLES (Confirm/Cancel)
+  * ==============================================================================
+  */
+
+ .confirm-button {
+     -fx-background-color: #FC7222; /* Primary Orange */
+     -fx-text-fill: white;
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-weight: bold;
+     -fx-font-size: 14px;
+     -fx-background-radius: 8;
+ }
+
+ .confirm-button:hover {
+     -fx-background-color: #E06010; /* Darker orange hover */
+     -fx-cursor: hand;
+ }
+
+ .cancel-button {
+     -fx-background-color: #f0f0f0; /* Light Gray */
+     -fx-text-fill: #333333;
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-weight: normal;
+     -fx-font-size: 14px;
+     -fx-background-radius: 8;
+     -fx-border-color: #d0d0d0;
+     -fx-border-radius: 8;
+ }
+
+ .cancel-button:hover {
+     -fx-background-color: #e0e0e0;
+     -fx-cursor: hand;
+ }
+
+ /*
+  * ==============================================================================
+  * 4. FORM AND INPUT STYLES (TextFields, DatePicker)
+  * ==============================================================================
+  */
+
+ .form-text-field {
+     -fx-background-color: white;
+     -fx-background-radius: 8;
+     -fx-border-color: #d0d0d0;
+     -fx-border-radius: 8;
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-size: 13px;
+     -fx-padding: 5px;
+ }
+
+ .form-text-field-disabled {
+     -fx-background-color: e9e9e9;
+     -fx-background-radius: 8;
+     -fx-border-color: #d0d0d0;
+     -fx-border-radius: 8;
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-size: 13px;
+     -fx-padding: 5px;
+ }
+
+ /* DatePicker Styling */
+ .date-picker {
+     -fx-background-color: transparent;
+     -fx-border-width: 0;
+ }
+
+ .date-picker .text-input {
+     -fx-background-radius: 8 0 0 8;
+     -fx-border-radius: 8 0 0 8;
+     -fx-border-color: #d0d0d0;
+     -fx-border-width: 1 0 1 1;
+ }
+
+ .date-picker .arrow-button {
+     -fx-background-color: #33a398; /* Teal */
+     -fx-background-radius: 0 5 5 0;
+ }
+
+ .date-picker .arrow-button .arrow {
+     -fx-background-color: transparent;
+     -fx-shape: "";
+     -fx-background-image: url("assets/calendar-icon.png");
+     -fx-background-size: 16px 16px;
+     -fx-background-repeat: no-repeat;
+     -fx-background-position: center;
+ }
+
+ /*
+  * ==============================================================================
+  * 5. DATA/CONTENT CONTAINERS (Quick Actions, Vehicles, Heads Up)
+  * ==============================================================================
+  */
+
+ .report-pane-base {
+     -fx-background-color: transparent;
+     -fx-background-size: contain;
+     -fx-background-position: center;
+     -fx-background-repeat: no-repeat;
+     -fx-cursor: hand;
+ }
+
+ .report-pane-base:hover{
+     -fx-opacity: 0.85;
+ }
+
+ .report-pane-folder{
+     -fx-background-image: url("assets/reportFolder.png");
+ }
+
+ .report-label{
+     -fx-text-fill: white;
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-weight: bold;
+     -fx-font-size: 14px;
+     -fx-background-color: transparent;
+ }
+
+ /* Vehicle Selection Panes (Rent a Vehicle) */
+ .vehicle-pane {
+     -fx-background-color: #2F8C82;
+     -fx-background-radius: 10;
+     -fx-border-color: transparent;
+     -fx-border-width: 3;
+     -fx-border-radius: 10;
+     -fx-cursor: hand;
+ }
+
+ .vehicle-pane:hover {
+     -fx-background-color: #287a70;
+ }
+
+ /* Controller-managed selection state */
+ .vehicle-pane-selected {
+     -fx-border-color: #F99C03; /* Bright orange border when selected */
+ }
+
+ /* Heads Up/Note Pane (e.g., Penalty Details) */
+ .heads-up-pane {
+     -fx-background-color: #F3F3F3;
+     -fx-background-radius: 8;
+     -fx-border-radius: 8;
+ }
+
+ /*
+  * ==============================================================================
+  * 6. TABLE STYLES (Transaction History)
+  * ==============================================================================
+  */
+
+ .transactions-table {
+     -fx-background-color: transparent;
+     -fx-border-color: transparent;
+     -fx-padding: 0;
+ }
+
+ .transactions-table .column-header-background {
+     -fx-background-color: transparent;
+ }
+
+ .transactions-table .column-header, .transactions-table .column-header-border {
+     -fx-background-color: transparent;
+     -fx-border-width: 0;
+ }
+
+ .transactions-table .column-header .label {
+     -fx-text-fill: #33a398; /* Teal Header Text */
+     -fx-font-weight: bold;
+     -fx-font-size: 13px;
+     -fx-padding: 10px 5px;
+     -fx-alignment: CENTER_LEFT;
+ }
+
+ .transactions-table .table-row-cell {
+     -fx-background-color: transparent;
+     -fx-padding: 0;
+     -fx-border-width: 0;
+ }
+
+ .transactions-table .table-cell {
+     -fx-border-width: 0;
+     -fx-text-fill: black;
+     -fx-padding: 10px 5px;
+ }
+
+
+
+ /*
+  * ==============================================================================
+  * 7. DIALOG/ALERT STYLES
+  * ==============================================================================
+  */
+
+ .dialog-pane > .header-panel {
+     -fx-background-color: #33a398; /* Teal Header Background (Matches your design) */
+ }
+
+ .dialog-pane .content {
+     -fx-text-fill: #333333; /* Dark gray content text */
+     -fx-font-family: "Arial";
+ }
+
+ .dialog-pane .button {
+     -fx-background-color: #FC7222; /* Orange Button Background */
+     -fx-text-fill: white;
+     -fx-font-weight: bold;
+ }
+
+ .dialog-pane .button:hover {
+     -fx-background-color: derive(#FC7222, 20%); /* Lighter orange on hover */
+ }
+
+ /*
+  * ==============================================================================
+  * 8. BUTTONS
+  * ==============================================================================
+  */
+
+  .add-button{
+     -fx-background-color: #33a398;
+     -fx-text-fill: white;
+     -fx-font-family: "SFT Schrifted Sans TRIAL";
+     -fx-font-weight: bold;
+     -fx-font-size: 20px;
+     -fx-background-radius: 50;
+  }
+
+  .add-button:hover {
+     -fx-background-color: #2b8a7f;
+     -fx-cursor: hand;
+  }
+
+  .edit-button {
+     -fx-background-color: #33a398;
+     -fx-text-fill: white;
+     -fx-font-size: 12px;
+     -fx-background-radius: 5;
+     -fx-padding: 3px 8px 3px 8px;
+  }
+
+  .edit-button:hover {
+     -fx-background-color: #2b8a7f;
+     -fx-cursor: hand;
+  }
+
+  /*
+   * ==============================================================================
+   * 9. TABLE ACTION BUTTONS (New)
+   * ==============================================================================
+   */
+
+  .deactivate-button {
+      -fx-background-color: #E06010; /* Darker orange from your theme */
+      -fx-text-fill: white;
+      -fx-font-size: 12px;
+      -fx-background-radius: 5;
+      -fx-padding: 3px 8px 3px 8px; /* Make it small */
+  }
+
+  .deactivate-button:hover {
+      -fx-background-color: #FC7222; /* Lighter orange on hover */
+      -fx-cursor: hand;
+  }
+
+  /*
+   * ==============================================================================
+   * 5. DATA/CONTENT CONTAINERS (Quick Actions, Vehicles, Heads Up)
+   * ==============================================================================
+   */
+
+  /* Vehicle Selection Panes (Rent a Vehicle) */
+  .vehicle-pane {
+      /* Set the background to white/light color, this is what the image will sit on top of */
+      -fx-background-color: transparent;
+      -fx-background-radius: 10;
+
+      -fx-border-color: #2F8C82;
+          -fx-border-width: 3;
+          -fx-border-radius: 10;
+          -fx-cursor: hand;
+  }
+
+  .vehicle-pane:hover {
+      /* Hover affects the border color, not the background color */
+      -fx-border-color: #287a70;
+  }
+
+  /* Controller-managed selection state */
+  .vehicle-pane-selected {
+      -fx-border-color: #FC7222;
+      -fx-border-width: 2.5;
+  }
+
+  /* --- VEHICLE IMAGE STYLES --- */
+
+  /* Now, we define the single background image, and use INSETS to make it shrink
+     by 3px (the border width) to sit perfectly inside the border area. */
+
+  /* 1. E-SCOOTER */
+  #scooterPane {
+
+      -fx-background-image: url("assets/scooter.png");
+      -fx-background-insets: 0;
+      -fx-background-size: 100% 100%;
+      -fx-background-position: center;
+      -fx-background-repeat: no-repeat;
+      -fx-background-radius: 10;
+  }
+
+  /* 2. E-BIKE */
+  #bikePane {
+      -fx-background-image: url("assets/bike.png");
+      -fx-background-insets: 0;
+      -fx-background-size: 100% 100%;
+      -fx-background-position: center;
+      -fx-background-repeat: no-repeat;
+      -fx-background-radius: 10;
+  }
+
+  /* 3. E-TRIKE */
+  #trikePane {
+      -fx-background-image: url("assets/trike.png");
+      -fx-background-insets: 0;
+      -fx-background-size: 100% 100%;
+      -fx-background-position: center;
+      -fx-background-repeat: no-repeat;
+      -fx-background-radius: 10;
+  }
