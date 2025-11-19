@@ -6,16 +6,19 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 import model.Part;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class Admin_partFormController {
+public class Admin_partFormController implements Initializable {
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField idField;
@@ -28,6 +31,18 @@ public class Admin_partFormController {
     private boolean isEditMode = false;
     private Part currentPart;
 
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        // Auto-generate ID for new parts
+        // ID field is always disabled (for display only)
+        if (!isEditMode) {
+            String nextID = partService.generateNextPartID();
+            idField.setText(nextID);
+            idField.setDisable(true);
+            idField.getStyleClass().add("form-text-field-disabled");
+        }
+    }
+
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
     }
@@ -38,13 +53,17 @@ public class Admin_partFormController {
             currentPart = part;
             formHeaderLabel.setText("Update Part");
 
+            // Display existing part ID (already disabled in initialize)
             idField.setText(part.getPartId());
             nameField.setText(part.getPartName());
             stockField.setText(String.valueOf(part.getQuantity()));
             priceField.setText(part.getPrice().toString());
 
+            // Ensure ID field is disabled for editing (should already be from initialize)
             idField.setDisable(true);
-            idField.getStyleClass().add("form-text-field-disabled");
+            if (!idField.getStyleClass().contains("form-text-field-disabled")) {
+                idField.getStyleClass().add("form-text-field-disabled");
+            }
         }
     }
 

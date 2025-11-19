@@ -823,14 +823,14 @@ public class MaintenanceService {
     /**
      * Generate the next sequential maintenance ID.
      * Format: MAINT-XXX where XXX is a 3-digit number (001, 002, 003, etc.)
-     * Finds the highest existing ID and increments by 1.
+     * Finds the highest existing ID (including inactive) and increments by 1.
      * 
      * @return Next maintenance ID (e.g., "MAINT-021")
      */
-    private String generateNextMaintenanceID() {
+    public String generateNextMaintenanceID() {
         try {
-            // Get all maintenance records
-            List<MaintenanceTransaction> allMaintenance = maintenanceDAO.getAllMaintenance();
+            // Get all maintenance records including inactive to ensure no ID collisions
+            List<MaintenanceTransaction> allMaintenance = maintenanceDAO.getAllMaintenanceIncludingInactive();
             
             int maxNumber = 0;
             
@@ -854,7 +854,9 @@ public class MaintenanceService {
             
             // Generate next ID
             int nextNumber = maxNumber + 1;
-            return String.format("MAINT-%03d", nextNumber);
+            String nextID = String.format("MAINT-%03d", nextNumber);
+            System.out.println("MaintenanceService: Generated next Maintenance ID: " + nextID);
+            return nextID;
             
         } catch (Exception e) {
             // Fallback: use timestamp-based ID if something goes wrong
