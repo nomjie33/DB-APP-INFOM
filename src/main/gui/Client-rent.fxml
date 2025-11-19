@@ -19,24 +19,25 @@
         <Label layoutX="38.0" layoutY="80.0" style="-fx-font-weight: bold;" text="1. CHOOSE A VEHICLE TYPE" />
 
         <HBox layoutX="38.0" layoutY="120.0" spacing="12.0">
-            <Pane fx:id="scooterPane" onMouseClicked="#handleTypeSelected" prefHeight="150.0" prefWidth="200.0" styleClass="vehicle-pane">
+
+            <Pane fx:id="scooterPane" onMouseClicked="#handleTypeSelected" prefHeight="138.0" prefWidth="200.0" styleClass="vehicle-pane">
                 <children>
-                    <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
-                    <Label layoutX="14.0" layoutY="110.0" prefHeight="26.0" prefWidth="78.0" text="E-scooter" />
+                    <Label layoutX="14.0" layoutY="105.0" prefHeight="26.0" prefWidth="78.0" text="E-scooter" style="-fx-font-weight: bold; -fx-text-fill: white;" />
                 </children>
             </Pane>
-            <Pane fx:id="bikePane" onMouseClicked="#handleTypeSelected" prefHeight="150.0" prefWidth="200.0" styleClass="vehicle-pane">
+
+            <Pane fx:id="bikePane" onMouseClicked="#handleTypeSelected" prefHeight="138.0" prefWidth="200.0" styleClass="vehicle-pane">
                 <children>
-                    <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
-                    <Label layoutX="14.0" layoutY="110.0" prefHeight="26.0" prefWidth="78.0" text="E-Bike" />
+                    <Label layoutX="14.0" layoutY="105.0" prefHeight="26.0" prefWidth="78.0" text="E-Bike" style="-fx-font-weight: bold; -fx-text-fill: white;" />
                 </children>
             </Pane>
-            <Pane fx:id="trikePane" onMouseClicked="#handleTypeSelected" prefHeight="150.0" prefWidth="200.0" styleClass="vehicle-pane">
+
+            <Pane fx:id="trikePane" onMouseClicked="#handleTypeSelected" prefHeight="138.0" prefWidth="200.0" styleClass="vehicle-pane">
                 <children>
-                    <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
-                    <Label layoutX="14.0" layoutY="110.0" prefHeight="26.0" prefWidth="78.0" text="E-Trike" />
+                    <Label layoutX="14.0" layoutY="105.0" prefHeight="26.0" prefWidth="78.0" text="E-Trike" style="-fx-font-weight: bold; -fx-text-fill: white;" />
                 </children>
             </Pane>
+
         </HBox>
 
         <VBox fx:id="rentalFormPane" layoutX="38.0" layoutY="290.0" spacing="15.0" visible="false">

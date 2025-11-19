@@ -17,7 +17,7 @@
                 <children>
                     <ImageView fitHeight="130.0" fitWidth="240.0" pickOnBounds="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                         <image>
-                            <Image url="@assets/logo1_orig.png" />
+                            <Image url="@assets/scooter.png" />
                         </image>
                     </ImageView>
 
@@ -29,7 +29,7 @@
                 <children>
                     <ImageView fitHeight="130.0" fitWidth="240.0" pickOnBounds="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                         <image>
-                            <Image url="@assets/logo1_orig.png" />
+                            <Image url="@assets/trike.png" />
                         </image>
                     </ImageView>
                     <Label text="Resolve Penalty" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
@@ -40,7 +40,7 @@
                 <children>
                     <ImageView fitHeight="130.0" fitWidth="240.0" pickOnBounds="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                         <image>
-                            <Image url="@assets/logo1_orig.png" />
+                            <Image url="@assets/bike.png" />
                         </image>
                     </ImageView>
                     <Label text="View History" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
