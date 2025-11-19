@@ -42,6 +42,7 @@ public class Admin_penaltyFormController implements Initializable {
     private final MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
     private final MaintenanceService maintenanceService = new MaintenanceService();
 
+    private boolean isLoading = false;
     private boolean isUpdatingRecord = false;
     private PenaltyTransaction currentPenalty;
 
@@ -50,7 +51,29 @@ public class Admin_penaltyFormController implements Initializable {
         setupStatusComboBox();
         loadComboBoxes();
         totalPenaltyField.setDisable(true);
-        setupMaintenanceListener();
+
+        maintenanceComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            // If we are currently loading data from the DB, DO NOT re-calculate
+            if (isLoading) {
+                return;
+            }
+
+            if (newVal != null && newVal.getMaintenanceID() != null) {
+                // Auto-fill amount
+                BigDecimal total = maintenanceService
+                        .calculateMaintenanceCost(newVal.getMaintenanceID())
+                        .setScale(2, RoundingMode.HALF_UP);
+
+                totalPenaltyField.setText(total.toPlainString());
+
+                if (newVal.getPlateID() != null) {
+                    autoSelectRentalByVehicle(newVal.getPlateID());
+                }
+            } else {
+                totalPenaltyField.setText("0.00");
+            }
+        });
+
     }
 
     public void setMainController(Admin_dashboardController mainController) {
@@ -59,20 +82,29 @@ public class Admin_penaltyFormController implements Initializable {
 
     public void setPenaltyData(PenaltyTransaction penalty) {
         if (penalty != null) {
+
+            isLoading = true;
+
             isUpdatingRecord = true;
             currentPenalty = penalty;
 
             formHeaderLabel.setText("Update Penalty");
             idField.setText(penalty.getPenaltyID());
+
             totalPenaltyField.setText(penalty.getTotalPenalty().setScale(2, RoundingMode.HALF_UP).toPlainString());
+
             dateIssuedPicker.setValue(penalty.getDateIssued() != null ? penalty.getDateIssued().toLocalDate() : null);
 
             rentalComboBox.setValue(findRental(penalty.getRentalID()));
+
             maintenanceComboBox.setValue(findMaintenance(penalty.getMaintenanceID()));
+
             statusComboBox.setValue(penalty.getPenaltyStatus());
 
             idField.setDisable(true);
             idField.getStyleClass().add("form-text-field-disabled");
+
+            isLoading = false;
         } else {
             isUpdatingRecord = false;
             formHeaderLabel.setText("New Penalty");
@@ -116,6 +148,26 @@ public class Admin_penaltyFormController implements Initializable {
             if (isUpdatingRecord && !hasChanges(rental, maintenance, totalPenalty, penaltyStatus, dateIssued)) {
                 mainController.loadPage("Admin-penaltyRecords.fxml");
                 return;
+            }
+
+            if (!isUpdatingRecord && maintenance != null && maintenance.getMaintenanceID() != null) {
+                if (penaltyDAO.isMaintenanceLinked(maintenance.getMaintenanceID())) {
+
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("Potential Double Billing");
+                    alert.setHeaderText("Maintenance Record Already Linked");
+                    alert.setContentText(
+                            "The Maintenance Record " + maintenance.getMaintenanceID() +
+                                    " is already linked to another penalty.\n\n" +
+                                    "If you proceed, ensure you have manually split the cost, " +
+                                    "or you will double-charge for the same repair.\n\n" +
+                                    "Do you want to continue?"
+                    );
+
+                    if (alert.showAndWait().get() != ButtonType.OK) {
+                        return; // User clicked Cancel
+                    }
+                }
             }
 
             PenaltyTransaction penalty = isUpdatingRecord ? currentPenalty : new PenaltyTransaction();
@@ -170,12 +222,18 @@ public class Admin_penaltyFormController implements Initializable {
 
     private void calculateTotalPenalty() {
         MaintenanceTransaction selected = maintenanceComboBox.getValue();
+
         if (selected != null && selected.getMaintenanceID() != null) {
-            BigDecimal total = maintenanceService.calculateMaintenanceCost(selected.getMaintenanceID())
+
+            BigDecimal total = maintenanceService
+                    .calculateMaintenanceCost(selected.getMaintenanceID())
                     .setScale(2, RoundingMode.HALF_UP);
+
             totalPenaltyField.setText(total.toPlainString());
 
-            if (selected.getPlateID() != null) autoSelectRentalByVehicle(selected.getPlateID());
+            if (selected.getPlateID() != null) {
+                autoSelectRentalByVehicle(selected.getPlateID());
+            }
         } else {
             totalPenaltyField.setText("0.00");
         }
