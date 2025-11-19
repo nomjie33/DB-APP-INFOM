@@ -1,11 +1,12 @@
-# 🚲 Vehicle Rental Management System
+# 🚲 U.V.R! - An E-Vehicle Rental App & Management System
+<img src="https://github.com/nomjie33/DB-APP-INFOM/blob/9ebf125472ca122eed8a7c043cc06762a2fac6d4/src/main/gui/assets/logo1_orig.png" alt="logo" width="500 height=auto"/>
 
 A comprehensive database-driven application for managing electric vehicle rentals (E-Scooters, E-Bikes, and E-Trikes) built with Java, JavaFX, and MySQL.
 
 ## 📋 Table of Contents
 - [Overview](#overview)
 - [Features](#features)
-- [Technology Stack](#technology-stack)
+- [Tech Stack](#tech-stack)
 - [Database Schema](#database-schema)
 - [Setup Instructions](#setup-instructions)
 - [Project Structure](#project-structure)
@@ -73,7 +74,7 @@ This Vehicle Rental Management System is designed for electric vehicle rental bu
 - **Rental Revenue Report**: Financial performance analysis
 - Branded PDF export for all reports
 
-## 🛠 Technology Stack
+## 🛠 Tech Stack
 
 ### Backend
 - **Java 11+**: Core application logic
@@ -304,29 +305,8 @@ DB-APP-INFOM/
 
 ## 👥 Contributors
 
-- **[Your Team Members' Names]**
+- **Bantillo, Gonzales, Reyes, Tan**
   - Database Design & Implementation
   - Backend Development (DAO, Services)
   - Frontend Development (JavaFX GUI)
   - Report Generation System
-
-## 📝 License
-
-This project is created for academic purposes as part of the Database Systems course.
-
-## 🤝 Contributing
-
-This is an academic project. For improvements or bug fixes:
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## 📧 Contact
-
-For questions or support, please contact the project maintainers through GitHub issues.
-
----
-
-**Note**: This is a student project for educational purposes. The system demonstrates database design, Java application development, and software engineering principles.

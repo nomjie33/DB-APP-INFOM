@@ -98,10 +98,15 @@ public class Admin_maintenanceChequeFormController implements Initializable {
             boolean isSuccessful;
             
             if (isUpdatingRecord){
-                // UPDATE: Use DAO directly for updates
+                // UPDATE: Use service layer to handle inventory adjustments automatically
+                // Service will: 1) Calculate quantity difference (old - new)
+                //              2) Return excess parts if reduced, or deduct more if increased
+                //              3) Update the cheque record
+                //              4) Recalculate maintenance cost
+                BigDecimal oldQuantity = currentCheque.getQuantityUsed();
                 MaintenanceCheque cheque = currentCheque;
                 cheque.setQuantityUsed(quantity);
-                isSuccessful = chequeDAO.updateMaintenanceCheque(cheque);
+                isSuccessful = maintenanceService.updateMaintenanceChequeWithInventory(cheque, oldQuantity);
             } else {
                 // NEW: Insert cheque record and decrement inventory
                 MaintenanceCheque cheque = new MaintenanceCheque();
@@ -118,16 +123,16 @@ public class Admin_maintenanceChequeFormController implements Initializable {
                     if (!inventoryUpdated) {
                         showAlert(Alert.AlertType.WARNING, "Warning", "Part usage recorded but inventory update failed.");
                     }
+                    
+                    // Recalculate maintenance cost
+                    boolean costRecalculated = maintenanceService.recalculateMaintenanceCost(maintenanceID);
+                    if (!costRecalculated) {
+                        showAlert(Alert.AlertType.WARNING, "Warning", "Part record saved but cost recalculation failed.");
+                    }
                 }
             }
 
             if (isSuccessful){
-                // REQUIREMENT: Recalculate maintenance cost whenever a cheque is added or edited
-                // This ensures the total cost is always accurate even if parts are added after completion
-                boolean costRecalculated = maintenanceService.recalculateMaintenanceCost(maintenanceID);
-                if (!costRecalculated) {
-                    showAlert(Alert.AlertType.WARNING, "Warning", "Part record saved but cost recalculation failed.");
-                }
                 
                 if (isUpdatingRecord){
                     showAlert(Alert.AlertType.INFORMATION, "Save Successful", 

@@ -480,9 +480,7 @@ public class Admin_dashboardController implements Initializable {
             Admin_penaltyFormController controller = loader.getController();
             controller.setMainController(this);
 
-            if (penalty != null) {
-                controller.setPenaltyData(penalty);
-            }
+            controller.setPenaltyData(penalty);
 
             centerContentPane.getChildren().setAll(root);
 
