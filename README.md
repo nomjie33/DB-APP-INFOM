@@ -5,7 +5,7 @@ A comprehensive database-driven application for managing electric vehicle rental
 ## 📋 Table of Contents
 - [Overview](#overview)
 - [Features](#features)
-- [Technology Stack](#technology-stack)
+- [Tech Stack](#tech-stack)
 - [Database Schema](#database-schema)
 - [Setup Instructions](#setup-instructions)
 - [Project Structure](#project-structure)
@@ -73,7 +73,7 @@ This Vehicle Rental Management System is designed for electric vehicle rental bu
 - **Rental Revenue Report**: Financial performance analysis
 - Branded PDF export for all reports
 
-## 🛠 Technology Stack
+## 🛠 Tech Stack
 
 ### Backend
 - **Java 11+**: Core application logic
