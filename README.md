@@ -85,6 +85,7 @@ This Vehicle Rental Management System is designed for electric vehicle rental bu
 - **JavaFX**: Desktop GUI framework
 - **FXML**: UI layout definitions
 - **CSS**: Custom styling
+- **Figma**: UI/UX Layout
 
 ### Libraries
 - **iText 5**: PDF report generation
