@@ -182,6 +182,18 @@ public class Admin_maintenanceChequeFormController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Invalid Input", "Quantity Used must be greater than zero.");
             return false;
         }
+        
+        // Enforce integer-only validation (no decimals allowed for part quantities)
+        try {
+            int intValue = Integer.parseInt(quantityText);
+            if (intValue != new BigDecimal(quantityText).intValue()) {
+                showAlert(Alert.AlertType.ERROR, "Invalid Input", "Quantity Used must be a whole number (no decimals).");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Invalid Input", "Quantity Used must be a whole number (no decimals).");
+            return false;
+        }
 
         return true;
     }

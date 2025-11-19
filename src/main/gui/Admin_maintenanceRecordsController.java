@@ -37,6 +37,7 @@ public class Admin_maintenanceRecordsController implements Initializable {
     @FXML private ComboBox<String> statusFilterComboBox;
 
     private MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
+    private service.MaintenanceService maintenanceService = new service.MaintenanceService();
     private Admin_dashboardController mainController;
 
     private static Popup textDisplayPopup = new Popup();
@@ -205,27 +206,63 @@ public class Admin_maintenanceRecordsController implements Initializable {
         actionColumn.setCellFactory(cellFactory);
     }
 
-    private void handleDeactivateReactivate(MaintenanceTransaction maintenance) {
-        String action = "Active".equals(maintenance.getStatus()) ? "Cancellation" : "Revert Cancellation";
+    private void handleDeactivateReactivate(MaintenanceTransaction maintenance) {        
+        // Build detailed confirmation message
+        String message = "Are you sure you want to " + action + " maintenance: " + maintenance.getMaintenanceID() + "?";
+        
+        if ("Active".equals(maintenance.getStatus())) {
+            // DEACTIVATION: Explain that this is a full cancellation
+            message += "\n\n⚠️ IMPORTANT: Deactivation means FULL CANCELLATION";
+            message += "\nThe maintenance will be treated as if it never occurred.";
+            message += "\n\nThis will:";
+            message += "\n• Deactivate all associated parts records";
+            message += "\n• Return ALL parts to inventory";
+            message += "\n• Update vehicle status to 'Available'";
+        } else {
+            // REACTIVATION: Explain that inventory will be checked
+            message += "\n\nThis will:";
+            message += "\n• Reactivate the maintenance transaction";
+            message += "\n• Reactivate all associated parts records";
+            message += "\n• Deduct parts from inventory again";
+            message += "\n• Update vehicle status to 'Maintenance'";
+            message += "\n\n⚠️ NOTE: Reactivation will fail if insufficient inventory.";
+        }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
         alert.setHeaderText("Confirm " + action);
-        alert.setContentText("Are you sure you want to " + action + " maintenance: " + maintenance.getMaintenanceID() + "?");
+        alert.setContentText(message);
 
         if (alert.showAndWait().get() == ButtonType.OK) {
             boolean success;
             if ("Active".equals(maintenance.getStatus())) {
-                success = maintenanceDAO.deactivateMaintenance(maintenance.getMaintenanceID());
+                // Use SERVICE layer for cascade deactivation with inventory rollback
+                success = maintenanceService.deactivateMaintenance(maintenance.getMaintenanceID());
             } else {
-                success = maintenanceDAO.reactivateMaintenance(maintenance.getMaintenanceID());
+                // Use SERVICE layer for validation and cascade reactivation
+                success = maintenanceService.reactivateMaintenance(maintenance.getMaintenanceID());
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Maintenance status has been updated.");
+                String successMessage = "Maintenance has been " + action + "d successfully.";
+                if ("Active".equals(maintenance.getStatus())) {
+                    successMessage += "\n\nAll parts have been returned to inventory.";
+                    successMessage += "\nVehicle status updated to 'Available'.";
+                } else {
+                    successMessage += "\n\nAll parts have been deducted from inventory.";
+                    successMessage += "\nVehicle status updated.";
+                }
+                showAlert(Alert.AlertType.INFORMATION, "Success", successMessage);
                 loadMaintenanceData();
             } else {
-                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update maintenance status.");
+                String errorMessage = "Failed to " + action + " maintenance.";
+                if (!"Active".equals(maintenance.getStatus())) {
+                    errorMessage += "\n\nPossible reasons:";
+                    errorMessage += "\n• Insufficient inventory for required parts";
+                    errorMessage += "\n• Database connection error";
+                    errorMessage += "\n\nCheck console for detailed error messages.";
+                }
+                showAlert(Alert.AlertType.ERROR, "Error", errorMessage);
             }
         }
     }

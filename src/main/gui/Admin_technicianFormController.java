@@ -140,6 +140,17 @@ public class Admin_technicianFormController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Validation Error", "Rate is required.");
             return false;
         }
+        
+        // Validate contact number is numeric only (if provided)
+        String contactNumber = contactField.getText().trim();
+        if (!contactNumber.isEmpty()) {
+            if (!contactNumber.matches("\\d+")) {
+                showAlert(Alert.AlertType.ERROR, "Invalid Input", 
+                    "Contact Number must contain only digits (0-9).");
+                return false;
+            }
+        }
+        
         return true;
     }
 

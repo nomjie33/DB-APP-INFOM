@@ -867,6 +867,187 @@ public class MaintenanceService {
     }
     
     /**
+     * Deactivate a maintenance transaction with full cascade effects.
+     * 
+     * BUSINESS LOGIC:
+     * Deactivating a maintenance transaction is treated as FULL CANCELLATION.
+     * This means the maintenance never happened, so we must:
+     * 1. Deactivate the maintenance transaction itself
+     * 2. Deactivate all associated maintenance cheques (parts records)
+     * 3. Return ALL parts to inventory (rollback consumption)
+     * 4. Update vehicle status back to "Available" (undo maintenance flag)
+     * 
+     * This ensures no "ghost" consumption remains in the system.
+     * All parts associated with this maintenance will be returned to inventory.
+     * 
+     * @param maintenanceID Maintenance transaction to deactivate
+     * @return true if full deactivation successful, false otherwise
+     */
+    public boolean deactivateMaintenance(String maintenanceID) {
+        try {
+            // STEP 1: Get the maintenance record to retrieve vehicle info
+            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceByIdIncludingInactive(maintenanceID);
+            if (maintenance == null) {
+                System.err.println("Maintenance record not found: " + maintenanceID);
+                return false;
+            }
+            
+            // STEP 2: Get ALL active cheques to return parts to inventory
+            // Must get active cheques BEFORE deactivating them
+            List<MaintenanceCheque> activeCheques = maintenanceChequeDAO.getPartsByMaintenance(maintenanceID);
+            
+            // STEP 3: Return all parts to inventory (reverse consumption)
+            for (MaintenanceCheque cheque : activeCheques) {
+                int quantityToReturn = cheque.getQuantityUsed().intValue();
+                boolean inventoryReturned = partDAO.incrementPartQuantity(cheque.getPartID(), quantityToReturn);
+                
+                if (!inventoryReturned) {
+                    System.err.println("WARNING: Failed to return part " + cheque.getPartID() + 
+                                     " (qty: " + quantityToReturn + ") to inventory during maintenance deactivation.");
+                    // Continue with other parts even if one fails
+                }
+            }
+            
+            // STEP 4: Deactivate all maintenance cheques (cascade soft delete)
+            boolean chequesDeactivated = maintenanceChequeDAO.deactivateAllByMaintenance(maintenanceID);
+            if (!chequesDeactivated) {
+                System.err.println("WARNING: Failed to deactivate maintenance cheques for: " + maintenanceID);
+            }
+            
+            // STEP 5: Deactivate the maintenance transaction itself
+            boolean maintenanceDeactivated = maintenanceDAO.deactivateMaintenance(maintenanceID);
+            if (!maintenanceDeactivated) {
+                System.err.println("Failed to deactivate maintenance transaction: " + maintenanceID);
+                return false;
+            }
+            
+            // STEP 6: Update vehicle status back to "Available"
+            // Only if maintenance was not completed (if completed, vehicle may already be available)
+            Vehicle vehicle = vehicleDAO.getVehicleById(maintenance.getPlateID());
+            if (vehicle != null && "Maintenance".equals(vehicle.getStatus())) {
+                boolean vehicleUpdated = vehicleDAO.updateVehicleStatus(
+                    maintenance.getPlateID(), 
+                    "Available"
+                );
+                
+                if (!vehicleUpdated) {
+                    System.err.println("WARNING: Failed to update vehicle status for: " + maintenance.getPlateID());
+                }
+            }
+            
+            System.out.println("✓ Maintenance " + maintenanceID + " deactivated successfully.");
+            System.out.println("✓ All associated parts returned to inventory.");
+            System.out.println("✓ Vehicle " + maintenance.getPlateID() + " status restored.");
+            
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("Error deactivating maintenance with cascade: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Reactivate a maintenance transaction with validation and cascade effects.
+     * 
+     * BUSINESS LOGIC:
+     * Reactivating a maintenance reverses the deactivation process.
+     * However, we must validate that sufficient inventory exists before reactivating.
+     * Steps:
+     * 1. Validate all parts are available in inventory
+     * 2. Reactivate the maintenance transaction
+     * 3. Reactivate all associated maintenance cheques
+     * 4. Deduct parts from inventory again
+     * 5. Update vehicle status to "Maintenance" if needed
+     * 
+     * @param maintenanceID Maintenance transaction to reactivate
+     * @return true if reactivation successful, false if inventory insufficient or other error
+     */
+    public boolean reactivateMaintenance(String maintenanceID) {
+        try {
+            // STEP 1: Get the maintenance record
+            MaintenanceTransaction maintenance = maintenanceDAO.getMaintenanceByIdIncludingInactive(maintenanceID);
+            if (maintenance == null) {
+                System.err.println("Maintenance record not found: " + maintenanceID);
+                return false;
+            }
+            
+            // STEP 2: Get ALL inactive cheques that will be reactivated
+            List<MaintenanceCheque> inactiveCheques = maintenanceChequeDAO.getPartsByMaintenanceIncludingInactive(maintenanceID)
+                .stream()
+                .filter(c -> "Inactive".equals(c.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+            
+            // STEP 3: Validate inventory availability for ALL parts before proceeding
+            for (MaintenanceCheque cheque : inactiveCheques) {
+                Part part = partDAO.getPartById(cheque.getPartID());
+                if (part == null) {
+                    System.err.println("Part not found: " + cheque.getPartID());
+                    return false;
+                }
+                
+                int requiredQuantity = cheque.getQuantityUsed().intValue();
+                if (part.getQuantity() < requiredQuantity) {
+                    System.err.println("Insufficient inventory for part " + cheque.getPartID() + 
+                                     ". Required: " + requiredQuantity + ", Available: " + part.getQuantity());
+                    return false;
+                }
+            }
+            
+            // STEP 4: Reactivate the maintenance transaction
+            boolean maintenanceReactivated = maintenanceDAO.reactivateMaintenance(maintenanceID);
+            if (!maintenanceReactivated) {
+                System.err.println("Failed to reactivate maintenance transaction: " + maintenanceID);
+                return false;
+            }
+            
+            // STEP 5: Reactivate all maintenance cheques
+            boolean chequesReactivated = maintenanceChequeDAO.reactivateAllByMaintenance(maintenanceID);
+            if (!chequesReactivated) {
+                System.err.println("WARNING: Failed to reactivate maintenance cheques for: " + maintenanceID);
+            }
+            
+            // STEP 6: Deduct parts from inventory again
+            for (MaintenanceCheque cheque : inactiveCheques) {
+                int quantityToDeduct = cheque.getQuantityUsed().intValue();
+                boolean inventoryDeducted = partDAO.decrementPartQuantity(cheque.getPartID(), quantityToDeduct);
+                
+                if (!inventoryDeducted) {
+                    System.err.println("WARNING: Failed to deduct part " + cheque.getPartID() + 
+                                     " (qty: " + quantityToDeduct + ") from inventory during reactivation.");
+                }
+            }
+            
+            // STEP 7: Update vehicle status to "Maintenance" if not completed
+            if (maintenance.getEndDateTime() == null) {
+                Vehicle vehicle = vehicleDAO.getVehicleById(maintenance.getPlateID());
+                if (vehicle != null && "Available".equals(vehicle.getStatus())) {
+                    boolean vehicleUpdated = vehicleDAO.updateVehicleStatus(
+                        maintenance.getPlateID(), 
+                        "Maintenance"
+                    );
+                    
+                    if (!vehicleUpdated) {
+                        System.err.println("WARNING: Failed to update vehicle status for: " + maintenance.getPlateID());
+                    }
+                }
+            }
+            
+            System.out.println("✓ Maintenance " + maintenanceID + " reactivated successfully.");
+            System.out.println("✓ All parts deducted from inventory.");
+            System.out.println("✓ Vehicle " + maintenance.getPlateID() + " status updated.");
+            
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("Error reactivating maintenance: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
      * Inner class to represent part usage in maintenance completion.
      * Used to pass part ID and quantity together.
      */
