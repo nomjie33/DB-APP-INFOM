@@ -208,6 +208,7 @@ public class Admin_maintenanceRecordsController implements Initializable {
 
     private void handleDeactivateReactivate(MaintenanceTransaction maintenance) {        
         // Build detailed confirmation message
+        String action = "Active".equals(maintenance.getStatus()) ? "Cancellation" : "Revert Cancellation";
         String message = "Are you sure you want to " + action + " maintenance: " + maintenance.getMaintenanceID() + "?";
         
         if ("Active".equals(maintenance.getStatus())) {
