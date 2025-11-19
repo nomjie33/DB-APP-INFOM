@@ -374,6 +374,183 @@ public class MaintenanceService {
     }
     
     /**
+     * Update an existing maintenance cheque with inventory adjustments.
+     * Handles inventory return when quantity is reduced or additional parts used when increased.
+     * Automatically recalculates the total maintenance cost.
+     * 
+     * @param cheque The updated MaintenanceCheque object
+     * @param oldQuantity The previous quantity used (before update)
+     * @return true if update and recalculation successful, false otherwise
+     */
+    public boolean updateMaintenanceChequeWithInventory(MaintenanceCheque cheque, BigDecimal oldQuantity) {
+        try {
+            String maintenanceID = cheque.getMaintenanceID();
+            String partID = cheque.getPartID();
+            BigDecimal newQuantity = cheque.getQuantityUsed();
+            
+            // Validate inputs
+            if (maintenanceID == null || partID == null || oldQuantity == null || newQuantity == null) {
+                System.out.println("Error: Invalid parameters for maintenance cheque update.");
+                return false;
+            }
+            
+            // Calculate quantity difference (positive = parts being returned, negative = more parts used)
+            BigDecimal quantityDifference = oldQuantity.subtract(newQuantity);
+            
+            System.out.println("Updating maintenance cheque: " + maintenanceID + " - " + partID);
+            System.out.println("Old quantity: " + oldQuantity + ", New quantity: " + newQuantity);
+            System.out.println("Quantity difference (to return): " + quantityDifference);
+            
+            // Adjust inventory based on difference
+            if (quantityDifference.compareTo(BigDecimal.ZERO) > 0) {
+                // Quantity reduced - return parts to inventory
+                int returnQuantity = quantityDifference.intValue();
+                System.out.println("Returning " + returnQuantity + " units of part " + partID + " to inventory.");
+                boolean returnSuccess = partDAO.incrementPartQuantity(partID, returnQuantity);
+                if (!returnSuccess) {
+                    System.out.println("Error: Failed to return parts to inventory.");
+                    return false;
+                }
+            } else if (quantityDifference.compareTo(BigDecimal.ZERO) < 0) {
+                // Quantity increased - decrement from inventory
+                int additionalUsage = quantityDifference.abs().intValue();
+                System.out.println("Deducting additional " + additionalUsage + " units of part " + partID + " from inventory.");
+                boolean deductSuccess = partDAO.decrementPartQuantity(partID, additionalUsage);
+                if (!deductSuccess) {
+                    System.out.println("Error: Failed to deduct additional parts from inventory.");
+                    return false;
+                }
+            }
+            // If quantityDifference == 0, no inventory adjustment needed
+            
+            // Update the maintenance cheque record
+            boolean updateSuccess = maintenanceChequeDAO.updateMaintenanceCheque(cheque);
+            if (!updateSuccess) {
+                System.out.println("Error: Failed to update maintenance cheque.");
+                return false;
+            }
+            
+            // Recalculate the total maintenance cost
+            boolean recalcSuccess = recalculateMaintenanceCost(maintenanceID);
+            if (!recalcSuccess) {
+                System.out.println("Warning: Maintenance cheque updated but cost recalculation failed.");
+            }
+            
+            System.out.println("Maintenance cheque updated successfully with inventory adjustments.");
+            return true;
+            
+        } catch (Exception e) {
+            System.out.println("Error updating maintenance cheque with inventory: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Deactivate a maintenance cheque and return all parts to inventory.
+     * Automatically recalculates the total maintenance cost.
+     * 
+     * @param maintenanceID Maintenance record ID
+     * @param partID Part ID
+     * @return true if deactivation and inventory return successful, false otherwise
+     */
+    public boolean deactivateMaintenanceChequeWithInventory(String maintenanceID, String partID) {
+        try {
+            // Retrieve the current cheque to get quantity
+            MaintenanceCheque cheque = maintenanceChequeDAO.getMaintenanceChequeById(maintenanceID, partID);
+            if (cheque == null) {
+                System.out.println("Error: Maintenance cheque not found - " + maintenanceID + " / " + partID);
+                return false;
+            }
+            
+            BigDecimal quantityToReturn = cheque.getQuantityUsed();
+            int returnQuantity = quantityToReturn.intValue();
+            System.out.println("Deactivating maintenance cheque: " + maintenanceID + " - " + partID);
+            System.out.println("Returning " + returnQuantity + " units to inventory.");
+            
+            // Return all parts to inventory
+            boolean returnSuccess = partDAO.incrementPartQuantity(partID, returnQuantity);
+            if (!returnSuccess) {
+                System.out.println("Error: Failed to return parts to inventory during deactivation.");
+                return false;
+            }
+            
+            // Deactivate the cheque
+            boolean deactivateSuccess = maintenanceChequeDAO.deactivateMaintenanceCheque(maintenanceID, partID);
+            if (!deactivateSuccess) {
+                System.out.println("Error: Failed to deactivate maintenance cheque.");
+                return false;
+            }
+            
+            // Recalculate the total maintenance cost
+            boolean recalcSuccess = recalculateMaintenanceCost(maintenanceID);
+            if (!recalcSuccess) {
+                System.out.println("Warning: Maintenance cheque deactivated but cost recalculation failed.");
+            }
+            
+            System.out.println("Maintenance cheque deactivated successfully with inventory return.");
+            return true;
+            
+        } catch (Exception e) {
+            System.out.println("Error deactivating maintenance cheque with inventory: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Reactivate a maintenance cheque and deduct parts from inventory.
+     * Automatically recalculates the total maintenance cost.
+     * 
+     * @param maintenanceID Maintenance record ID
+     * @param partID Part ID
+     * @return true if reactivation and inventory deduction successful, false otherwise
+     */
+    public boolean reactivateMaintenanceChequeWithInventory(String maintenanceID, String partID) {
+        try {
+            // Retrieve the cheque to get quantity
+            MaintenanceCheque cheque = maintenanceChequeDAO.getMaintenanceChequeByIdIncludingInactive(maintenanceID, partID);
+            if (cheque == null) {
+                System.out.println("Error: Maintenance cheque not found - " + maintenanceID + " / " + partID);
+                return false;
+            }
+            
+            BigDecimal quantityToDeduct = cheque.getQuantityUsed();
+            int deductQuantity = quantityToDeduct.intValue();
+            System.out.println("Reactivating maintenance cheque: " + maintenanceID + " - " + partID);
+            System.out.println("Deducting " + deductQuantity + " units from inventory.");
+            
+            // Deduct parts from inventory
+            boolean deductSuccess = partDAO.decrementPartQuantity(partID, deductQuantity);
+            if (!deductSuccess) {
+                System.out.println("Error: Failed to deduct parts from inventory during reactivation.");
+                return false;
+            }
+            
+            // Reactivate the cheque
+            boolean reactivateSuccess = maintenanceChequeDAO.reactivateMaintenanceCheque(maintenanceID, partID);
+            if (!reactivateSuccess) {
+                System.out.println("Error: Failed to reactivate maintenance cheque.");
+                return false;
+            }
+            
+            // Recalculate the total maintenance cost
+            boolean recalcSuccess = recalculateMaintenanceCost(maintenanceID);
+            if (!recalcSuccess) {
+                System.out.println("Warning: Maintenance cheque reactivated but cost recalculation failed.");
+            }
+            
+            System.out.println("Maintenance cheque reactivated successfully with inventory deduction.");
+            return true;
+            
+        } catch (Exception e) {
+            System.out.println("Error reactivating maintenance cheque with inventory: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
      * Complete a maintenance job by recording repair end time (no new parts).
      * Used when parts were already added separately via MaintenanceCheque.
      * Updates vehicle status to "Available" and calculates total cost.
@@ -646,14 +823,14 @@ public class MaintenanceService {
     /**
      * Generate the next sequential maintenance ID.
      * Format: MAINT-XXX where XXX is a 3-digit number (001, 002, 003, etc.)
-     * Finds the highest existing ID and increments by 1.
+     * Finds the highest existing ID (including inactive) and increments by 1.
      * 
      * @return Next maintenance ID (e.g., "MAINT-021")
      */
-    private String generateNextMaintenanceID() {
+    public String generateNextMaintenanceID() {
         try {
-            // Get all maintenance records
-            List<MaintenanceTransaction> allMaintenance = maintenanceDAO.getAllMaintenance();
+            // Get all maintenance records including inactive to ensure no ID collisions
+            List<MaintenanceTransaction> allMaintenance = maintenanceDAO.getAllMaintenanceIncludingInactive();
             
             int maxNumber = 0;
             
@@ -677,7 +854,9 @@ public class MaintenanceService {
             
             // Generate next ID
             int nextNumber = maxNumber + 1;
-            return String.format("MAINT-%03d", nextNumber);
+            String nextID = String.format("MAINT-%03d", nextNumber);
+            System.out.println("MaintenanceService: Generated next Maintenance ID: " + nextID);
+            return nextID;
             
         } catch (Exception e) {
             // Fallback: use timestamp-based ID if something goes wrong

@@ -59,6 +59,15 @@ public class Admin_maintenanceFormController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         loadComboBoxes();
+        
+        // Auto-generate ID for new maintenance records
+        // ID field is always disabled (for display only)
+        if (!isUpdatingRecord) {
+            String nextID = maintenanceService.generateNextMaintenanceID();
+            maintenanceIDField.setText(nextID);
+            maintenanceIDField.setDisable(true);
+            maintenanceIDField.getStyleClass().add("form-text-field-disabled");
+        }
     }
 
     public void setMaintenanceData(MaintenanceTransaction maintenance) {
@@ -68,6 +77,7 @@ public class Admin_maintenanceFormController implements Initializable {
 
             formHeaderLabel.setText("Update Maintenance");
 
+            // Display existing maintenance ID (already disabled in initialize)
             maintenanceIDField.setText(maintenance.getMaintenanceID());
 
             plateComboBox.setValue(findVehicleInList(maintenance.getPlateID()));
@@ -85,7 +95,11 @@ public class Admin_maintenanceFormController implements Initializable {
 
             notesArea.setText(maintenance.getNotes());
 
+            // Ensure ID field is disabled for editing
             maintenanceIDField.setDisable(true);
+            if (!maintenanceIDField.getStyleClass().contains("form-text-field-disabled")) {
+                maintenanceIDField.getStyleClass().add("form-text-field-disabled");
+            }
         }
     }
 

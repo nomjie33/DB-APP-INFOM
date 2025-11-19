@@ -6,17 +6,21 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 import dao.TechnicianDAO;
 import model.Technician;
+import service.TechnicianService;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
 import java.math.BigDecimal;
 
-public class Admin_technicianFormController {
+public class Admin_technicianFormController implements Initializable {
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField idField;
@@ -28,7 +32,20 @@ public class Admin_technicianFormController {
 
     private Admin_dashboardController mainController;
     private TechnicianDAO technicianDAO = new TechnicianDAO();
+    private TechnicianService technicianService = new TechnicianService();
     private boolean isEditMode = false;
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        // Auto-generate ID for new technicians
+        // ID field is always disabled (for display only)
+        if (!isEditMode) {
+            String nextID = technicianService.generateNextTechnicianID();
+            idField.setText(nextID);
+            idField.setDisable(true);
+            idField.getStyleClass().add("form-text-field-disabled");
+        }
+    }
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
@@ -39,6 +56,7 @@ public class Admin_technicianFormController {
             isEditMode = true;
             formHeaderLabel.setText("Update Technician");
 
+            // Display existing technician ID (already disabled in initialize)
             idField.setText(technician.getTechnicianId());
             lastNameField.setText(technician.getLastName());
             firstNameField.setText(technician.getFirstName());
@@ -46,8 +64,11 @@ public class Admin_technicianFormController {
             rateField.setText(technician.getRate().toString());
             contactField.setText(technician.getContactNumber());
 
+            // Ensure ID field is disabled for editing
             idField.setDisable(true);
-            idField.getStyleClass().add("form-text-field-disabled");
+            if (!idField.getStyleClass().contains("form-text-field-disabled")) {
+                idField.getStyleClass().add("form-text-field-disabled");
+            }
         }
     }
 
@@ -78,10 +99,10 @@ public class Admin_technicianFormController {
                     return;
                 }
                 technician.setStatus(oldTech.getStatus());
-                success = technicianDAO.updateTechnician(technician);
+                success = technicianService.updateTechnician(technician);
             } else {
                 technician.setStatus("Active");
-                success = technicianDAO.insertTechnician(technician);
+                success = technicianService.addTechnician(technician);
             }
 
             if (success) {

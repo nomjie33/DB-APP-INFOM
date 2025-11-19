@@ -29,6 +29,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+import javafx.fxml.Initializable;
+import service.DeploymentService;
+
 public class Admin_deploymentFormController implements Initializable {
 
     @FXML private Label formHeaderLabel;
@@ -47,12 +52,20 @@ public class Admin_deploymentFormController implements Initializable {
     private LocationDAO locationDAO = new LocationDAO();
 
     private DeploymentTransaction currentDeployment;
+    private DeploymentService deploymentService;
     private boolean isUpdatingRecord = false;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-
+        this.deploymentService = new DeploymentService(deploymentDAO, vehicleDAO, locationDAO);
         loadComboBoxes();
+
+        if (!isUpdatingRecord) {
+            String nextID = deploymentService.generateDeploymentID();
+            deploymentIDField.setText(nextID);
+            deploymentIDField.setDisable(true);
+            deploymentIDField.getStyleClass().add("form-text-field-disabled");
+        }
     }
 
     public void setMainController(Admin_dashboardController mainController){
@@ -65,9 +78,7 @@ public class Admin_deploymentFormController implements Initializable {
             currentDeployment = deployment;
             formHeaderLabel.setText("Update Deployment");
 
-            deploymentIDField.setDisable(true);
-            deploymentIDField.getStyleClass().add("form-text-field-disabled");
-
+            // Display existing deployment ID (already disabled in initialize)
             deploymentIDField.setText(deployment.getDeploymentID());
 
             endDateLabel.setVisible(true);
@@ -94,6 +105,12 @@ public class Admin_deploymentFormController implements Initializable {
             startDatePicker.setDisable(true);
             startDatePicker.getStyleClass().add("form-text-field-disabled");
 
+            // Ensure ID field is disabled for editing
+            deploymentIDField.setDisable(true);
+            if (!deploymentIDField.getStyleClass().contains("form-text-field-disabled")) {
+                deploymentIDField.getStyleClass().add("form-text-field-disabled");
+            }
+
             if ("Completed".equalsIgnoreCase(deployment.getStatus())) {
                 endDatePicker.setDisable(true);
                 endDatePicker.getStyleClass().add("form-text-field-disabled");
@@ -103,12 +120,12 @@ public class Admin_deploymentFormController implements Initializable {
             }
 
         } else {
+            // NEW DEPLOYMENT - initialize() already set the ID
             isUpdatingRecord = false;
             formHeaderLabel.setText("New Deployment");
 
-            deploymentIDField.setDisable(false);
-            deploymentIDField.getStyleClass().remove("form-text-field-disabled");
-            deploymentIDField.setText("");
+            // ID already generated and disabled in initialize()
+            // No need to touch deploymentIDField here
 
             endDateLabel.setVisible(false);
             endDatePicker.setVisible(false);
@@ -124,6 +141,7 @@ public class Admin_deploymentFormController implements Initializable {
             endDatePicker.setValue(null);
             plateComboBox.setValue(null);
             locationComboBox.setValue(null);
+            startDatePicker.setValue(null);
         }
     }
 

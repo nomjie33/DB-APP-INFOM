@@ -265,15 +265,104 @@ public class DeploymentService {
     }
 
     // HELPER METHODS
-    
+
+// ========================================
+// UPDATE DeploymentService.java
+// ========================================
+// REPLACE the existing generateDeploymentID() method (around line 246)
+
     /**
-     * Generate unique deployment ID
-     * Format: DEP-XXXXXX
-     * 
-     * @return Generated deployment ID
+     * Generate the next sequential deployment ID.
+     * Format: DEP-XXX where XXX is a 3-digit number (001, 002, 003, etc.)
+     * Finds the highest existing ID (including cancelled) and increments by 1.
+     *
+     * @return Next deployment ID (e.g., "DEP-021")
      */
-    private String generateDeploymentID() {
-        long timestamp = System.currentTimeMillis();
-        return "DEP-" + (timestamp % 1000000);
+    public String generateDeploymentID() {
+        try {
+            // Get all deployments including cancelled to ensure no ID collisions
+            List<DeploymentTransaction> allDeployments = deploymentDAO.getAllDeploymentsIncludingCancelled();
+
+            int maxNumber = 0;
+
+            // Find the highest number from existing IDs
+            for (DeploymentTransaction deployment : allDeployments) {
+                String id = deployment.getDeploymentID();
+                // Extract number from format "DEP-XXX"
+                if (id != null && id.startsWith("DEP-") && id.length() >= 7) {
+                    try {
+                        String numberPart = id.substring(4); // Get part after "DEP-"
+                        int number = Integer.parseInt(numberPart);
+                        if (number > maxNumber) {
+                            maxNumber = number;
+                        }
+                    } catch (NumberFormatException e) {
+                        // Skip IDs that don't have numeric suffix
+                        continue;
+                    }
+                }
+            }
+
+            // Generate next ID
+            int nextNumber = maxNumber + 1;
+            String nextID = String.format("DEP-%03d", nextNumber);
+            System.out.println("DeploymentService: Generated next Deployment ID: " + nextID);
+            return nextID;
+
+        } catch (Exception e) {
+            // Fallback: use timestamp-based ID if something goes wrong
+            System.err.println("Error generating deployment ID, using fallback: " + e.getMessage());
+            long timestamp = System.currentTimeMillis();
+            return String.format("DEP-%03d", (int)(timestamp % 1000));
+        }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

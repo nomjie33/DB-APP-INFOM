@@ -29,8 +29,11 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
+import java.net.URL;
+import java.util.ResourceBundle;
+import javafx.fxml.Initializable;
 
-public class Admin_rentalFormController {
+public class Admin_rentalFormController implements Initializable{
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField rentalIDField;
@@ -61,58 +64,44 @@ public class Admin_rentalFormController {
     private boolean isUpdatingRecord = false;
     private RentalTransaction currentRental;
 
-    public void setMainController(Admin_dashboardController mainController) {
-        this.mainController = mainController;
-        
-        // Initialize RentalService
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
         this.rentalService = new RentalService(
-            customerDAO,
-            vehicleDAO,
-            locationDAO,
-            rentalDAO,
-            paymentDAO,
-            paymentService
+                customerDAO,
+                vehicleDAO,
+                locationDAO,
+                rentalDAO,
+                paymentDAO,
+                paymentService
         );
-    }
 
-    public void setRentalData(RentalTransaction rental) {
         loadCustomerComboBox();
         loadVehicleComboBox();
         loadLocationComboBox();
 
-        rentalIDField.setDisable(false);
-        customerComboBox.setDisable(false);
-        vehicleComboBox.setDisable(false);
-        locationComboBox.setDisable(false);
-        pickUpDatePicker.setDisable(false);
-        pickUpTimeField.setDisable(false);
-        startDatePicker.setDisable(false);
-        startTimeField.setDisable(false);
+        // Auto-generate ID for new rentals
+        // ID field is always disabled (for display only)
+        if (!isUpdatingRecord) {
+            String nextID = rentalService.generateNextRentalID();
+            rentalIDField.setText(nextID);
+            rentalIDField.setDisable(true);
+            rentalIDField.getStyleClass().add("form-text-field-disabled");
+        }
+    }
 
-        endDateLabel.setVisible(true);
-        endDatePicker.setVisible(true);
-        endDatePicker.setDisable(false);
-        endTimeLabel.setVisible(true);
-        endTimeField.setVisible(true);
-        endTimeField.setDisable(false);
+    public void setMainController(Admin_dashboardController mainController) {
+        this.mainController = mainController;
+    }
 
-        rentalIDField.getStyleClass().remove("form-text-field-disabled");
-        customerComboBox.getStyleClass().remove("form-text-field-disabled");
-        vehicleComboBox.getStyleClass().remove("form-text-field-disabled");
-        locationComboBox.getStyleClass().remove("form-text-field-disabled");
-        pickUpDatePicker.getStyleClass().remove("form-text-field-disabled");
-        pickUpTimeField.getStyleClass().remove("form-text-field-disabled");
-        startDatePicker.getStyleClass().remove("form-text-field-disabled");
-        startTimeField.getStyleClass().remove("form-text-field-disabled");
-        endDatePicker.getStyleClass().remove("form-text-field-disabled");
-        endTimeField.getStyleClass().remove("form-text-field-disabled");
-
+    public void setRentalData(RentalTransaction rental) {
         if (rental != null) {
             isUpdatingRecord = true;
             currentRental = rental;
             formHeaderLabel.setText("Update Rental");
 
+            // Display existing rental ID (already disabled in initialize)
             rentalIDField.setText(rental.getRentalID());
+
             customerComboBox.setValue(findCustomerInList(rental.getCustomerID()));
             vehicleComboBox.setValue(findVehicleInList(rental.getPlateID()));
             locationComboBox.setValue(findLocationInList(rental.getLocationID()));
@@ -130,14 +119,23 @@ public class Admin_rentalFormController {
                 endTimeField.setText(rental.getEndDateTime().toLocalDateTime().toLocalTime().toString());
             }
 
+            // Show end date/time fields for editing
+            endDateLabel.setVisible(true);
+            endDatePicker.setVisible(true);
+            endTimeLabel.setVisible(true);
+            endTimeField.setVisible(true);
+
+            // Ensure ID field is disabled for editing
             rentalIDField.setDisable(true);
-            rentalIDField.getStyleClass().add("form-text-field-disabled");
+            if (!rentalIDField.getStyleClass().contains("form-text-field-disabled")) {
+                rentalIDField.getStyleClass().add("form-text-field-disabled");
+            }
 
         } else {
+            // NEW RENTAL - initialize() already set the ID
             isUpdatingRecord = false;
             formHeaderLabel.setText("New Rental");
 
-            rentalIDField.clear();
             customerComboBox.setValue(null);
             vehicleComboBox.setValue(null);
             locationComboBox.setValue(null);
@@ -145,15 +143,12 @@ public class Admin_rentalFormController {
             pickUpTimeField.clear();
             startDatePicker.setValue(null);
             startTimeField.clear();
-            endDatePicker.setValue(null);
-            endTimeField.clear();
 
+            // Hide end date/time fields for new rentals
             endDateLabel.setVisible(false);
             endDatePicker.setVisible(false);
-            endDatePicker.setDisable(true);
             endTimeLabel.setVisible(false);
             endTimeField.setVisible(false);
-            endTimeField.setDisable(true);
         }
     }
 

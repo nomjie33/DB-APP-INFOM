@@ -6,14 +6,14 @@
 
 <AnchorPane prefHeight="600.0" prefWidth="600.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.gui.Client_returnVehicleController">
     <VBox layoutX="50.0" layoutY="50.0" prefWidth="500.0" spacing="20.0">
-        <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="You have an Active Rental!" />
-        <Label style="-fx-font-weight: bold;" text="Please settle/finish your Active vehicle rental to avail another one." />
+        <Label style="-fx-font-size: 30px; -fx-font-weight: bold; -fx-text-fill: #FC7222;" text="You have an Active Rental!" />
+        <Label style="-fx-font-weight: bold; -fx-text-fill: #FC7222;" text="Please settle/finish your Active vehicle rental to avail another one." />
 
         <VBox spacing="10.0" styleClass="card">
             <padding>
                 <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
             </padding>
-            <Label style="-fx-font-weight: bold; -fx-font-size: 16px;" text="Rental Details:" />
+            <Label style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #33a398;" text="Rental Details:" />
             <HBox spacing="10.0">
                 <Label style="-fx-font-weight: bold;" text="Rental ID:" />
                 <Label fx:id="rentalIdLabel" text="[Loading...]" />
@@ -23,7 +23,7 @@
                 <Label fx:id="vehiclePlateLabel" text="[Loading...]" />
             </HBox>
             <HBox spacing="10.0">
-                <Label style="-fx-font-weight: bold;" text="Start Time:" />
+                <Label style="-fx-font-weight: bold;" text="Start Date/Time:" />
                 <Label fx:id="startTimeLabel" text="[Loading...]" />
             </HBox>
         </VBox>

@@ -489,6 +489,52 @@ public class RentalService {
     }
 
     /**
+     * Generate the next sequential rental ID.
+     * Format: RNT-XXX where XXX is a 3-digit number (001, 002, 003, etc.)
+     * Finds the highest existing ID (including cancelled) and increments by 1.
+     *
+     * @return Next rental ID (e.g., "RNT-021")
+     */
+    public String generateNextRentalID() {
+        try {
+            // Get all rentals including cancelled to ensure no ID collisions
+            List<RentalTransaction> allRentals = rentalDAO.getAllRentalsIncludingCancelled();
+
+            int maxNumber = 0;
+
+            // Find the highest number from existing IDs
+            for (RentalTransaction rental : allRentals) {
+                String id = rental.getRentalID();
+                // Extract number from format "RNT-XXX"
+                if (id != null && id.startsWith("RNT-") && id.length() >= 7) {
+                    try {
+                        String numberPart = id.substring(4); // Get part after "RNT-"
+                        int number = Integer.parseInt(numberPart);
+                        if (number > maxNumber) {
+                            maxNumber = number;
+                        }
+                    } catch (NumberFormatException e) {
+                        // Skip IDs that don't have numeric suffix
+                        continue;
+                    }
+                }
+            }
+
+            // Generate next ID
+            int nextNumber = maxNumber + 1;
+            String nextID = String.format("RNT-%03d", nextNumber);
+            System.out.println("RentalService: Generated next Rental ID: " + nextID);
+            return nextID;
+
+        } catch (Exception e) {
+            // Fallback: use timestamp-based ID if something goes wrong
+            System.err.println("Error generating rental ID, using fallback: " + e.getMessage());
+            long timestamp = System.currentTimeMillis();
+            return String.format("RNT-%03d", (int)(timestamp % 1000));
+        }
+    }
+
+    /**
      * Check if vehicle is available for rental
      * 
      * @param plateID Vehicle to check

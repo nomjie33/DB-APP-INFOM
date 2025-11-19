@@ -32,15 +32,15 @@ public class Client_returnVehicleController {
         this.activeRental = rental;
 
         if (activeRental != null) {
-            rentalIdLabel.setText("Rental ID: " + rental.getRentalID());
-            vehiclePlateLabel.setText("Vehicle: " + rental.getPlateID());
+            rentalIdLabel.setText(rental.getRentalID());
+            vehiclePlateLabel.setText(rental.getPlateID());
 
             if (rental.getStartDateTime() != null) {
-                startTimeLabel.setText("Start Time: " + rental.getStartDateTime().toString());
+                startTimeLabel.setText(rental.getStartDateTime().toString());
                 confirmReturnButton.setDisable(false);
             } else {
 
-                startTimeLabel.setText("Start Time: PENDING (Admin must start)");
+                startTimeLabel.setText("PENDING (Admin must start)");
                 confirmReturnButton.setDisable(true);
             }
 
