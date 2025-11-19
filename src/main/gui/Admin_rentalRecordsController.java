@@ -186,7 +186,7 @@ public class Admin_rentalRecordsController implements Initializable {
      * Handler for the "Cancel" / "Reactivate" buttons.
      */
     private void handleCancelReactivate(RentalTransaction rental) {
-        String action = "Active".equals(rental.getStatus()) ? "cancel" : "reactivate";
+        String action = "Active".equals(rental.getStatus()) ? "Cancellation" : "Revert Cancellation";
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
@@ -202,7 +202,7 @@ public class Admin_rentalRecordsController implements Initializable {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Rental has been " + action + "ed.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Rental status has been updated.");
                 loadRentalRecords();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update rental status.");

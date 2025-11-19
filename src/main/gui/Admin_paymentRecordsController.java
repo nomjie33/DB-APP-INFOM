@@ -146,7 +146,7 @@ public class Admin_paymentRecordsController implements Initializable {
                             Button btn = new Button();
 
                             if ("Active".equals(payment.getStatus())) {
-                                btn.setText("Deactivate");
+                                btn.setText("Cancel");
                                 btn.getStyleClass().add("deactivate-button");
                             } else {
                                 btn.setText("Reactivate");
@@ -170,7 +170,7 @@ public class Admin_paymentRecordsController implements Initializable {
     }
 
     private void handleDeactivateReactivate(PaymentTransaction payment) {
-        String action = "Active".equals(payment.getStatus()) ? "deactivate" : "reactivate";
+        String action = "Active".equals(payment.getStatus()) ? "Cancellation" : "Revert Cancellation";
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
@@ -186,7 +186,7 @@ public class Admin_paymentRecordsController implements Initializable {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Payment has been " + action + "d.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Payment status has been updated.");
                 loadPaymentData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update payment status.");

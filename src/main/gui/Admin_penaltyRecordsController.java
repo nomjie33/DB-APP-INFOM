@@ -147,7 +147,7 @@ public class Admin_penaltyRecordsController implements Initializable {
                             Button btn = new Button();
 
                             if ("Active".equals(penalty.getStatus())) {
-                                btn.setText("Deactivate");
+                                btn.setText("Cancel");
                                 btn.getStyleClass().add("deactivate-button");
                             } else {
                                 btn.setText("Reactivate");
@@ -171,7 +171,7 @@ public class Admin_penaltyRecordsController implements Initializable {
     }
 
     private void handleDeactivateReactivate(PenaltyTransaction penalty) {
-        String action = "Active".equals(penalty.getStatus()) ? "deactivate" : "reactivate";
+        String action = "Active".equals(penalty.getStatus()) ? "Cancellation" : "Revert Cancellation";
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
@@ -187,7 +187,7 @@ public class Admin_penaltyRecordsController implements Initializable {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Penalty has been " + action + "d.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Penalty status has been updated.");
                 loadPenaltyData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update status.");

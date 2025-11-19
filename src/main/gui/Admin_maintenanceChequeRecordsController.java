@@ -125,7 +125,7 @@ public class Admin_maintenanceChequeRecordsController implements Initializable {
                             Button btn = new Button();
 
                             if ("Active".equals(cheque.getStatus())) {
-                                btn.setText("Deactivate");
+                                btn.setText("Cancel");
                                 btn.getStyleClass().add("deactivate-button");
                             } else {
                                 btn.setText("Reactivate");
@@ -149,7 +149,7 @@ public class Admin_maintenanceChequeRecordsController implements Initializable {
     }
 
     private void handleDeactivateReactivate(MaintenanceCheque cheque) {
-        String action = "Active".equals(cheque.getStatus()) ? "deactivate" : "reactivate";
+        String action = "Active".equals(cheque.getStatus()) ? "Cancellation" : "Revert Cancellation";
         
         String inventoryMessage = "";
         if ("Active".equals(cheque.getStatus())) {
@@ -174,7 +174,7 @@ public class Admin_maintenanceChequeRecordsController implements Initializable {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Record has been " + action + "d and inventory updated.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Maintenance cheque status has been updated.");
                 loadChequeData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update status. Check console for details.");

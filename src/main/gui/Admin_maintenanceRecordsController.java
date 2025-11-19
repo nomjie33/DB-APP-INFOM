@@ -183,7 +183,7 @@ public class Admin_maintenanceRecordsController implements Initializable {
                             Button btn = new Button();
 
                             if ("Active".equals(maintenance.getStatus())) {
-                                btn.setText("Deactivate");
+                                btn.setText("Cancel");
                                 btn.getStyleClass().add("deactivate-button");
                             } else {
                                 btn.setText("Reactivate");
@@ -206,9 +206,7 @@ public class Admin_maintenanceRecordsController implements Initializable {
         actionColumn.setCellFactory(cellFactory);
     }
 
-    private void handleDeactivateReactivate(MaintenanceTransaction maintenance) {
-        String action = "Active".equals(maintenance.getStatus()) ? "deactivate" : "reactivate";
-        
+    private void handleDeactivateReactivate(MaintenanceTransaction maintenance) {        
         // Build detailed confirmation message
         String message = "Are you sure you want to " + action + " maintenance: " + maintenance.getMaintenanceID() + "?";
         

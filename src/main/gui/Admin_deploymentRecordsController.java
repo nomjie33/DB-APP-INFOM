@@ -173,7 +173,7 @@ public class Admin_deploymentRecordsController implements Initializable {
     }
 
     private void handleCancelReactivate(DeploymentTransaction deployment) {
-        String action = "Active".equals(deployment.getStatus()) ? "cancel" : "reactivate";
+        String action = "Active".equals(deployment.getStatus()) ? "Cancellation" : "Revert Cancellation";
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
@@ -189,7 +189,7 @@ public class Admin_deploymentRecordsController implements Initializable {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Deployment has been " + action + "ed.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Deployment status has been updated.");
                 loadDeploymentData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update deployment status.");
