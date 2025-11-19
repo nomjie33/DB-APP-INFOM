@@ -30,6 +30,8 @@ public class Admin_penaltyRecordsController implements Initializable {
 
     @FXML private TableColumn<PenaltyTransaction, Void> actionColumn;
     @FXML private ComboBox<String> statusFilterComboBox;
+    @FXML private ComboBox<String> paymentFilterComboBox;
+
     @FXML private TableColumn<PenaltyTransaction, String> penaltyStatusColumn;
 
     private final PenaltyDAO penaltyDAO = new PenaltyDAO();
@@ -37,9 +39,13 @@ public class Admin_penaltyRecordsController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+
         penaltyIDColumn.setCellValueFactory(new PropertyValueFactory<>("penaltyID"));
         rentalIDColumn.setCellValueFactory(new PropertyValueFactory<>("rentalID"));
         maintenanceIDColumn.setCellValueFactory(new PropertyValueFactory<>("maintenanceID"));
+        penaltyStatusColumn.setCellValueFactory(new PropertyValueFactory<>("penaltyStatus"));
+        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        dateIssuedColumn.setCellValueFactory(new PropertyValueFactory<>("dateIssued"));
 
         totalPenaltyColumn.setCellValueFactory(cellData ->
                 new javafx.beans.property.SimpleStringProperty(
@@ -47,14 +53,15 @@ public class Admin_penaltyRecordsController implements Initializable {
                 )
         );
 
-        penaltyStatusColumn.setCellValueFactory(new PropertyValueFactory<>("penaltyStatus"));
-
-        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        dateIssuedColumn.setCellValueFactory(new PropertyValueFactory<>("dateIssued"));
-
         statusFilterComboBox.setItems(FXCollections.observableArrayList("Active", "Inactive", "All"));
         statusFilterComboBox.setValue("Active");
         statusFilterComboBox.setOnAction(e -> loadPenaltyData());
+
+        if (paymentFilterComboBox != null) {
+            paymentFilterComboBox.setItems(FXCollections.observableArrayList("All", "UNPAID", "PAID", "WAIVED"));
+            paymentFilterComboBox.setValue("All"); // Default to showing everything
+            paymentFilterComboBox.setOnAction(e -> loadPenaltyData());
+        }
 
         loadPenaltyData();
         setupEditButtonColumn();
@@ -69,12 +76,18 @@ public class Admin_penaltyRecordsController implements Initializable {
         try {
             penaltyTable.getItems().clear();
             String statusFilter = statusFilterComboBox.getValue();
+            String paymentFilter = (paymentFilterComboBox != null) ? paymentFilterComboBox.getValue() : "All";
+
             List<PenaltyTransaction> penalties;
 
             if ("All".equals(statusFilter)) {
                 penalties = penaltyDAO.getAllPenaltiesIncludingInactive();
             } else {
                 penalties = penaltyDAO.getPenaltiesByStatus(statusFilter);
+            }
+
+            if (!"All".equals(paymentFilter)) {
+                penalties.removeIf(p -> !p.getPenaltyStatus().equalsIgnoreCase(paymentFilter));
             }
 
             ObservableList<PenaltyTransaction> data = FXCollections.observableArrayList(penalties);

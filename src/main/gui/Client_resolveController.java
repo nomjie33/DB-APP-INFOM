@@ -41,21 +41,9 @@ public class Client_resolveController {
 
         this.loggedInCustomer = customer;
 
-        List<PenaltyTransaction> allUnpaidPenalties = penaltyDAO.getPenaltiesByPaymentStatus("UNPAID");
+        List<PenaltyTransaction> myUnpaidPenalties = penaltyDAO.getUnpaidPenaltiesByCustomer(customer.getCustomerID());
 
-        PenaltyTransaction myUnpaidPenalty = null;
-
-        for (PenaltyTransaction p : allUnpaidPenalties) {
-
-            RentalTransaction rental = rentalDAO.getRentalById(p.getRentalID());
-
-            if (rental != null && rental.getCustomerID().equals(customer.getCustomerID())) {
-                myUnpaidPenalty = p;
-                break;
-            }
-        }
-
-        if (myUnpaidPenalty == null){
+        if (myUnpaidPenalties.isEmpty()){
 
             penaltyIDLabel.setText("N/A");
             rentalIDLabel.setText("No unpaid penalties found.");
@@ -70,7 +58,7 @@ public class Client_resolveController {
             return;
         }
 
-        this.currentPenalty = myUnpaidPenalty;
+        this.currentPenalty = myUnpaidPenalties.get(0);
         loadPenaltyDetails(this.currentPenalty);
     }
 
