@@ -21,7 +21,7 @@
                         </image>
                     </ImageView>
 
-                    <Label text="Rent Vehicle" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
+                    <Label text="Rent Vehicle" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" style="-fx-font-weight: bold; -fx-text-fill: white;"/>
                 </children>
             </AnchorPane>
 
@@ -32,7 +32,7 @@
                             <Image url="@assets/trike.png" />
                         </image>
                     </ImageView>
-                    <Label text="Resolve Penalty" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
+                    <Label text="Resolve Penalty" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" style="-fx-font-weight: bold; -fx-text-fill: white;"/>
                 </children>
             </AnchorPane>
 
@@ -43,7 +43,7 @@
                             <Image url="@assets/bike.png" />
                         </image>
                     </ImageView>
-                    <Label text="View History" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" />
+                    <Label text="View History" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="15.0" style="-fx-font-weight: bold; -fx-text-fill: white;"/>
                 </children>
             </AnchorPane>
 

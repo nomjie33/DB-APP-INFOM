@@ -56,7 +56,7 @@
 
                     <VBox>
                         <Label text="Start Time" />
-                        <TextField fx:id="startTimeField" prefWidth="100.0" promptText="8:00 AM" styleClass="form-text-field" />
+                        <TextField fx:id="startTimeField" prefWidth="100.0" promptText="08:00 (24-Hour format)" styleClass="form-text-field" />
                     </VBox>
 
                     <VBox>
