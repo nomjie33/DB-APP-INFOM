@@ -1,73 +1,56 @@
 package main.gui;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import java.io.IOException;
-import java.util.Objects;
-
-import dao.PenaltyDAO;
-import dao.RentalDAO;
-import dao.MaintenanceDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.Alert.AlertType;
-import javafx.util.StringConverter;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import model.PenaltyTransaction;
 import model.RentalTransaction;
 import model.MaintenanceTransaction;
+import dao.PenaltyDAO;
+import dao.RentalDAO;
+import dao.MaintenanceDAO;
+import service.MaintenanceService;
+
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.ResourceBundle;
+import java.math.RoundingMode;
 
-public class Admin_penaltyFormController implements Initializable{
+public class Admin_penaltyFormController implements Initializable {
 
     @FXML private Label formHeaderLabel;
     @FXML private TextField idField;
-
     @FXML private ComboBox<RentalTransaction> rentalComboBox;
     @FXML private ComboBox<MaintenanceTransaction> maintenanceComboBox;
-
     @FXML private ComboBox<String> statusComboBox;
-
     @FXML private TextField totalPenaltyField;
     @FXML private DatePicker dateIssuedPicker;
 
     private Admin_dashboardController mainController;
-    private PenaltyDAO penaltyDAO = new PenaltyDAO();
-    private RentalDAO rentalDAO = new RentalDAO();
-    private MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
+    private final PenaltyDAO penaltyDAO = new PenaltyDAO();
+    private final RentalDAO rentalDAO = new RentalDAO();
+    private final MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
+    private final MaintenanceService maintenanceService = new MaintenanceService();
 
     private boolean isUpdatingRecord = false;
     private PenaltyTransaction currentPenalty;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        setupStatusComboBox();
         loadComboBoxes();
-
-        if (statusComboBox != null) {
-            statusComboBox.setItems(FXCollections.observableArrayList("UNPAID", "PAID", "WAIVED"));
-            statusComboBox.setValue("UNPAID");
-        }
-
-        maintenanceComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && newVal.getMaintenanceID() != null) {
-
-                if (newVal.getTotalCost() != null) {
-                    totalPenaltyField.setText(newVal.getTotalCost().toString());
-                }
-
-                if (newVal.getPlateID() != null) {
-                    autoSelectRentalByVehicle(newVal.getPlateID());
-                }
-            }
-        });
+        totalPenaltyField.setDisable(true);
+        setupMaintenanceListener();
     }
 
     public void setMainController(Admin_dashboardController mainController) {
@@ -80,27 +63,21 @@ public class Admin_penaltyFormController implements Initializable{
             currentPenalty = penalty;
 
             formHeaderLabel.setText("Update Penalty");
-
             idField.setText(penalty.getPenaltyID());
-            totalPenaltyField.setText(penalty.getTotalPenalty().toPlainString());
+            totalPenaltyField.setText(penalty.getTotalPenalty().setScale(2, RoundingMode.HALF_UP).toPlainString());
+            dateIssuedPicker.setValue(penalty.getDateIssued() != null ? penalty.getDateIssued().toLocalDate() : null);
 
-            if (penalty.getDateIssued() != null) {
-                dateIssuedPicker.setValue(penalty.getDateIssued().toLocalDate());
-            }
-
-            rentalComboBox.setValue(findRentalInList(penalty.getRentalID()));
-            maintenanceComboBox.setValue(findMaintenanceInList(penalty.getMaintenanceID()));
-
-            if (statusComboBox != null) {
-                statusComboBox.setValue(penalty.getPenaltyStatus());
-            }
+            rentalComboBox.setValue(findRental(penalty.getRentalID()));
+            maintenanceComboBox.setValue(findMaintenance(penalty.getMaintenanceID()));
+            statusComboBox.setValue(penalty.getPenaltyStatus());
 
             idField.setDisable(true);
             idField.getStyleClass().add("form-text-field-disabled");
         } else {
             isUpdatingRecord = false;
             formHeaderLabel.setText("New Penalty");
-            if (statusComboBox != null) statusComboBox.setValue("UNPAID");
+            statusComboBox.setValue("UNPAID");
+            totalPenaltyField.setText("0.00");
         }
     }
 
@@ -110,161 +87,175 @@ public class Admin_penaltyFormController implements Initializable{
 
         try {
             String penaltyID = idField.getText().trim();
+            RentalTransaction rental = rentalComboBox.getValue();
+            MaintenanceTransaction maintenance = maintenanceComboBox.getValue();
 
-            if (rentalComboBox.getValue() == null) {
-                showAlert(AlertType.ERROR, "Missing Data", "Please select a Rental ID.");
+            if (rental == null) {
+                showAlert(Alert.AlertType.ERROR, "Missing Data", "Please select a Rental ID.");
                 return;
             }
-            String rentalID = rentalComboBox.getValue().getRentalID();
 
-            String maintenanceID = null;
-            if (maintenanceComboBox.getValue() != null && maintenanceComboBox.getValue().getMaintenanceID() != null) {
-                maintenanceID = maintenanceComboBox.getValue().getMaintenanceID();
+            if (maintenance == null || maintenance.getMaintenanceID() == null) {
+                showAlert(Alert.AlertType.ERROR, "Missing Data", "Please select a Maintenance record.");
+                return;
             }
 
-            BigDecimal totalPenalty = new BigDecimal(totalPenaltyField.getText().trim());
-            LocalDate dateIssued = dateIssuedPicker.getValue();
+            // Always calculate penalty using the service
+            BigDecimal totalPenalty = maintenanceService.calculateMaintenanceCost(maintenance.getMaintenanceID())
+                    .setScale(2, RoundingMode.HALF_UP);
+            totalPenaltyField.setText(totalPenalty.toPlainString());
 
-            String penaltyStatus = (statusComboBox != null) ? statusComboBox.getValue() : "UNPAID";
+            LocalDate dateIssued = dateIssuedPicker.getValue();
+            String penaltyStatus = statusComboBox.getValue();
 
             if (!isUpdatingRecord && penaltyDAO.getPenaltyById(penaltyID) != null) {
-                showAlert(AlertType.ERROR, "Duplicate ID", "Penalty ID already exists.");
+                showAlert(Alert.AlertType.ERROR, "Duplicate ID", "Penalty ID already exists.");
                 return;
             }
 
-            if (isUpdatingRecord) {
-                boolean rentalSame = Objects.equals(currentPenalty.getRentalID(), rentalID);
-                boolean maintSame = Objects.equals(currentPenalty.getMaintenanceID(), maintenanceID);
-                boolean amountSame = currentPenalty.getTotalPenalty().compareTo(totalPenalty) == 0;
-                boolean statusSame = Objects.equals(currentPenalty.getPenaltyStatus(), penaltyStatus);
-                boolean dateSame = currentPenalty.getDateIssued().toLocalDate().equals(dateIssued);
-
-                if (rentalSame && maintSame && amountSame && statusSame && dateSame) {
-                    System.out.println("No changes detected.");
-                    mainController.loadPage("Admin-penaltyRecords.fxml");
-                    return;
-                }
+            if (isUpdatingRecord && !hasChanges(rental, maintenance, totalPenalty, penaltyStatus, dateIssued)) {
+                mainController.loadPage("Admin-penaltyRecords.fxml");
+                return;
             }
 
             PenaltyTransaction penalty = isUpdatingRecord ? currentPenalty : new PenaltyTransaction();
             penalty.setPenaltyID(penaltyID);
-            penalty.setRentalID(rentalID);
-            penalty.setMaintenanceID(maintenanceID);
+            penalty.setRentalID(rental.getRentalID());
+            penalty.setMaintenanceID(maintenance.getMaintenanceID());
             penalty.setTotalPenalty(totalPenalty);
             penalty.setPenaltyStatus(penaltyStatus);
             penalty.setDateIssued(dateIssued != null ? java.sql.Date.valueOf(dateIssued) : null);
-
-            if (!isUpdatingRecord) {
-                penalty.setStatus("Active");
-            }
+            if (!isUpdatingRecord) penalty.setStatus("Active");
 
             boolean success = isUpdatingRecord
                     ? penaltyDAO.updatePenalty(penalty)
                     : penaltyDAO.insertPenalty(penalty);
 
             if (success) {
-                String title = isUpdatingRecord ? "Penalty Updated!" : "New Penalty Added!";
-                String content = "Penalty ID:\n" + penalty.getPenaltyID() + "\n\n" +
-                        "Amount:\n₱" + String.format("%.2f", penalty.getTotalPenalty()) + "\n\n" +
-                        "Status:\n" + penalty.getPenaltyStatus();
-
-                showConfirmationDialog(title, content);
+                showConfirmationDialog(
+                        isUpdatingRecord ? "Penalty Updated!" : "New Penalty Added!",
+                        "Penalty ID:\n" + penalty.getPenaltyID() +
+                                "\n\nAmount:\n₱" + totalPenalty +
+                                "\n\nStatus:\n" + penalty.getPenaltyStatus()
+                );
                 mainController.loadPage("Admin-penaltyRecords.fxml");
-
             } else {
-                showAlert(AlertType.ERROR, "Error", "Failed to save penalty record.");
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to save penalty record.");
             }
 
-        } catch (NumberFormatException e) {
-            showAlert(AlertType.ERROR, "Invalid Amount", "Total penalty must be a valid number.");
         } catch (Exception e) {
-            showAlert(AlertType.ERROR, "Error", "An unexpected error occurred.");
+            showAlert(Alert.AlertType.ERROR, "Error", "An unexpected error occurred.");
             e.printStackTrace();
         }
     }
 
-    private void autoSelectRentalByVehicle(String plateID) {
-        if (rentalComboBox.getItems() == null) return;
-        for (RentalTransaction r : rentalComboBox.getItems()) {
-            if (r != null && r.getPlateID().equals(plateID)) {
-                rentalComboBox.setValue(r);
-                return;
-            }
+    private boolean hasChanges(RentalTransaction rental, MaintenanceTransaction maintenance,
+                               BigDecimal total, String status, LocalDate dateIssued) {
+        return !(Objects.equals(currentPenalty.getRentalID(), rental.getRentalID()) &&
+                Objects.equals(currentPenalty.getMaintenanceID(), maintenance.getMaintenanceID()) &&
+                currentPenalty.getTotalPenalty().compareTo(total) == 0 &&
+                Objects.equals(currentPenalty.getPenaltyStatus(), status) &&
+                ((currentPenalty.getDateIssued() == null && dateIssued == null) ||
+                        (currentPenalty.getDateIssued() != null && currentPenalty.getDateIssued().toLocalDate().equals(dateIssued))));
+    }
+
+    private void setupStatusComboBox() {
+        statusComboBox.setItems(FXCollections.observableArrayList("UNPAID", "PAID", "WAIVED"));
+        statusComboBox.setValue("UNPAID");
+    }
+
+    private void setupMaintenanceListener() {
+        maintenanceComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> calculateTotalPenalty());
+    }
+
+    private void calculateTotalPenalty() {
+        MaintenanceTransaction selected = maintenanceComboBox.getValue();
+        if (selected != null && selected.getMaintenanceID() != null) {
+            BigDecimal total = maintenanceService.calculateMaintenanceCost(selected.getMaintenanceID())
+                    .setScale(2, RoundingMode.HALF_UP);
+            totalPenaltyField.setText(total.toPlainString());
+
+            if (selected.getPlateID() != null) autoSelectRentalByVehicle(selected.getPlateID());
+        } else {
+            totalPenaltyField.setText("0.00");
         }
     }
 
-    @FXML
-    private void handleCancel() {
+    private void autoSelectRentalByVehicle(String plateID) {
+        if (plateID == null) return;
+
+        RentalTransaction rental = rentalComboBox.getItems().stream()
+                .filter(r -> r != null && plateID.equals(r.getPlateID()))
+                .findFirst()
+                .orElseGet(() -> rentalDAO.getActiveRentalByVehicle(plateID));
+
+        if (rental != null) rentalComboBox.setValue(rental);
+    }
+
+    @FXML private void handleCancel() {
         mainController.loadPage("Admin-penaltyRecords.fxml");
     }
 
     private boolean validateFields() {
         if (idField.getText().trim().isEmpty() ||
-                rentalComboBox.getValue() == null||
+                rentalComboBox.getValue() == null ||
                 totalPenaltyField.getText().trim().isEmpty() ||
                 dateIssuedPicker.getValue() == null) {
-            showAlert(AlertType.WARNING, "Validation Error", "Please fill in all required fields.");
+            showAlert(Alert.AlertType.WARNING, "Validation Error", "Please fill in all required fields.");
             return false;
         }
 
-        try {
-            new BigDecimal(totalPenaltyField.getText().trim());
-        } catch (NumberFormatException e) {
-            showAlert(AlertType.ERROR, "Invalid Amount", "Penalty amount must be a number.");
+        try { new BigDecimal(totalPenaltyField.getText().trim()); }
+        catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Invalid Amount", "Penalty amount must be a number.");
             return false;
         }
 
         return true;
     }
 
-    private void showAlert(AlertType type, String title, String content) {
+    private RentalTransaction findRental(String id) {
+        if (id == null) return null;
+        return rentalComboBox.getItems().stream()
+                .filter(r -> r != null && id.equals(r.getRentalID()))
+                .findFirst()
+                .orElse(rentalDAO.getRentalById(id));
+    }
+
+    private MaintenanceTransaction findMaintenance(String id) {
+        if (id == null) return null;
+        return maintenanceComboBox.getItems().stream()
+                .filter(m -> m != null && id.equals(m.getMaintenanceID()))
+                .findFirst()
+                .orElse(maintenanceDAO.getMaintenanceById(id));
+    }
+
+    private void loadComboBoxes() {
+        ObservableList<RentalTransaction> rentals = FXCollections.observableArrayList(rentalDAO.getAllRentals());
+        rentalComboBox.setItems(rentals);
+        rentalComboBox.setConverter(new javafx.util.StringConverter<>() {
+            @Override public String toString(RentalTransaction r) { return r == null ? "" : r.getRentalID() + " (" + r.getPlateID() + ")"; }
+            @Override public RentalTransaction fromString(String string) { return null; }
+        });
+
+        ObservableList<MaintenanceTransaction> maints = FXCollections.observableArrayList(maintenanceDAO.getAllMaintenance());
+        MaintenanceTransaction none = new MaintenanceTransaction(); // None placeholder
+        maints.add(0, none);
+        maintenanceComboBox.setItems(maints);
+        maintenanceComboBox.setConverter(new javafx.util.StringConverter<>() {
+            @Override public String toString(MaintenanceTransaction m) {
+                return (m == null || m.getMaintenanceID() == null) ? "None (Not Linked)" : m.getMaintenanceID() + " (" + m.getPlateID() + ")";
+            }
+            @Override public MaintenanceTransaction fromString(String string) { return null; }
+        });
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
-    }
-
-    private RentalTransaction findRentalInList(String id) {
-        if (id == null) return null;
-        return rentalComboBox.getItems().stream()
-                .filter(r -> r != null && id.equals(r.getRentalID()))
-                .findFirst().orElse(rentalDAO.getRentalById(id));
-    }
-
-    private MaintenanceTransaction findMaintenanceInList(String id) {
-        if (id == null) return null;
-        return maintenanceComboBox.getItems().stream()
-                .filter(m -> m != null && id.equals(m.getMaintenanceID()))
-                .findFirst().orElse(maintenanceDAO.getMaintenanceById(id));
-    }
-
-    private void loadComboBoxes() {
-        try {
-            ObservableList<RentalTransaction> rentalList = FXCollections.observableArrayList(rentalDAO.getAllRentals());
-            rentalComboBox.setItems(rentalList);
-            rentalComboBox.setConverter(new StringConverter<RentalTransaction>() {
-                @Override public String toString(RentalTransaction r) {
-                    if (r == null) return null;
-                    return String.format("%s (Vehicle: %s)", r.getRentalID(), r.getPlateID());
-                }
-                @Override public RentalTransaction fromString(String string) { return null; }
-            });
-        } catch (Exception e) { e.printStackTrace(); }
-
-        try {
-            ObservableList<MaintenanceTransaction> maintenanceList = FXCollections.observableArrayList(maintenanceDAO.getAllMaintenance());
-            MaintenanceTransaction optionalNone = new MaintenanceTransaction();
-            maintenanceList.add(0, optionalNone);
-            maintenanceComboBox.setItems(maintenanceList);
-            maintenanceComboBox.setConverter(new StringConverter<MaintenanceTransaction>() {
-                @Override public String toString(MaintenanceTransaction m) {
-                    if (m == null || m.getMaintenanceID() == null) return "None (Not Linked)";
-                    return String.format("%s (Vehicle: %s)", m.getMaintenanceID(), m.getPlateID());
-                }
-                @Override public MaintenanceTransaction fromString(String string) { return null; }
-            });
-        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void showConfirmationDialog(String title, String content) {
@@ -274,11 +265,8 @@ public class Admin_penaltyFormController implements Initializable{
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Confirmation");
             dialogStage.initModality(Modality.WINDOW_MODAL);
-            if (mainController != null) {
-                dialogStage.initOwner(mainController.getPrimaryStage());
-            }
-            Scene scene = new Scene(page);
-            dialogStage.setScene(scene);
+            if (mainController != null) dialogStage.initOwner(mainController.getPrimaryStage());
+            dialogStage.setScene(new Scene(page));
             Admin_addRecordConfirmationController controller = loader.getController();
             controller.setDialogStage(dialogStage);
             controller.setData(title, content);

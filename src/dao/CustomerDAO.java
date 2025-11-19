@@ -324,4 +324,26 @@ public class CustomerDAO {
         }
         return customers;
     }
+
+    public int getNextCustomerNumber() {
+        String sql = "SELECT customerID FROM customers ORDER BY customerID DESC LIMIT 1";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                String lastID = rs.getString("customerID");
+                String numericPart = lastID.substring(5);
+                return Integer.parseInt(numericPart) + 1;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 1;
+    }
+
+    public String generateCustomerID() {
+        int nextNum = getNextCustomerNumber();
+        return String.format("CUST-%03d", nextNum);
+    }
 }

@@ -172,18 +172,15 @@
 }
 
 .date-picker .arrow-button {
-    -fx-background-color: #33a398; /* Teal color for the button */
+    -fx-background-color: #33a398; /* Teal */
     -fx-background-radius: 0 5 5 0;
 }
 
-.date-picker .arrow {
-    -fx-background-color: transparent; /* Hides default black arrow */
-}
-
-.date-picker .arrow-button .open-button {
-    /* Sets a custom icon for the calendar button */
+.date-picker .arrow-button .arrow {
+    -fx-background-color: transparent;
+    -fx-shape: "";
     -fx-background-image: url("assets/calendar-icon.png");
-    -fx-background-size: 16 16;
+    -fx-background-size: 16px 16px;
     -fx-background-repeat: no-repeat;
     -fx-background-position: center;
 }
