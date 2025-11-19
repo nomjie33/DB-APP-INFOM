@@ -334,7 +334,7 @@ DB-APP-INFOM/
 
 ## 👥 Contributors
 
-**CCINFOM S22 Group 07**
+**Bantillo, Gonzales, Reyes, Tan**
 - Team members responsible for:
   - Database Schema Design & Implementation
   - Backend Development (DAO Layer, Service Layer)
@@ -344,10 +344,10 @@ DB-APP-INFOM/
 
 ## 📝 Academic Context
 
-This project was developed as a major course requirement for **CCINFOM (Database Systems)** - Section S22, Group 07.
+This project was developed as a major course requirement for **CCINFOM (Information Management)** - Section S22, Group 07.
 
 **Institution**: De La Salle University  
-**Course**: Database Management Systems  
+**Course**: CCINFOM (Information Management)
 **Academic Year**: 2024-2025  
 
 The system demonstrates:
