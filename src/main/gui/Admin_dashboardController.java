@@ -7,6 +7,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -27,6 +28,7 @@ public class Admin_dashboardController implements Initializable {
     @FXML private BorderPane adminDashboardRoot;
     @FXML private AnchorPane centerContentPane;
     @FXML private Button quitButton;
+    @FXML private Label currentUserLabel;
 
     // Main Nav
     @FXML private HBox homeButton;
@@ -67,12 +69,20 @@ public class Admin_dashboardController implements Initializable {
                 maintenanceTransactionsButton, maintenanceChequesButton, penaltyTransactionsButton,
                 reportRentalRevenueButton, reportDefectiveVehiclesButton, reportLocationFrequencyButton, reportCustomerRentalButton
         );
-
+        if (currentUserLabel != null) {
+            currentUserLabel.setText("Welcome, Admin");
+        }
         handleHome(null);
     }
 
     public void setLoggedInStaff(Staff staff){
+
         this.loggedInStaff = staff;
+        if (currentUserLabel != null && staff != null) {
+            String displayName = (staff.getUsername() != null) ? staff.getUsername() : "Admin";
+            currentUserLabel.setText("Hello, " + displayName + "!");
+        }
+        loadPage("Admin-home.fxml");
     }
 
     @FXML void handleHome(MouseEvent event) {
@@ -227,6 +237,7 @@ public class Admin_dashboardController implements Initializable {
 
             if (controller instanceof Admin_homeController){
                 ((Admin_homeController) controller).setMainController(this);
+                ((Admin_homeController) controller).setStaffData(this.loggedInStaff);
             } else if (controller instanceof  Admin_customerRecordsController){
                 ((Admin_customerRecordsController) controller).setMainController(this);
             } else if (controller instanceof Admin_vehicleRecordsController){

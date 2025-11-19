@@ -18,6 +18,8 @@ import java.net.URL;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import model.Staff;
+
 public class Admin_homeController implements Initializable {
 
     @FXML private Label adminNameLabel;
@@ -49,10 +51,21 @@ public class Admin_homeController implements Initializable {
                 handleRecordClick(selectedRecord);
             }
         });
+
+        if (adminNameLabel != null) {
+            adminNameLabel.setText("Welcome, Admin");
+        }
     }
 
     public void setMainController(Admin_dashboardController mainController) {
         this.mainController = mainController;
+    }
+
+    public void setStaffData(Staff staff) {
+        if (adminNameLabel != null && staff != null) {
+            String name = (staff.getUsername() != null) ? staff.getUsername() : "Admin";
+            adminNameLabel.setText("Welcome, " + name + "!");
+        }
     }
 
     private void loadRecordData() {
