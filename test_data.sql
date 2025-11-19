@@ -46,7 +46,9 @@ INSERT INTO locations (locationID, name) VALUES
 ('LOC-005', 'UP Town Center'),
 ('LOC-006', 'SM Mall of Asia'),
 ('LOC-007', 'Trinoma'),
-('LOC-008', 'Alabang Town Center');
+('LOC-008', 'Alabang Town Center'),
+('LOC-009', 'Ayala Malls Manila Bay'),
+('LOC-010', 'Greenhills Shopping Center');
 
 SELECT * FROM locations;
 
@@ -91,7 +93,11 @@ INSERT INTO vehicles (plateID, vehicleType, status, rentalPrice) VALUES
 ('ET-003', 'E-Trike', 'In Use', 105.00),
 ('ET-004', 'E-Trike', 'Available', 120.00),
 ('ET-005', 'E-Trike', 'Available', 98.00),
-('ET-006', 'E-Trike', 'Inactive', 95.00);  -- Retired: Involved in accident, retired from service
+('ET-006', 'E-Trike', 'Inactive', 95.00), -- Retired: Involved in accident, retired from service
+('ET-007', 'E-Trike', 'In Use', 105.00),
+('ET-008', 'E-Trike', 'Available', 120.00),
+('ET-009', 'E-Trike', 'Available', 98.00),
+('ET-010', 'E-Trike', 'Inactive', 95.00); -- Retired: Motor failure, not cost-effective to repair
 
 -- =====================================================
 -- 3. CITIES TABLE
@@ -106,7 +112,9 @@ INSERT INTO cities (name) VALUES
 ('Pasay'),
 ('Muntinlupa'),
 ('Manila'),
-('Mandaluyong');
+('Mandaluyong'),
+('Navotas'),
+('Malabon');
 
 SELECT * FROM cities;
 
@@ -143,7 +151,13 @@ INSERT INTO barangays (cityID, name) VALUES
 (7, 'Malate'),
 -- Mandaluyong barangays
 (8, 'Plainview'),
-(8, 'Highway Hills');
+(8, 'Highway Hills'),
+-- Navotas barangays
+(9, 'San Jose'),
+(9, 'San Roque'),
+-- Malabon barangays
+(10, 'Potrero'),
+(10, 'Tonsuya');
 
 SELECT * FROM barangays;
 
@@ -209,7 +223,9 @@ INSERT INTO technicians (technician_id, last_name, first_name, specialization_id
 ('TECH-005', 'Mendoza', 'Carlos', 'MECHANICAL', 330.00, '09281234568', 'Active'),
 ('TECH-006', 'Villanueva', 'Sofia', 'BODYWORK', 370.00, '09391234568', 'Active'),
 ('TECH-007', 'Torres', 'Miguel', 'ELECTRICAL', 360.00, '09171234569', 'Active'),
-('TECH-008', 'Ramos', 'Elena', 'MECHANICAL', 315.00, '09281234569', 'Active');
+('TECH-008', 'Ramos', 'Elena', 'MECHANICAL', 315.00, '09281234569', 'Active'),
+('TECH-009', 'Gomez', 'Richmond', 'ELECTRICAL', 350.00, '09170559847', 'Active'),
+('TECH-010', 'Evangelista', 'Will', 'BODYWORK', 380.00, '09289875563', 'Active');
 
 SELECT * FROM technicians;
 
@@ -264,6 +280,19 @@ INSERT INTO rentals (rentalID, customerID, plateID, locationID, pickUpDateTime, 
 ('RNT-013', 'CUST-002', 'ES-007', 'LOC-002', '2024-10-23 09:00:00', '2024-10-23 09:10:00', '2024-10-23 11:00:00', 'Completed'),
 ('RNT-014', 'CUST-004', 'ET-002', 'LOC-004', '2024-10-23 15:00:00', '2024-10-23 15:05:00', '2024-10-23 18:00:00', 'Completed'),
 ('RNT-015', 'CUST-006', 'ES-009', 'LOC-006', '2024-10-22 10:00:00', '2024-10-22 10:10:00', '2024-10-22 13:00:00', 'Completed'),
+('RNT-029', 'CUST-001', 'ES-005', 'LOC-001', '2024-02-15 08:00:00', '2024-02-15 08:05:00', '2024-02-15 12:00:00', 'Completed'),
+('RNT-030', 'CUST-002', 'ET-002', 'LOC-004', '2023-07-16 09:00:00', '2023-07-16 09:05:00', '2023-07-16 13:30:00', 'Completed'),
+('RNT-031', 'CUST-003', 'ET-002', 'LOC-004', '2023-03-17 10:00:00', '2023-03-17 10:05:00', '2023-03-17 14:00:00', 'Completed'),
+('RNT-032', 'CUST-004', 'ET-002', 'LOC-004', '2022-08-18 11:00:00', '2022-08-18 11:05:00', '2022-08-18 15:30:00', 'Completed'),
+('RNT-033', 'CUST-005', 'ET-002', 'LOC-004', '2022-04-19 09:00:00', '2022-04-19 09:05:00', '2022-04-19 12:00:00', 'Completed'),
+('RNT-034', 'CUST-006', 'ET-001', 'LOC-006', '2021-11-20 10:00:00', '2021-11-20 10:05:00', '2021-11-20 13:30:00', 'Completed'),
+('RNT-035', 'CUST-007', 'ES-005', 'LOC-001', '2021-05-21 08:30:00', '2021-05-21 08:35:00', '2021-05-21 11:00:00', 'Completed'),
+('RNT-036', 'CUST-008', 'ES-005', 'LOC-001', '2020-09-22 14:00:00', '2020-09-22 14:05:00', '2020-09-22 17:00:00', 'Completed'),
+('RNT-037', 'CUST-009', 'EB-006', 'LOC-007', '2024-06-10 09:00:00', '2024-06-10 09:05:00', '2024-06-10 13:00:00', 'Completed'),
+('RNT-038', 'CUST-010', 'ET-001', 'LOC-006', '2023-12-12 10:00:00', '2023-12-12 10:05:00', '2023-12-12 14:30:00', 'Completed'),
+('RNT-039', 'CUST-001', 'EB-006', 'LOC-007', '2022-03-14 08:00:00', '2022-03-14 08:05:00', '2022-03-14 12:00:00', 'Completed'),
+('RNT-040', 'CUST-002', 'EB-006', 'LOC-007', '2021-07-16 11:00:00', '2021-07-16 11:05:00', '2021-07-16 15:00:00', 'Completed'),
+('RNT-041', 'CUST-003', 'EB-006', 'LOC-007', '2020-10-18 09:00:00', '2020-10-18 09:05:00', '2020-10-18 13:30:00', 'Completed'),
 -- Additional rentals for ES-005 (now in Maintenance) - heavy usage before defect
 ('RNT-016', 'CUST-001', 'ES-005', 'LOC-001', '2024-10-15 08:00:00', '2024-10-15 08:05:00', '2024-10-15 12:00:00', 'Completed'),
 ('RNT-017', 'CUST-002', 'ES-005', 'LOC-001', '2024-10-16 09:00:00', '2024-10-16 09:05:00', '2024-10-16 13:30:00', 'Completed'),
@@ -304,6 +333,19 @@ INSERT INTO payments (paymentID, amount, rentalID, paymentDate, status) VALUES
 ('PAY-009', 3.75, 'RNT-013', '2024-10-23', 'Active'),   -- ES-007: 2h × ₱45/day
 ('PAY-010', 11.88, 'RNT-014', '2024-10-23', 'Active'),  -- ET-002: 3h × ₱95/day
 ('PAY-011', 7.25, 'RNT-015', '2024-10-22', 'Active'),   -- ES-009: 3h × ₱58/day
+('PAY-029', 8.00, 'RNT-029', '2024-02-15', 'Active'),   -- ES-005: 4h × ₱48/day
+('PAY-030', 9.50, 'RNT-030', '2023-07-16', 'Active'),   -- ET-002: 4.5h × ₱95/day
+('PAY-031', 9.50, 'RNT-031', '2023-03-17', 'Active'),   -- ET-002: 4.5h × ₱95/day
+('PAY-032', 9.50, 'RNT-032', '2022-08-18', 'Active'),   -- ET-002: 4.5h × ₱95/day
+('PAY-033', 9.50, 'RNT-033', '2022-04-19', 'Active'),   -- ET-002: 4.5h × ₱95/day
+('PAY-034', 12.50, 'RNT-034', '2021-11-20', 'Active'),  -- ET-001: 3h × ₱100/day
+('PAY-035', 8.00, 'RNT-035', '2021-05-21', 'Active'),   -- ES-005: 4h × ₱48/day
+('PAY-036', 8.00, 'RNT-036', '2020-09-22', 'Active'),   -- ES-005: 4h × ₱48/day
+('PAY-037', 13.67, 'RNT-037', '2024-06-10', 'Active'),  -- EB-006: 4h × ₱82/day
+('PAY-038', 12.50, 'RNT-038', '2023-12-12', 'Active'),  -- ET-001: 3h × ₱100/day
+('PAY-039', 13.67, 'RNT-039', '2022-03-14', 'Active'),  -- EB-006: 4h × ₱82/day
+('PAY-040', 13.67, 'RNT-040', '2021-07-16', 'Active'),  -- EB-006: 4h × ₱82/day
+('PAY-041', 13.67, 'RNT-041', '2020-10-18', 'Active'),  -- EB-006: 4h × ₱82/day
 -- Additional payments for ES-005 rentals (before maintenance)
 ('PAY-016', 8.00, 'RNT-016', '2024-10-15', 'Active'),   -- ES-005: 4h × ₱48/day
 ('PAY-017', 9.00, 'RNT-017', '2024-10-16', 'Active'),   -- ES-005: 4.5h × ₱48/day
@@ -651,15 +693,15 @@ ORDER BY VehicleCount DESC;
 
 SELECT 'Test data loaded successfully!' as Status;
 SELECT 'Data Summary:' as Info;
-SELECT '  - 8 Locations' as Summary
-UNION ALL SELECT '  - 23 Vehicles'
+SELECT '  - 10 Locations' as Summary
+UNION ALL SELECT '  - 32 Vehicles'
 UNION ALL SELECT '  - 10 Customers'
-UNION ALL SELECT '  - 8 Technicians'
+UNION ALL SELECT '  - 10 Technicians'
 UNION ALL SELECT '  - 15 Parts'
-UNION ALL SELECT '  - 15 Rentals'
-UNION ALL SELECT '  - 11 Payments'
-UNION ALL SELECT '  - 20 Maintenance Records'
-UNION ALL SELECT '  - 37 Maintenance Parts Usage Records'
+UNION ALL SELECT '  - 41 Rentals'
+UNION ALL SELECT '  - 41 Payments'
+UNION ALL SELECT '  - 24 Maintenance Records'
+UNION ALL SELECT '  - 34 Maintenance Parts Usage Records'
 UNION ALL SELECT '  - 10 Penalties'
 UNION ALL SELECT '  - 27 Deployments';
 
