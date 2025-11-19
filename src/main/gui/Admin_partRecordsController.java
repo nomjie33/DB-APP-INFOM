@@ -164,7 +164,7 @@ public class Admin_partRecordsController implements Initializable {
     }
 
     private void handleDeactivateReactivate(Part part) {
-        String action = "Active".equals(part.getStatus()) ? "deactivate" : "reactivate";
+        String action = "Active".equals(part.getStatus()) ? "Deactivation" : "Revert Deactivation";
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
@@ -180,7 +180,7 @@ public class Admin_partRecordsController implements Initializable {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Part has been " + action + "d.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Part status has been updated.");
                 loadData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update part status.");

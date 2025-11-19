@@ -188,7 +188,7 @@ public class Admin_vehicleRecordsController implements  Initializable {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Vehicle has been " + action + "d.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Vehicle status has been updated.");
                 loadVehicleData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update vehicle status.");

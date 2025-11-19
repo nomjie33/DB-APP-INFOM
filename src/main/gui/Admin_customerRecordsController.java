@@ -215,7 +215,7 @@ public class Admin_customerRecordsController implements Initializable {
 
             if (success) {
 
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Customer has been " + action + "d.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Customer status has been updated.");
                 loadCustomerData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update customer status.");

@@ -157,7 +157,7 @@ public class Admin_locationRecordsController implements  Initializable{
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Location has been " + action + "d.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Location status has been updated.");
                 loadData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update location status.");

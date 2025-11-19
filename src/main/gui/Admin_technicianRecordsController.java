@@ -186,7 +186,7 @@ public class Admin_technicianRecordsController implements Initializable {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Technician has been " + action + "d.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Technician status has been updated.");
                 loadData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update technician status.");

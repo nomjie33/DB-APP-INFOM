@@ -182,7 +182,7 @@ public class Admin_maintenanceRecordsController implements Initializable {
                             Button btn = new Button();
 
                             if ("Active".equals(maintenance.getStatus())) {
-                                btn.setText("Deactivate");
+                                btn.setText("Cancel");
                                 btn.getStyleClass().add("deactivate-button");
                             } else {
                                 btn.setText("Reactivate");
@@ -206,7 +206,7 @@ public class Admin_maintenanceRecordsController implements Initializable {
     }
 
     private void handleDeactivateReactivate(MaintenanceTransaction maintenance) {
-        String action = "Active".equals(maintenance.getStatus()) ? "deactivate" : "reactivate";
+        String action = "Active".equals(maintenance.getStatus()) ? "Cancellation" : "Revert Cancellation";
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
@@ -222,7 +222,7 @@ public class Admin_maintenanceRecordsController implements Initializable {
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Maintenance has been " + action + "d.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Maintenance status has been updated.");
                 loadMaintenanceData();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Error", "Failed to update maintenance status.");
