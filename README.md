@@ -1,5 +1,5 @@
 # 🚲 U.V.R! - An Vehicle Rental App & Management System
-<img src="https://github.com/nomjie33/DB-APP-INFOM/blob/9ebf125472ca122eed8a7c043cc06762a2fac6d4/src/main/gui/assets/logo1_orig.png" alt="logo" width="200"/>
+<img src="https://github.com/nomjie33/DB-APP-INFOM/blob/9ebf125472ca122eed8a7c043cc06762a2fac6d4/src/main/gui/assets/logo1_orig.png" alt="logo" width="500"/>
 
 A comprehensive database-driven application for managing electric vehicle rentals (E-Scooters, E-Bikes, and E-Trikes) built with Java, JavaFX, and MySQL.
 
