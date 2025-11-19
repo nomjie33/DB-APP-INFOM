@@ -3,6 +3,7 @@ package main.gui;
 import javafx.scene.layout.AnchorPane;
 import dao.MaintenanceChequeDAO;
 import model.MaintenanceCheque;
+import service.MaintenanceService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -31,6 +32,7 @@ public class Admin_maintenanceChequeRecordsController implements Initializable {
     @FXML private ComboBox<String> statusFilterComboBox;
 
     private final MaintenanceChequeDAO chequeDAO = new MaintenanceChequeDAO();
+    private final MaintenanceService maintenanceService = new MaintenanceService();
     private Admin_dashboardController mainController;
 
     @Override
@@ -148,25 +150,34 @@ public class Admin_maintenanceChequeRecordsController implements Initializable {
 
     private void handleDeactivateReactivate(MaintenanceCheque cheque) {
         String action = "Active".equals(cheque.getStatus()) ? "deactivate" : "reactivate";
+        
+        String inventoryMessage = "";
+        if ("Active".equals(cheque.getStatus())) {
+            inventoryMessage = "\n\nNote: All " + cheque.getQuantityUsed() + " units of this part will be returned to inventory.";
+        } else {
+            inventoryMessage = "\n\nNote: " + cheque.getQuantityUsed() + " units will be deducted from inventory.";
+        }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
         alert.setHeaderText("Confirm " + action);
-        alert.setContentText("Are you sure you want to " + action + " this record?\nMaintenance ID: " + cheque.getMaintenanceID() + "\nPart ID: " + cheque.getPartID());
+        alert.setContentText("Are you sure you want to " + action + " this record?\nMaintenance ID: " + cheque.getMaintenanceID() + "\nPart ID: " + cheque.getPartID() + inventoryMessage);
 
         if (alert.showAndWait().get() == ButtonType.OK) {
             boolean success;
             if ("Active".equals(cheque.getStatus())) {
-                success = chequeDAO.deactivateMaintenanceCheque(cheque.getMaintenanceID(), cheque.getPartID());
+                // Use service method to handle inventory return automatically
+                success = maintenanceService.deactivateMaintenanceChequeWithInventory(cheque.getMaintenanceID(), cheque.getPartID());
             } else {
-                success = chequeDAO.reactivateMaintenanceCheque(cheque.getMaintenanceID(), cheque.getPartID());
+                // Use service method to handle inventory deduction automatically
+                success = maintenanceService.reactivateMaintenanceChequeWithInventory(cheque.getMaintenanceID(), cheque.getPartID());
             }
 
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Record has been " + action + "d.");
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Record has been " + action + "d and inventory updated.");
                 loadChequeData();
             } else {
-                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update status.");
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update status. Check console for details.");
             }
         }
     }
