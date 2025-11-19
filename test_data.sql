@@ -27,10 +27,10 @@ SET FOREIGN_KEY_CHECKS = 0;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- =====================================================
--- Note: Now run database_schema.sql to recreate tables
+-- Note: Now run CCINFOM 22-07.sql to recreate tables
 -- =====================================================
 -- This file only contains test data.
--- Make sure to run database_schema.sql FIRST to create the table structure.
+-- Make sure to run CCINFOM 22-07.sql FIRST to create the table structure.
 -- =====================================================
 
 -- =====================================================

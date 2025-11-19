@@ -154,7 +154,7 @@ customers
 3. **Run Database Schema**
    ```bash
    # In MySQL Workbench or command line:
-   mysql -u your_username -p < database_schema.sql
+   mysql -u your_username -p < CCINFOM 22-07.sql
    ```
 
 4. **Load Test Data (Optional)**
@@ -234,7 +234,7 @@ DB-APP-INFOM/
 ├── lib/                    # External libraries
 ├── bin/                    # Compiled classes
 ├── reports_output/         # Generated PDF reports
-├── database_schema.sql     # Database creation script
+├── CCINFOM 22-07.sql     # Database creation script
 ├── test_data.sql          # Sample data for testing
 ├── db.properties.example  # Database config template
 └── README.md

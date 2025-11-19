@@ -270,7 +270,7 @@ Each team member should work on one layer at a time:
 
 ### Week 1: Foundation
 - [ ] Set up MySQL database
-- [ ] Import `database_schema.sql`
+- [ ] Import `CCINFOM 22-07.sql`
 - [ ] Add MySQL Connector JAR
 - [ ] Test database connection (`DBConnection.testConnection()`)
 - [ ] Implement all Model classes

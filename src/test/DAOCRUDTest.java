@@ -35,7 +35,7 @@ import java.util.List;
  * 
  * PREREQUISITES:
  * 1. MySQL database 'vehicle_rental_db' must exist
- * 2. All required tables must be created (run database_schema.sql)
+ * 2. All required tables must be created (run CCINFOM 22-07.sql)
  * 3. db.properties file must be configured with YOUR MySQL credentials
  * 4. At least one vehicle must exist (e.g., ES-001)
  * 
