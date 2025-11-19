@@ -268,6 +268,12 @@ INSERT INTO rentals (rentalID, customerID, plateID, locationID, pickUpDateTime, 
 ('RNT-002', 'CUST-009', 'ES-008', 'LOC-001', '2024-10-28 10:30:00', '2024-10-28 10:35:00', NULL, 'Active'),
 ('RNT-003', 'CUST-005', 'EB-003', 'LOC-005', '2024-10-28 08:00:00', '2024-10-28 08:10:00', NULL, 'Active'),
 ('RNT-004', 'CUST-007', 'ET-003', 'LOC-001', '2024-10-28 11:00:00', '2024-10-28 11:05:00', NULL, 'Active'),
+('RNT-042', 'CUST-005', 'ES-010', 'LOC-005', '2024-11-10 09:00:00', '2024-11-10 09:05:00', NULL, 'Active'),
+('RNT-043', 'CUST-006', 'EB-007', 'LOC-006', '2024-11-19 10:00:00', '2024-11-19 10:05:00', NULL, 'Active'),
+('RNT-044', 'CUST-007', 'ET-004', 'LOC-001', '2024-11-21 11:00:00', '2024-11-21 11:05:00', NULL, 'Active'),
+('RNT-045', 'CUST-008', 'ES-001', 'LOC-008', '2024-12-15 12:00:00', '2024-12-15 12:05:00', NULL, 'Active'),
+('RNT-046', 'CUST-009', 'EB-008', 'LOC-007', '2024-12-29 13:00:00', '2024-12-29 13:05:00', NULL, 'Active'),
+('RNT-047', 'CUST-010', 'ET-005', 'LOC-006', '2024-12-29 14:00:00', '2024-12-29 14:05:00', NULL, 'Active'),
 -- Completed rentals with precise start and end times (pickUpDateTime set at booking, startDateTime when customer arrived)
 ('RNT-005', 'CUST-001', 'ES-001', 'LOC-001', '2024-10-27 09:00:00', '2024-10-27 09:05:00', '2024-10-27 11:45:00', 'Completed'),
 ('RNT-006', 'CUST-002', 'EB-001', 'LOC-002', '2024-10-27 14:00:00', '2024-10-27 14:10:00', '2024-10-27 17:30:00', 'Completed'),
@@ -374,7 +380,13 @@ INSERT INTO payments (paymentID, amount, rentalID, paymentDate, status) VALUES
 ('PAY-012', 0.00, 'RNT-001', '2024-10-28', 'Active'),
 ('PAY-013', 0.00, 'RNT-002', '2024-10-28', 'Active'),
 ('PAY-014', 0.00, 'RNT-003', '2024-10-28', 'Active'),
-('PAY-015', 0.00, 'RNT-004', '2024-10-28', 'Active');
+('PAY-015', 0.00, 'RNT-004', '2024-10-28', 'Active'),
+('PAY-042', 0.00, 'RNT-042', '2024-11-10', 'Active'),
+('PAY-043', 0.00, 'RNT-043', '2024-11-19', 'Active'),
+('PAY-044', 0.00, 'RNT-044', '2024-11-21', 'Active'),
+('PAY-045', 0.00, 'RNT-045', '2024-12-15', 'Active'),
+('PAY-046', 0.00, 'RNT-046', '2024-12-29', 'Active'),
+('PAY-047', 0.00, 'RNT-047', '2024-12-29', 'Active');
 
 SELECT * FROM payments;
 
@@ -698,8 +710,8 @@ UNION ALL SELECT '  - 32 Vehicles'
 UNION ALL SELECT '  - 10 Customers'
 UNION ALL SELECT '  - 10 Technicians'
 UNION ALL SELECT '  - 15 Parts'
-UNION ALL SELECT '  - 41 Rentals'
-UNION ALL SELECT '  - 41 Payments'
+UNION ALL SELECT '  - 47 Rentals'
+UNION ALL SELECT '  - 47 Payments'
 UNION ALL SELECT '  - 24 Maintenance Records'
 UNION ALL SELECT '  - 34 Maintenance Parts Usage Records'
 UNION ALL SELECT '  - 10 Penalties'
